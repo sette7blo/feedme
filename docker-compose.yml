@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  feedme:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./recipes:/app/recipes
+      - ./images:/app/images
+      - ./data:/app/data
+      - ./.env:/app/.env
+      - ./frontend:/app/frontend
+      - ./server.py:/app/server.py
+      - ./modules:/app/modules
+      - ./core:/app/core
+    restart: unless-stopped
