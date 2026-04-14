@@ -134,6 +134,14 @@ def generate_shopping_list(start_date: str, end_date: str, list_date: str = None
     date_val = list_date or end_date
 
     with db() as conn:
+        # Preserve manually added items (no matching meal plan entry)
+        manual = conn.execute(
+            "SELECT food, quantity, unit FROM shopping_list WHERE list_date=? AND covered=0",
+            (date_val,)
+        ).fetchall()
+        manual_keep = [dict(r) for r in manual if r["food"].lower().strip() not in
+                       {i["food"].lower().strip() for i in to_buy}]
+
         conn.execute("DELETE FROM shopping_list WHERE list_date=?", (date_val,))
         for item in to_buy:
             conn.execute(
@@ -143,6 +151,11 @@ def generate_shopping_list(start_date: str, end_date: str, list_date: str = None
         for item in from_pantry:
             conn.execute(
                 "INSERT INTO shopping_list (food, quantity, unit, list_date, covered) VALUES (?,?,?,?,1)",
+                (item["food"], item.get("quantity"), item.get("unit"), date_val)
+            )
+        for item in manual_keep:
+            conn.execute(
+                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered) VALUES (?,?,?,?,0)",
                 (item["food"], item.get("quantity"), item.get("unit"), date_val)
             )
 

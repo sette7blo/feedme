@@ -11,6 +11,13 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+### Fixed
+- Settings: saving an empty value now clears the setting instead of being silently ignored
+- Pantry: `PUT /api/pantry/:id` now whitelists accepted fields at the API boundary
+- Grocery: regenerating the shopping list now preserves manually added items
+- Sync: `POST /api/recipes/sync` now updates `status` from JSON (source of truth)
+- Version check: GitHub release fetch is now non-blocking (runs in background thread)
+
 ---
 
 ## [v1.1.0] — 2026-04-14

@@ -125,6 +125,7 @@ def sync_all() -> dict:
                         ingredients=excluded.ingredients,
                         source_url=excluded.source_url,
                         source_type=excluded.source_type,
+                        status=excluded.status,
                         mealie_id=COALESCE(excluded.mealie_id, recipes.mealie_id),
                         nostr_event_id=COALESCE(excluded.nostr_event_id, recipes.nostr_event_id),
                         updated_at=datetime('now')

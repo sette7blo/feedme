@@ -4,6 +4,7 @@ Run: python server.py
 """
 import json
 import os
+import threading
 import time
 import urllib.request
 from datetime import date, timedelta
@@ -343,8 +344,10 @@ def add_pantry_item():
 
 @app.route("/api/pantry/<int:item_id>", methods=["PUT"])
 def update_pantry_item(item_id):
-    data = request.get_json()
-    ok = pantry.update_item(item_id, **data)
+    data = request.get_json() or {}
+    ok = pantry.update_item(item_id,
+        **{k: data[k] for k in ("food", "quantity", "unit", "notes") if k in data}
+    )
     return jsonify({"ok": ok})
 
 
@@ -484,7 +487,7 @@ def save_settings():
         "equipment":        "EQUIPMENT",
     }
     for field, env_key in field_map.items():
-        if field in data and data[field]:
+        if field in data and data[field] is not None:
             updates[env_key] = data[field]
 
     config.save_env(updates)
@@ -597,10 +600,7 @@ def _read_local_version() -> str:
         return "unknown"
 
 
-def _fetch_latest_version() -> str | None:
-    now = time.time()
-    if _version_cache["latest"] and now - _version_cache["checked_at"] < _CACHE_TTL:
-        return _version_cache["latest"]
+def _do_fetch_latest_version():
     try:
         req = urllib.request.Request(
             _GITHUB_API,
@@ -610,10 +610,18 @@ def _fetch_latest_version() -> str | None:
             data = json.loads(resp.read())
         tag = data.get("tag_name", "").lstrip("v")
         _version_cache["latest"] = tag
-        _version_cache["checked_at"] = now
-        return tag
+        _version_cache["checked_at"] = time.time()
     except Exception:
-        return _version_cache["latest"]  # return stale cache on error
+        pass
+
+
+def _fetch_latest_version() -> str | None:
+    now = time.time()
+    if _version_cache["latest"] and now - _version_cache["checked_at"] < _CACHE_TTL:
+        return _version_cache["latest"]
+    # Fetch in background — return stale/None immediately
+    threading.Thread(target=_do_fetch_latest_version, daemon=True).start()
+    return _version_cache["latest"]
 
 
 @app.route("/api/version")
