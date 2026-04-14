@@ -147,7 +147,13 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .search-wrap input { background: none; border: none; outline: none; color: var(--text); font-family: 'Jost', sans-serif; font-size: 13px; width: 100%; }
 .search-wrap input::placeholder { color: var(--text-muted); }
 
-.topbar-right { margin-left: auto; display: flex; gap: 4px; align-items: center; padding-left: 16px; flex-shrink: 0; }
+.topbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; padding-right: 20px; padding-left: 16px; flex-shrink: 0; }
+
+/* Topbar selection state */
+.topbar-sel-info { display: none; align-items: center; gap: 14px; }
+.topbar-sel-count { font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 600; color: var(--brown-dark); }
+.topbar-sel-deselect { font-family: 'Jost', sans-serif; font-size: 12px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 0; }
+.topbar-sel-deselect:hover { color: var(--amber); }
 
 .icon-btn {
   width: 34px; height: 34px;
@@ -352,6 +358,10 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   flex-shrink: 0;
 }
 .sidebar.open .sidebar-foot { opacity: 1; }
+.sidebar-foot-version { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-style: normal; }
+.version-badge { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: .3px; }
+.version-badge.update { color: var(--amber); cursor: pointer; text-decoration: none; }
+.version-badge.update::after { content: ' ↑'; font-size: 9px; }
 
 /* ═══════════════════════════════════════
    MAIN CONTENT
@@ -476,15 +486,13 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .sel-check svg { display: block; }
 
 /* Bulk action bar */
-.bulk-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: var(--brown-dark); color: var(--white); display: flex; align-items: center; gap: 10px; padding: 12px 20px; padding-bottom: max(12px, env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .25s cubic-bezier(.4,0,.2,1); box-shadow: 0 -4px 24px rgba(44,26,6,.18); }
+.bulk-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: var(--brown-dark); color: var(--white); display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 12px 20px; padding-bottom: max(12px, env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .25s cubic-bezier(.4,0,.2,1); box-shadow: 0 -4px 24px rgba(44,26,6,.18); }
 .bulk-bar.open { transform: translateY(0); }
-.bulk-count { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.7); flex: 1; }
-.bulk-count strong { color: var(--white); }
 .bulk-btn { padding: 7px 16px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.25); background: transparent; color: var(--white); font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
 .bulk-btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.5); }
+.bulk-btn:disabled { opacity: .35; cursor: not-allowed; }
+.bulk-btn:disabled:hover { background: transparent; border-color: rgba(255,255,255,.25); }
 .bulk-btn.danger:hover { background: rgba(192,80,64,.5); border-color: rgba(192,80,64,.8); }
-.bulk-cancel { margin-left: auto; padding: 7px 14px; border-radius: 20px; border: none; background: rgba(255,255,255,.1); color: rgba(255,255,255,.6); font-family: 'Jost', sans-serif; font-size: 12px; cursor: pointer; transition: all .15s; }
-.bulk-cancel:hover { background: rgba(255,255,255,.18); color: var(--white); }
 .cook-mode-btn.active { background: var(--amber); border-color: var(--amber); color: #fff; }
 @keyframes cook-pulse { 0%,100% { opacity:1 } 50% { opacity:.7 } }
 .cook-mode-btn.active { animation: cook-pulse 2.5s ease-in-out infinite; }
@@ -764,9 +772,14 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
       </svg>
       <input type="text" placeholder="Search recipes, cuisines, ingredients…" id="search-input">
     </div>
+    <div class="topbar-sel-info" id="topbar-sel-info">
+      <span class="topbar-sel-count" id="topbar-sel-count">0 selected</span>
+      <button class="topbar-sel-deselect" onclick="deselectAll()">Deselect all</button>
+    </div>
   </div>
 
   <div class="topbar-right">
+    <button class="select-toggle" id="topbar-select-btn" style="display:none" onclick="toggleSelectMode()">Select</button>
     <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Recipe</button>
   </div>
 </header>
@@ -922,7 +935,12 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 
     </nav>
 
-    <div class="sidebar-foot">Schema.org/Recipe · v1.0</div>
+    <div class="sidebar-foot">
+      Schema.org/Recipe
+      <div class="sidebar-foot-version">
+        <span class="version-badge" id="sidebar-version">v1.0.0</span>
+      </div>
+    </div>
   </aside>
 
   <!-- MAIN -->
@@ -942,7 +960,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
       <div class="tab-panel" id="tab-favorites">
         <div class="page-header">
           <div class="page-title">Favorites</div>
-          <button class="select-toggle" id="fav-select-toggle-btn" onclick="toggleSelectMode()">Select</button>
         </div>
         <div class="recipe-grid" id="favorites-grid"></div>
       </div>
@@ -951,7 +968,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
       <div class="tab-panel" id="tab-staging">
         <div class="page-header">
           <div class="page-title">Staging</div>
-          <button class="select-toggle" id="stage-select-toggle-btn" onclick="toggleSelectMode()">Select</button>
         </div>
         <div class="recipe-grid" id="staging-grid"></div>
       </div>
@@ -1618,12 +1634,18 @@ function toggleSidebar() {
 let currentTab = 'recipes';
 document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchTab(el.dataset.tab)));
 
+const _SEL_TABS = ['recipes', 'favorites', 'staging'];
+
 function switchTab(tab) {
   if (_selMode) exitSelectMode();
   currentTab = tab;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${tab}`));
-  document.getElementById('search-wrap').style.display = ['recipes','staging','favorites'].includes(tab) ? 'flex' : 'none';
+  const selectable = _SEL_TABS.includes(tab);
+  const searchable = ['recipes', 'staging', 'favorites'].includes(tab);
+  document.getElementById('search-wrap').style.display = searchable ? 'flex' : 'none';
+  const selBtn = document.getElementById('topbar-select-btn');
+  if (selBtn) selBtn.style.display = selectable ? '' : 'none';
   if (tab === 'recipes')     loadRecipes();
   if (tab === 'favorites')   loadFavorites();
   if (tab === 'staging')     loadStaged();
@@ -1640,6 +1662,23 @@ document.getElementById('search-input').addEventListener('input', () => {
   if (currentTab === 'recipes') renderRecipes();
   if (currentTab === 'favorites') renderFavorites();
 });
+
+/* ── Version ── */
+(async function loadVersion() {
+  try {
+    const v = await apiGet('/api/version');
+    const el = document.getElementById('sidebar-version');
+    if (!el) return;
+    if (v.update_available && v.latest) {
+      el.textContent = `v${v.current}`;
+      el.insertAdjacentHTML('afterend',
+        `<a class="version-badge update" href="${v.release_url}" target="_blank" title="v${v.latest} available">v${v.latest} available</a>`
+      );
+    } else {
+      el.textContent = `v${v.current}`;
+    }
+  } catch(e) {}
+})();
 
 /* ── Recipes ── */
 let recipesData = [];
@@ -1683,7 +1722,6 @@ function buildFilterChips() {
   html += `<div class="filter-sep"></div>`;
   html += _PROTEINS.map(p => chip(p, 'protein', p, _filters.protein === p)).join('');
 
-  html += `<button class="select-toggle${_selMode ? ' active' : ''}" id="select-toggle-btn" onclick="toggleSelectMode()">Select</button>`;
   bar.innerHTML = html;
 }
 
@@ -2966,50 +3004,72 @@ async function openNostrBrowser() {
   _nostrEvents = {};
   _nostrSelected = new Set();
   try {
-    const r = await apiGet('/api/nostr/known-events');
-    _nostrKnownIds = new Set(r.ids || []);
+    const [settingsRes, knownRes] = await Promise.all([
+      apiGet('/api/settings'),
+      apiGet('/api/nostr/known-events').catch(() => ({ ids: [] }))
+    ]);
+    _nostrRelayUrl = (settingsRes.nostr_relay || '').trim();
+    _nostrKnownIds = new Set(knownRes.ids || []);
   } catch(e) { _nostrKnownIds = new Set(); }
   _connectNostrRelay();
+}
+
+function _closeNostrWs() {
+  if (_nostrWs) {
+    const old = _nostrWs;
+    _nostrWs = null;
+    old.onopen = old.onmessage = old.onerror = old.onclose = null;
+    try { old.close(); } catch(e) {}
+  }
 }
 
 function closeNostrBrowser() {
   document.getElementById('nostr-overlay').classList.remove('open');
   document.getElementById('nostr-modal').classList.remove('open');
-  if (_nostrWs) { try { _nostrWs.close(); } catch(e) {} _nostrWs = null; }
+  _closeNostrWs();
 }
 
 async function _connectNostrRelay() {
+  // Tear down any existing socket — clear handlers first so stale callbacks
+  // don't fire on the status element after we've already started a new connection.
+  _closeNostrWs();
+
   const relay = _nostrRelayUrl.trim();
+  const statusEl = document.getElementById('nostr-browser-status');
+  const listEl   = document.getElementById('nostr-browser-list');
+
   if (!relay) {
-    document.getElementById('nostr-browser-status').textContent = 'No relay configured. Add a relay URL in Settings.';
+    statusEl.textContent = 'No relay configured. Add a relay URL in Settings.';
     return;
   }
 
   const pubkeyRaw = (document.getElementById('nostr-pubkey-input')?.value || '').trim();
   const pubkey = pubkeyRaw ? _nostrPubkeyToHex(pubkeyRaw) : null;
 
-  const statusEl = document.getElementById('nostr-browser-status');
-  const listEl   = document.getElementById('nostr-browser-list');
   statusEl.textContent = `Connecting to ${relay}…`;
   listEl.innerHTML = '';
 
+  let ws;
   try {
-    _nostrWs = new WebSocket(relay);
+    ws = new WebSocket(relay);
   } catch(e) {
-    statusEl.textContent = `Could not connect: ${e.message}`;
+    statusEl.innerHTML = `Could not connect: ${e.message} <button onclick="_connectNostrRelay()" style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid currentColor;background:none;cursor:pointer">Retry</button>`;
     return;
   }
+  _nostrWs = ws;
 
   const subId = 'feedme-browse-' + Date.now();
   const filter = { kinds: [30078], '#t': ['feedme', 'recipe'], limit: 100 };
   if (pubkey) filter.authors = [pubkey];
 
-  _nostrWs.onopen = () => {
+  ws.onopen = () => {
+    if (_nostrWs !== ws) return;
     statusEl.textContent = 'Connected — fetching recipes…';
-    _nostrWs.send(JSON.stringify(['REQ', subId, filter]));
+    ws.send(JSON.stringify(['REQ', subId, filter]));
   };
 
-  _nostrWs.onmessage = (msg) => {
+  ws.onmessage = (msg) => {
+    if (_nostrWs !== ws) return;
     let data;
     try { data = JSON.parse(msg.data); } catch { return; }
     const [type, , payload] = data;
@@ -3024,11 +3084,12 @@ async function _connectNostrRelay() {
     }
   };
 
-  _nostrWs.onerror = () => {
-    statusEl.textContent = 'Connection error — check relay URL in Settings.';
+  ws.onerror = () => {
+    if (_nostrWs !== ws) return;
+    statusEl.innerHTML = `Connection error — relay unreachable. <button onclick="_connectNostrRelay()" style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid currentColor;background:none;cursor:pointer">Retry</button>`;
   };
 
-  _nostrWs.onclose = () => {};
+  ws.onclose = () => {};
 }
 
 function _nostrPubkeyToHex(raw) {
@@ -3662,13 +3723,16 @@ function toast(msg, type='ok') {
 /* ── Init ── */
 loadRecipes();
 apiGet('/api/recipes?status=staged&per_page=1').then(d => updateStageBadge(d.total||0)).catch(()=>{});
+// Show Select button on default tab (recipes)
+const _initSelBtn = document.getElementById('topbar-select-btn');
+if (_initSelBtn) _initSelBtn.style.display = '';
 
 /* ── Selection mode ── */
 let _selMode = false;
 let _selected = new Set();
 
 function _syncSelToggleBtns(active) {
-  ['select-toggle-btn', 'fav-select-toggle-btn', 'stage-select-toggle-btn'].forEach(id => {
+  ['topbar-select-btn'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('active', active);
   });
@@ -3706,8 +3770,10 @@ function toggleSelectRecipe(slug) {
 }
 
 function _updateBulkBar() {
-  const bar = document.getElementById('bulk-bar');
-  const count = document.getElementById('bulk-count');
+  const bar       = document.getElementById('bulk-bar');
+  const selInfo   = document.getElementById('topbar-sel-info');
+  const selCount  = document.getElementById('topbar-sel-count');
+  const searchEl  = document.getElementById('search-wrap');
   const favBtn    = document.getElementById('bulk-fav-btn');
   const unfavBtn  = document.getElementById('bulk-unfav-btn');
   const keepBtn   = document.getElementById('bulk-keep-btn');
@@ -3716,10 +3782,18 @@ function _updateBulkBar() {
   const nostrBtn  = document.getElementById('bulk-nostr-btn');
   if (!bar) return;
   const n = _selected.size;
-  bar.classList.toggle('open', _selMode);
-  if (count) count.innerHTML = _selMode
-    ? (n === 0 ? 'Select recipes to act on them' : `<strong>${n}</strong> recipe${n!==1?'s':''} selected`)
-    : '';
+  const searchable = ['recipes', 'staging', 'favorites'].includes(currentTab);
+
+  // Topbar: swap search ↔ count
+  if (selInfo) selInfo.style.display = _selMode ? 'flex' : 'none';
+  if (searchEl) searchEl.style.display = (_selMode || !searchable) ? 'none' : 'flex';
+  if (selCount) selCount.textContent = n === 0
+    ? 'Select recipes below'
+    : `${n} recipe${n !== 1 ? 's' : ''} selected`;
+
+  // Bulk bar slides up only when something is selected
+  bar.classList.toggle('open', _selMode && n > 0);
+
   const onFav   = currentTab === 'favorites';
   const onStage = currentTab === 'staging';
   if (favBtn)   favBtn.style.display   = (!onFav && !onStage) ? '' : 'none';
@@ -3732,6 +3806,12 @@ function _updateBulkBar() {
     nostrBtn.disabled = n === 0 || n > 20;
     nostrBtn.title = n > 20 ? 'Select 20 or fewer recipes to publish' : '';
   }
+}
+
+function deselectAll() {
+  _selected.clear();
+  document.querySelectorAll('.recipe-card.selected').forEach(c => c.classList.remove('selected'));
+  _updateBulkBar();
 }
 
 async function bulkFavorite() {
@@ -3807,16 +3887,22 @@ async function bulkPublishNostr() {
   const slugs = [..._selected];
   if (!slugs.length || slugs.length > 20) return;
 
+  const btn = document.getElementById('bulk-nostr-btn');
+  const count = document.getElementById('topbar-sel-count');
+  btn.disabled = true;
+  if (count) count.textContent = 'Connecting…';
+
   const s = await apiGet('/api/settings').catch(() => ({}));
   const relay = (s.nostr_relay || '').trim();
-  if (!relay) { toast('Configure a Nostr relay URL in Settings first', 'err'); return; }
+  if (!relay) {
+    toast('Configure a Nostr relay URL in Settings first', 'err');
+    btn.disabled = false;
+    if (count) count.textContent = `${slugs.length} recipe${slugs.length !== 1 ? 's' : ''} selected`;
+    return;
+  }
 
-  const btn = document.getElementById('bulk-nostr-btn');
-  const count = document.getElementById('bulk-count');
   const n = slugs.length;
   let published = 0, noImage = 0, failed = 0;
-
-  btn.disabled = true;
 
   // Open a single WebSocket connection for the whole batch
   let ws;
@@ -3876,14 +3962,21 @@ async function bulkPublishNostr() {
   if (failed) parts.push(`${failed} failed`);
   toast(parts.join(' · '), published > 0 ? 'ok' : 'err');
 
-  exitSelectMode();
-  _renderCurrentGrid();
+  if (published > 0) {
+    exitSelectMode();
+    // Reload from server so Nostr dots appear on published cards
+    if (currentTab === 'recipes') await loadRecipes();
+    else if (currentTab === 'favorites') await loadFavorites();
+  } else {
+    // Nothing succeeded — re-enable button so user can retry without re-selecting
+    btn.disabled = false;
+    if (count) count.textContent = `${n} recipe${n !== 1 ? 's' : ''} selected`;
+  }
 }
 </script>
 
 <!-- Bulk action bar -->
 <div class="bulk-bar" id="bulk-bar">
-  <span class="bulk-count" id="bulk-count"></span>
   <button class="bulk-btn" id="bulk-fav-btn" onclick="bulkFavorite()">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     Favorite
@@ -3908,7 +4001,6 @@ async function bulkPublishNostr() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     Publish to Nostr
   </button>
-  <button class="bulk-cancel" onclick="exitSelectMode()">Cancel</button>
 </div>
 
 </body>
