@@ -4,7 +4,10 @@ Run: python server.py
 """
 import json
 import os
+import time
+import urllib.request
 from datetime import date, timedelta
+from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
@@ -577,6 +580,60 @@ def nostr_save_event_id(slug):
             with open(p, "w") as f:
                 _json.dump(data_json, f, indent=2, ensure_ascii=False)
     return jsonify({"ok": True})
+
+
+# ── Version ───────────────────────────────────────────────────────────────────
+
+_version_cache = {"latest": None, "checked_at": 0}
+_VERSION_FILE = Path(__file__).parent / "VERSION"
+_GITHUB_API = "https://api.github.com/repos/sette7blo/feedme/releases/latest"
+_CACHE_TTL = 3600  # 1 hour
+
+
+def _read_local_version() -> str:
+    try:
+        return _VERSION_FILE.read_text().strip()
+    except OSError:
+        return "unknown"
+
+
+def _fetch_latest_version() -> str | None:
+    now = time.time()
+    if _version_cache["latest"] and now - _version_cache["checked_at"] < _CACHE_TTL:
+        return _version_cache["latest"]
+    try:
+        req = urllib.request.Request(
+            _GITHUB_API,
+            headers={"User-Agent": "Feedme/1.0", "Accept": "application/vnd.github+json"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+        tag = data.get("tag_name", "").lstrip("v")
+        _version_cache["latest"] = tag
+        _version_cache["checked_at"] = now
+        return tag
+    except Exception:
+        return _version_cache["latest"]  # return stale cache on error
+
+
+@app.route("/api/version")
+def get_version():
+    current = _read_local_version()
+    latest = _fetch_latest_version()
+    update_available = False
+    if latest and current != "unknown":
+        try:
+            def _parse(v):
+                return tuple(int(x) for x in v.split("."))
+            update_available = _parse(latest) > _parse(current)
+        except Exception:
+            update_available = latest != current
+    return jsonify({
+        "current": current,
+        "latest": latest,
+        "update_available": update_available,
+        "release_url": "https://github.com/sette7blo/feedme/releases/latest",
+    })
 
 
 # ── Export ────────────────────────────────────────────────────────────────────

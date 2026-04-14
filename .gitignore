@@ -6,6 +6,7 @@ CLAUDE.md
 data/
 *.db
 *.backup.*
+VERSION
 
 # Personal recipe data — never publish
 recipes/*.json
