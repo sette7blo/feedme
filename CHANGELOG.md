@@ -13,6 +13,18 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [v1.1.0] — 2026-04-14
+### Added
+- Version endpoint (`/api/version`) reads local VERSION file and checks GitHub for latest release
+- Sidebar footer shows current version with update indicator when a newer release is available
+
+### Changed
+- Selection mode button moved to topbar; selection count replaces search bar when active
+- Bulk action bar now only slides up when at least one recipe is selected
+- Nostr browser: fixed stale WebSocket callbacks and race conditions; added retry button on connection errors
+
+---
+
 ## [v1.0.0] — 2026-04-12
 ### Added
 - Initial release
@@ -33,5 +45,6 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.1.0...HEAD
+[v1.1.0]: https://github.com/sette7blo/feedme/releases/tag/v1.1.0
 [v1.0.0]: https://github.com/sette7blo/feedme/releases/tag/v1.0.0
