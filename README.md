@@ -12,7 +12,8 @@ A self-hosted recipe management platform. Import recipes from AI generation, RSS
 - **Image import** — photograph a cookbook page or recipe card; AI extracts it
 - **Staging workflow** — all imports require your approval before going active
 - **Meal planner** — assign recipes to days across a weekly calendar
-- **Pantry tracking** — log what you have with quantities
+- **Pantry tracking** — log what you have with quantities; scan barcodes to look up products instantly via Open Food Facts
+- **Cook tonight** — filter your recipe library by what you already have in the pantry, sorted by ingredient coverage
 - **Grocery list** — automatically calculates what to buy based on your meal plan and pantry
 - **Nostr backup** — optional decentralized backup of your recipe library
 - No account, no cloud, no tracking — your data stays on your server

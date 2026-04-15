@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-title" content="Feedme">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
 <style>
 :root {
   --cream:       #faf7f2;
@@ -31,7 +33,6 @@
   --white:       #ffffff;
   --radius:      14px;
   --radius-sm:   8px;
-  --topbar-h:    68px;
   --nav-col:     52px;
   --nav-exp:     230px;
   --shadow-sm:   0 2px 12px rgba(44,26,6,.06);
@@ -47,21 +48,20 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
    TOP BANNER — fixed, full width
 ═══════════════════════════════════════ */
 .topbar {
-  height: var(--topbar-h);
   background: var(--white);
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 20px 0 0;
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  grid-template-rows: auto auto;
   flex-shrink: 0;
   z-index: 100;
   box-shadow: 0 1px 0 var(--border-soft);
 }
 
-/* Logo zone — fixed width, always fully visible */
+/* Logo zone — fixed width, spans both topbar rows */
 .topbar-logo {
   width: 230px;
-  height: var(--topbar-h);
+  grid-row: 1 / 3;
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -119,13 +119,19 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   margin-top: 3px;
 }
 
-/* Topbar center / right */
-.topbar-center {
-  flex: 1;
+/* Topbar rows */
+.topbar-row1 {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-left: 20px;
+  justify-content: flex-end;
+  padding: 10px 20px 6px 20px;
+}
+
+.topbar-row2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px 10px 20px;
 }
 
 .search-wrap {
@@ -137,7 +143,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   border-radius: 30px;
   padding: 8px 16px;
   width: 100%;
-  max-width: 420px;
   transition: border-color var(--tr), box-shadow var(--tr);
 }
 .search-wrap:focus-within {
@@ -146,8 +151,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 }
 .search-wrap input { background: none; border: none; outline: none; color: var(--text); font-family: 'Jost', sans-serif; font-size: 13px; width: 100%; }
 .search-wrap input::placeholder { color: var(--text-muted); }
-
-.topbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; padding-right: 20px; padding-left: 16px; flex-shrink: 0; }
 
 /* Topbar selection state */
 .topbar-sel-info { display: none; align-items: center; gap: 14px; }
@@ -198,112 +201,50 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
    SIDEBAR — scrollable nav only
 ═══════════════════════════════════════ */
 .sidebar {
-  width: var(--nav-col);
+  width: 80px;
   background: var(--white);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
-  transition: width .28s cubic-bezier(.4,0,.2,1);
   position: relative;
   z-index: 30;
 }
-
-.sidebar.open { width: var(--nav-exp); }
-
-/* Hamburger toggle at top of sidebar */
-.nav-hamburger {
-  display: flex;
-  align-items: center;
-  padding: 0 0 0 12px;
-  height: 46px;
-  cursor: pointer;
-  color: var(--text-mid);
-  border: none;
-  border-left: 3px solid transparent;
-  border-bottom: 1px solid var(--border-soft);
-  background: none;
-  width: 100%;
-  gap: 11px;
-  flex-shrink: 0;
-  transition: all var(--tr);
-  white-space: nowrap;
-  overflow: hidden;
-  outline: none;
-  appearance: none;
-}
-.nav-hamburger:hover { background: var(--amber-pale); color: var(--brown-dark); }
-.nav-hamburger:hover .nav-svg { stroke: var(--brown-dark); }
-.nav-hamburger-label {
-  opacity: 0;
-  transform: translateX(-6px);
-  transition: opacity .18s ease .06s, transform .18s ease .06s;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.sidebar.open .nav-hamburger-label { opacity: 1; transform: translateX(0); }
 
 /* Nav scroll area */
 .nav {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 14px 0 60px;
+  padding: 10px 0 60px;
   scrollbar-width: none;
 }
 .nav::-webkit-scrollbar { display: none; }
 
-.nav-sec {
-  height: 1px;
-  background: var(--border-soft);
-  margin: 6px 10px;
-  font-size: 0;
-  overflow: hidden;
-  opacity: 1;
-  transition: all .2s ease;
-}
-.sidebar.open .nav-sec {
-  height: 30px;
-  background: transparent;
-  margin: 0;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 14px 0 5px 16px;
-  white-space: nowrap;
-  overflow: hidden;
-  opacity: 1;
-}
-.nav-divider { height: 1px; background: var(--border-soft); margin: 8px 12px; }
+.nav-sec { height: 1px; background: var(--border-soft); margin: 6px 10px; }
+.nav-divider { height: 1px; background: var(--border-soft); margin: 6px 10px; }
 
 .nav-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0 0 0 12px;
-  height: 42px;
+  justify-content: center;
+  padding: 8px 4px 7px;
   cursor: pointer;
-  color: var(--text-mid);
-  font-size: 13.5px;
-  font-weight: 400;
+  color: var(--text-dim);
   border-left: 3px solid transparent;
   transition: all var(--tr);
   user-select: none;
-  white-space: nowrap;
-  overflow: hidden;
-  gap: 11px;
+  gap: 4px;
+  position: relative;
 }
 .nav-item:hover { color: var(--brown-dark); background: var(--amber-pale); }
-.nav-item.active { color: var(--amber); border-left-color: var(--amber); background: var(--amber-pale); font-weight: 500; }
+.nav-item.active { color: var(--amber); border-left-color: var(--amber); background: var(--amber-pale); }
 .nav-item.active .nav-svg { stroke: var(--amber); }
 .nav-item:hover .nav-svg { stroke: var(--brown-dark); }
 
-/* SVG icon container — always visible, consistent size */
+/* SVG icon container */
 .nav-icon-wrap {
   width: 26px;
   height: 26px;
@@ -311,6 +252,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .nav-svg {
@@ -324,41 +266,43 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 }
 
 .nav-label {
-  opacity: 0;
-  transform: translateX(-6px);
-  transition: opacity .18s ease .06s, transform .18s ease .06s;
-  flex: 1;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .3px;
+  color: inherit;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 64px;
 }
-.sidebar.open .nav-label { opacity: 1; transform: translateX(0); }
 
 .nav-badge {
+  position: absolute;
+  top: -3px;
+  right: -5px;
   background: var(--amber);
   color: white;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 10px;
-  margin-right: 10px;
-  opacity: 0;
-  transition: opacity .18s ease .08s;
-  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.sidebar.open .nav-badge { opacity: 1; }
 
 .sidebar-foot {
-  padding: 10px 0 12px 14px;
+  padding: 8px 0 10px;
   border-top: 1px solid var(--border-soft);
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-muted);
-  font-style: italic;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
-  opacity: 0;
-  transition: opacity .15s ease;
   flex-shrink: 0;
 }
-.sidebar.open .sidebar-foot { opacity: 1; }
-.sidebar-foot-version { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-style: normal; }
+.sidebar-foot-version { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 2px; }
 .version-badge { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: .3px; }
 .version-badge.update { color: var(--amber); cursor: pointer; text-decoration: none; }
 .version-badge.update::after { content: ' ↑'; font-size: 9px; }
@@ -401,6 +345,10 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .filter-chip.active { background: var(--amber); border-color: var(--amber); color: #fff; }
 .filter-chip.active:hover { background: var(--amber-mid); border-color: var(--amber-mid); color: #fff; }
 .filter-sep { width: 1px; height: 20px; background: var(--border-soft); flex-shrink: 0; margin: 0 2px; }
+.cook-tonight-chip { color: var(--sage) !important; border-color: var(--sage) !important; }
+.cook-tonight-chip:hover { background: rgba(122,144,104,.08) !important; }
+.cook-tonight-chip.active { background: var(--sage) !important; border-color: var(--sage) !important; color: #fff !important; }
+.coverage-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 10px; background: rgba(122,144,104,.12); color: var(--sage); font-size: 10px; font-weight: 600; border: 1px solid rgba(122,144,104,.25); white-space: nowrap; }
 .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 15px; }
 .recipe-card { background: var(--white); border: 1px solid var(--border-soft); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: all var(--tr); box-shadow: var(--shadow-sm); position: relative; }
 .recipe-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--amber-soft); }
@@ -445,12 +393,25 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .drawer.open { transform: translateX(0); }
 .d-img-ph { width: 100%; height: 220px; flex-shrink: 0; background: linear-gradient(135deg, var(--cream-deep), var(--parchment)); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 .d-img-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.d-img-regen { position: absolute; bottom: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: rgba(44,26,6,.52); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,.18); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; transition: background var(--tr); z-index: 2; }
+.d-img-regen:hover { background: rgba(232,130,12,.82); }
+.d-img-regen:disabled { opacity: .5; cursor: not-allowed; }
+.d-img-regen.loading svg { animation: spin .9s linear infinite; }
+.d-img-shimmer { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.18) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite; pointer-events: none; display: none; }
+.d-img-shimmer.visible { display: block; }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
 .d-head { padding: 16px 22px 13px 22px; border-bottom: 1px solid var(--border-soft); flex-shrink: 0; position: relative; }
 .d-head-close { position: absolute; top: 12px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--cream); border: 1px solid var(--border-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-mid); transition: all var(--tr); }
 .d-head-close:hover { background: var(--border-soft); color: var(--brown-dark); }
 .d-cat { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--amber); margin-bottom: 4px; }
 .d-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: var(--brown-dark); line-height: 1.25; }
-.d-meta { display: flex; gap: 14px; font-size: 13px; color: var(--text-dim); margin-top: 8px; }
+.d-meta { display: flex; gap: 14px; font-size: 13px; color: var(--text-dim); margin-top: 8px; align-items: center; flex-wrap: wrap; }
+.d-servings-stepper { display: inline-flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+.d-servings-stepper button { background: none; border: none; width: 26px; height: 24px; cursor: pointer; font-size: 15px; color: var(--text-mid); display: flex; align-items: center; justify-content: center; transition: background var(--tr); }
+.d-servings-stepper button:hover { background: var(--amber-pale); color: var(--amber); }
+.d-servings-stepper span { font-size: 12px; font-weight: 600; color: var(--brown-dark); padding: 0 4px; min-width: 18px; text-align: center; }
+.d-servings-label { font-size: 12px; color: var(--text-dim); margin-left: 4px; }
 .d-body { flex: 1; overflow-y: auto; padding: 15px 22px; }
 .d-desc { color: var(--text-mid); font-size: 14px; line-height: 1.75; font-style: italic; margin-bottom: 16px; }
 .d-sec { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--amber); margin: 18px 0 9px; display: flex; align-items: center; gap: 8px; }
@@ -735,6 +696,12 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .modal-body { flex: 1; overflow-y: auto; padding: 18px 22px; }
 .modal-foot { padding: 12px 22px; border-top: 1px solid var(--border-soft); display: flex; gap: 8px; justify-content: flex-end; background: var(--cream); border-radius: 0 0 var(--radius) var(--radius); flex-shrink: 0; }
 .modal-close { position: absolute; top: 0; right: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--cream); border: 1px solid var(--border-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
+/* Scanner modal */
+#scan-reader { width: 100%; border-radius: var(--radius-sm); overflow: hidden; }
+#scan-reader video { border-radius: var(--radius-sm); }
+.scan-status { margin-top: 12px; font-size: 13px; color: var(--text-mid); text-align: center; min-height: 20px; }
+.scan-result { margin-top: 10px; background: var(--amber-pale); border: 1px solid var(--amber-soft); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--brown-dark); display: none; }
+.scan-result.visible { display: block; }
 </style>
 </head>
 <body>
@@ -765,7 +732,11 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
     </a>
   </div>
 
-  <div class="topbar-center">
+  <div class="topbar-row1">
+    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Recipe</button>
+  </div>
+
+  <div class="topbar-row2">
     <div class="search-wrap" id="search-wrap">
       <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="#c0a880" stroke-width="1.6" stroke-linecap="round">
         <circle cx="7.5" cy="7.5" r="5.5"/><path d="M13 13l3 3"/>
@@ -776,11 +747,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
       <span class="topbar-sel-count" id="topbar-sel-count">0 selected</span>
       <button class="topbar-sel-deselect" onclick="deselectAll()">Deselect all</button>
     </div>
-  </div>
-
-  <div class="topbar-right">
     <button class="select-toggle" id="topbar-select-btn" style="display:none" onclick="toggleSelectMode()">Select</button>
-    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Recipe</button>
   </div>
 </header>
 
@@ -791,19 +758,9 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <button class="nav-hamburger" onclick="toggleSidebar()">
-      <div class="nav-icon-wrap">
-        <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
-          <line x1="3" y1="6"  x2="21" y2="6"/>
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </div>
-      <span class="nav-hamburger-label">Menu</span>
-    </button>
     <nav class="nav">
 
-      <div class="nav-sec">Library</div>
+      <div class="nav-sec"></div>
 
       <div class="nav-item active" data-tab="recipes">
         <div class="nav-icon-wrap">
@@ -836,10 +793,10 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
           </svg>
         </div>
         <span class="nav-label">Staging</span>
-        <span class="nav-badge" id="stage-badge">3</span>
+        <span class="nav-badge" id="stage-badge" style="display:none"></span>
       </div>
 
-      <div class="nav-sec">Discover</div>
+      <div class="nav-sec"></div>
 
       <div class="nav-item" data-tab="generate">
         <div class="nav-icon-wrap">
@@ -855,7 +812,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
             <path d="M5 18 H3 M19 18 H21"/>
           </svg>
         </div>
-        <span class="nav-label">Generate with AI</span>
+        <span class="nav-label">Generate</span>
       </div>
 
       <div class="nav-item" data-tab="connections">
@@ -869,7 +826,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
         <span class="nav-label">Connections</span>
       </div>
 
-      <div class="nav-sec">Planning</div>
+      <div class="nav-sec"></div>
 
       <div class="nav-item" data-tab="planner">
         <div class="nav-icon-wrap">
@@ -880,7 +837,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
             <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
           </svg>
         </div>
-        <span class="nav-label">Meal Planner</span>
+        <span class="nav-label">Planner</span>
       </div>
 
       <div class="nav-item" data-tab="pantry">
@@ -904,7 +861,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
             <path d="M16 10a4 4 0 01-8 0"/>
           </svg>
         </div>
-        <span class="nav-label">Grocery List</span>
+        <span class="nav-label">Grocery</span>
       </div>
 
       <div class="nav-divider"></div>
@@ -1220,6 +1177,9 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
           <div><label class="form-label">Qty</label><input id="p-qty" class="form-input" type="number" placeholder="500" style="width:72px"></div>
           <div><label class="form-label">Unit</label><input id="p-unit" class="form-input" placeholder="g, ml…" style="width:80px"></div>
           <button class="btn btn-primary" style="align-self:flex-end" onclick="addPantryItem()">+ Add</button>
+          <button class="btn btn-ghost" style="align-self:flex-end" onclick="openScannerModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>Scan
+          </button>
         </div>
         <table class="pantry-table"><thead><tr><th>Food</th><th>Qty</th><th>Unit</th><th></th></tr></thead><tbody id="pantry-tbody"></tbody></table>
       </div>
@@ -1437,6 +1397,35 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   </div>
 </div>
 
+<!-- BARCODE SCANNER MODAL -->
+<div class="modal-overlay" id="scan-overlay" onclick="closeScannerModal()"></div>
+<div class="modal" id="scan-modal" style="width:400px">
+  <div class="modal-head">
+    <div class="modal-title">Scan Barcode</div>
+    <button class="modal-close" onclick="closeScannerModal()">
+      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div id="scan-reader"></div>
+    <div class="scan-status" id="scan-status">Point your camera at a barcode</div>
+    <div class="scan-result" id="scan-result"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+      <div style="flex:1;height:1px;background:var(--border-soft)"></div>
+      <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">or</span>
+      <div style="flex:1;height:1px;background:var(--border-soft)"></div>
+    </div>
+    <div style="margin-top:12px;text-align:center">
+      <input type="file" id="scan-file-input" accept="image/*" style="display:none">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-file-input').click()">Select a photo of the barcode</button>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-ghost btn-sm" onclick="closeScannerModal()">Cancel</button>
+    <button class="btn btn-primary btn-sm" id="scan-use-btn" style="display:none" onclick="useScanResult()">Use This</button>
+  </div>
+</div>
+
 <!-- ADD RECIPE MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeAddModal()"></div>
 <div class="modal" id="add-modal">
@@ -1624,11 +1613,6 @@ function heartBtn(slug, favorited) {
 }
 
 /* ── Sidebar ── */
-let navOpen = false;
-function toggleSidebar() {
-  navOpen = !navOpen;
-  document.getElementById('sidebar').classList.toggle('open', navOpen);
-}
 
 /* ── Tabs ── */
 let currentTab = 'recipes';
@@ -1685,8 +1669,37 @@ let recipesData = [];
 
 /* ── Recipe filters ── */
 let _filters = { max_time: null, servings: null, protein: null };
+let _cookTonight = false;
+let _pantryCache = null;
 
 const _PROTEINS = ['Chicken', 'Beef', 'Pork', 'Fish', 'Seafood', 'Lamb', 'Turkey', 'Tofu'];
+
+async function toggleCookTonight() {
+  _cookTonight = !_cookTonight;
+  if (_cookTonight) {
+    try {
+      const data = await apiGet('/api/pantry');
+      _pantryCache = (data || []).map(p => p.food.toLowerCase());
+    } catch(e) {
+      toast('Could not load pantry', 'err');
+      _cookTonight = false;
+    }
+  }
+  buildFilterChips();
+  renderRecipes();
+}
+
+function _computeCoverage(r) {
+  const ingredients = Array.isArray(r.ingredients) ? r.ingredients : [];
+  if (!ingredients.length) return { matched: 0, total: 0 };
+  const pantry = _pantryCache || [];
+  let matched = 0;
+  for (const ing of ingredients) {
+    const ingLower = ing.toLowerCase();
+    if (pantry.some(p => p && ingLower.includes(p))) matched++;
+  }
+  return { matched, total: ingredients.length };
+}
 
 function _parseTimeMinutes(str) {
   if (!str) return null;
@@ -1708,7 +1721,10 @@ function buildFilterChips() {
   const chip = (label, key, value, active) =>
     `<button class="filter-chip${active ? ' active' : ''}" onclick="setFilter('${key}','${value}')">${label}</button>`;
 
-  let html = `<button class="filter-chip${allClear ? ' active' : ''}" onclick="clearFilters()">All</button>`;
+  let html = `<button class="filter-chip cook-tonight-chip${_cookTonight ? ' active' : ''}" onclick="toggleCookTonight()">Cook tonight</button>`;
+
+  html += `<div class="filter-sep"></div>`;
+  html += `<button class="filter-chip${allClear ? ' active' : ''}" onclick="clearFilters()">All</button>`;
 
   html += `<div class="filter-sep"></div>`;
   html += chip('≤ 30 min', 'max_time', 30, _filters.max_time === 30);
@@ -1772,12 +1788,24 @@ function renderRecipes() {
       `<div style="color:var(--text-muted);padding:24px;font-style:italic">No recipes yet. Generate one with AI or import from RSS.</div>`;
     return;
   }
+
+  let renderList = list;
+  if (_cookTonight && _pantryCache) {
+    renderList = list
+      .map(r => ({ ...r, _cov: _computeCoverage(r) }))
+      .filter(r => r._cov.matched > 0)
+      .sort((a, b) => (b._cov.matched / Math.max(b._cov.total, 1)) - (a._cov.matched / Math.max(a._cov.total, 1)));
+  }
+
   const selCheck = `<div class="sel-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
-  document.getElementById('recipe-grid').innerHTML = list.map(r => {
+  document.getElementById('recipe-grid').innerHTML = renderList.map(r => {
     const isSel = _selected.has(r.slug);
     const clickAction = _selMode
       ? `toggleSelectRecipe('${r.slug}')`
       : `openDrawer('${r.slug}')`;
+    const covBadge = (_cookTonight && r._cov && r._cov.total > 0)
+      ? `<span class="coverage-badge">${r._cov.matched}/${r._cov.total} ingredients</span>`
+      : '';
     return `
     <div class="recipe-card${_selMode ? ' selectable' : ''}${isSel ? ' selected' : ''}" data-slug="${r.slug}" onclick="${clickAction}">
       <div class="card-img-wrap">
@@ -1797,6 +1825,7 @@ function renderRecipes() {
             ${(r.total_time||r.cook_time) ? `<span>⏱ ${r.total_time||r.cook_time}</span>` : ''}
             ${r.servings  ? `<span>👤 ${r.servings}</span>` : ''}
           </div>
+          ${covBadge}
         </div>
       </div>
     </div>`;
@@ -1895,7 +1924,8 @@ async function loadStaged() {
 
 function updateStageBadge(n) {
   const el = document.getElementById('stage-badge');
-  el.textContent = n > 0 ? n : '';
+  el.textContent = n;
+  el.style.display = n > 0 ? 'flex' : 'none';
 }
 
 function renderStaged() {
@@ -1975,11 +2005,30 @@ async function openDrawer(slug) {
       <div class="d-img-ph">
         ${imageUrl ? `<img src="${imageUrl}" alt="${r.name}" onerror="this.remove()">` : ''}
         ${(FOOD_SVG[src]||FOOD_SVG.manual).replace('width="52" height="52"','width="72" height="72"').replace('stroke="#c0a880"','stroke="#b8906a"')}
+        <div class="d-img-shimmer" id="d-img-shimmer"></div>
+        <button class="d-img-regen" id="d-img-regen-btn" onclick="regenImage()" title="Regenerate AI photo" style="display:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="2" x2="12" y2="5"/>
+            <circle cx="12" cy="1.5" r="1" fill="currentColor" stroke="none"/>
+            <rect x="4" y="5" width="16" height="13" rx="2.5"/>
+            <circle cx="9" cy="11" r="1.5" fill="currentColor" stroke="none"/>
+            <circle cx="15" cy="11" r="1.5" fill="currentColor" stroke="none"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+        </button>
       </div>`;
     document.getElementById('d-cat').textContent = `${r.category||''} · ${r.cuisine||''}`;
     document.getElementById('d-title').textContent = r.name;
+    const origServings = r.servings || _extractServings(full.recipeYield);
+    _drawerOrigServings = origServings;
+    _drawerCurServings  = origServings;
     document.getElementById('d-meta').innerHTML =
-      `${(r.total_time||r.cook_time) ? `<span>⏱ ${r.total_time||r.cook_time}</span>` : ''}${r.servings ? `<span>👤 ${r.servings} servings</span>` : ''}`;
+      `${(r.total_time||r.cook_time) ? `<span>⏱ ${r.total_time||r.cook_time}</span>` : ''}
+       ${origServings ? `<div class="d-servings-stepper">
+         <button onclick="scaleDrawer(-1)">−</button>
+         <span id="d-servings-val">${origServings}</span>
+         <button onclick="scaleDrawer(1)">+</button>
+       </div><span class="d-servings-label">servings</span>` : ''}`;
     // Show/update favorite button (only for active recipes)
     const dfav = document.getElementById('d-fav-btn');
     if (r.status === 'active') {
@@ -1996,7 +2045,7 @@ async function openDrawer(slug) {
       ${r.description ? `<p class="d-desc">${r.description}</p>` : ''}
       ${(full.tools||[]).length ? `<div class="d-sec">Equipment</div><ul class="ing-list">${(full.tools).map(t=>`<li>${t}</li>`).join('')}</ul>` : ''}
       <div class="d-sec">Ingredients</div>
-      <ul class="ing-list">${ingredients.map(i=>`<li>${i}</li>`).join('') || '<li style="color:var(--text-muted)">Not specified</li>'}</ul>
+      <ul class="ing-list" id="d-ing-list">${ingredients.map(i=>`<li>${i}</li>`).join('') || '<li style="color:var(--text-muted)">Not specified</li>'}</ul>
       ${steps.length ? `<div class="d-sec">Method</div><ol class="step-list">${steps.map(s=>`<li>${typeof s==='string'?s:s.text}</li>`).join('')}</ol>` : ''}
       ${(full.source_url || r.mealie_id) ? `<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:7px">
         ${full.source_url ? `<a href="${full.source_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Original source</a>` : ''}
@@ -2034,6 +2083,62 @@ async function openDrawer(slug) {
     document.getElementById('d-title').textContent = 'Error loading recipe';
     document.getElementById('d-body').innerHTML = `<p style="color:#c05040">${e.message}</p>`;
   }
+}
+
+/* ── Recipe scaling ── */
+function _extractServings(recipeYield) {
+  if (!recipeYield) return null;
+  const m = String(recipeYield).match(/\d+/);
+  return m ? parseInt(m[0]) : null;
+}
+
+function _parseQty(str) {
+  // Mixed fraction: "1 1/2"
+  let m = str.match(/^(\d+)\s+(\d+)\/(\d+)/);
+  if (m) return parseInt(m[1]) + parseInt(m[2]) / parseInt(m[3]);
+  // Simple fraction: "1/2"
+  m = str.match(/^(\d+)\/(\d+)/);
+  if (m) return parseInt(m[1]) / parseInt(m[2]);
+  // Decimal or integer
+  m = str.match(/^(\d*\.?\d+)/);
+  if (m) return parseFloat(m[1]);
+  return null;
+}
+
+function _formatQty(n) {
+  if (n <= 0) return '0';
+  const whole = Math.floor(n);
+  const frac  = n - whole;
+  const FRACS = [[1/8,'⅛'],[1/4,'¼'],[1/3,'⅓'],[3/8,'⅜'],[1/2,'½'],[5/8,'⅝'],[2/3,'⅔'],[3/4,'¾'],[7/8,'⅞']];
+  if (frac < 0.04) return String(whole || Math.round(n));
+  for (const [val, sym] of FRACS) {
+    if (Math.abs(frac - val) < 0.07) return whole > 0 ? `${whole}${sym}` : sym;
+  }
+  // Fall back to 1 decimal
+  return n % 1 === 0 ? String(n) : n.toFixed(1).replace(/\.0$/, '');
+}
+
+function _scaleIngredient(str, ratio) {
+  if (ratio === 1) return str;
+  // Match a leading quantity (mixed fraction, fraction, or decimal/integer)
+  const m = str.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)(\s*)/);
+  if (!m) return str;
+  const qty = _parseQty(m[1]);
+  if (!qty) return str;
+  return _formatQty(qty * ratio) + m[2] + str.slice(m[0].length);
+}
+
+function scaleDrawer(delta) {
+  if (!_drawerOrigServings) return;
+  _drawerCurServings = Math.max(1, _drawerCurServings + delta);
+  const valEl = document.getElementById('d-servings-val');
+  if (valEl) valEl.textContent = _drawerCurServings;
+  const list = document.getElementById('d-ing-list');
+  if (!list || !_drawerData) return;
+  const ratio = _drawerCurServings / _drawerOrigServings;
+  const ingredients = _drawerData.full.recipeIngredient || [];
+  list.innerHTML = ingredients.map(i => `<li>${_scaleIngredient(i, ratio)}</li>`).join('')
+    || '<li style="color:var(--text-muted)">Not specified</li>';
 }
 
 async function trashFromDrawer(slug) {
@@ -2085,6 +2190,8 @@ function _displayToIso(display) {
 
 function editDrawer() {
   if (!_drawerData) return;
+  const regenBtn = document.getElementById('d-img-regen-btn');
+  if (regenBtn) regenBtn.style.display = '';
   const { slug, full } = _drawerData;
   const ingredients = (full.recipeIngredient || []).join('\n');
   const steps = (full.recipeInstructions || []).map(s => typeof s === 'string' ? s : (s.text || '')).join('\n');
@@ -2141,14 +2248,8 @@ function editDrawer() {
       </div>
       <div class="edit-field">
         <label>Image</label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div id="ef-img-preview" style="width:72px;height:72px;border-radius:6px;overflow:hidden;background:var(--border-soft);flex-shrink:0">
-            ${full.image ? `<img id="ef-img-thumb" src="${full.image}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=''">` : ''}
-          </div>
-          <button type="button" class="btn btn-ghost btn-sm" id="ef-regen-btn" onclick="regenImage()" title="Generate a new AI photo for this recipe" style="display:flex;align-items:center;gap:6px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.1-5.8"/><polyline points="21 3 21 9 15 9"/></svg>
-            Regenerate image
-          </button>
+        <div id="ef-img-preview" style="width:72px;height:72px;border-radius:6px;overflow:hidden;background:var(--border-soft)">
+          ${full.image ? `<img id="ef-img-thumb" src="${full.image}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=''">` : ''}
         </div>
       </div>
       <div class="edit-field">
@@ -2203,23 +2304,22 @@ async function saveDrawer() {
 async function regenImage() {
   const slug = _drawerData?.slug;
   if (!slug) return;
-  const btn = document.getElementById('ef-regen-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  const btn = document.getElementById('d-img-regen-btn');
+  const shimmer = document.getElementById('d-img-shimmer');
+  if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+  if (shimmer) shimmer.classList.add('visible');
   try {
     const res = await apiPost(`/api/recipes/${slug}/regenerate-image`, {});
     if (res.image) {
+      document.getElementById('d-img').querySelector('img')?.setAttribute('src', res.image + '?t=' + Date.now());
       const preview = document.getElementById('ef-img-preview');
       if (preview) preview.innerHTML = `<img src="${res.image}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover">`;
-      // Also refresh the main drawer image
-      document.getElementById('d-img').querySelector('img')?.setAttribute('src', res.image + '?t=' + Date.now());
       toast('Image regenerated', 'ok');
     }
   } catch(e) { toast(e.message || 'Image generation failed', 'err'); }
   finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.1-5.8"/><polyline points="21 3 21 9 15 9"/></svg> Regenerate image`;
-    }
+    if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+    if (shimmer) shimmer.classList.remove('visible');
   }
 }
 
@@ -2231,7 +2331,9 @@ function closeDrawer() {
 
 /* ── Cook Mode (Wake Lock API; video fallback for non-iOS HTTP) ── */
 let _wakeLock    = null;
-let _drawerData  = null; // { slug, full } — set each time a drawer opens
+let _drawerData         = null; // { slug, full } — set each time a drawer opens
+let _drawerOrigServings = null;
+let _drawerCurServings  = null;
 let _noSleepVid  = null;
 
 async function toggleCookMode() {
@@ -3570,6 +3672,132 @@ async function deletePantryItem(id) {
     await apiDel(`/api/pantry/${id}`);
     await loadPantry();
   } catch(e) { toast(e.message, 'err'); }
+}
+
+/* ── Barcode scanner ── */
+let _scanner = null;
+let _scannerStarted = false;
+let _scanResult = null;
+
+function openScannerModal() {
+  _scanResult = null;
+  _scannerStarted = false;
+  document.getElementById('scan-result').classList.remove('visible');
+  document.getElementById('scan-result').textContent = '';
+  document.getElementById('scan-use-btn').style.display = 'none';
+  document.getElementById('scan-status').textContent = 'Point your camera at a barcode';
+  document.getElementById('scan-overlay').classList.add('open');
+  document.getElementById('scan-modal').classList.add('open');
+  const fileInput = document.getElementById('scan-file-input');
+  fileInput.value = '';
+  fileInput.onchange = () => scanFromFile(fileInput);
+
+  _scanner = new Html5Qrcode('scan-reader');
+  _scanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 260, height: 120 } },
+    _onBarcodeDetected,
+    () => {}
+  ).then(() => {
+    _scannerStarted = true;
+  }).catch(() => {
+    document.getElementById('scan-status').textContent = 'Camera access denied or not available';
+    _scanner.clear();
+    _scanner = null;
+  });
+}
+
+function closeScannerModal() {
+  document.getElementById('scan-overlay').classList.remove('open');
+  document.getElementById('scan-modal').classList.remove('open');
+  if (_scanner && _scannerStarted) {
+    _scanner.stop().catch(() => {}).finally(() => { _scanner.clear(); _scanner = null; _scannerStarted = false; });
+  } else {
+    _scanner = null;
+    _scannerStarted = false;
+  }
+}
+
+async function scanFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  document.getElementById('scan-status').textContent = 'Reading barcode…';
+  document.getElementById('scan-result').classList.remove('visible');
+  document.getElementById('scan-use-btn').style.display = 'none';
+  _scanResult = null;
+  let tmp = document.getElementById('_scan_file_tmp');
+  if (!tmp) { tmp = document.createElement('div'); tmp.id = '_scan_file_tmp'; tmp.style.display = 'none'; document.body.appendChild(tmp); }
+  try {
+    if (typeof Quagga === 'undefined') throw new Error('Quagga not loaded');
+    document.getElementById('scan-status').textContent = 'Scanning (' + Math.round(file.size/1024) + 'KB, ' + file.type + ')…';
+    const objectUrl = URL.createObjectURL(file);
+    const barcode = await new Promise((resolve, reject) => {
+      Quagga.decodeSingle({
+        src: objectUrl,
+        numOfWorkers: 0,
+        locate: true,
+        inputStream: { size: 800 },
+        decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader'] }
+      }, result => {
+        URL.revokeObjectURL(objectUrl);
+        if (result && result.codeResult) resolve(result.codeResult.code);
+        else reject(new Error('No barcode detected'));
+      });
+    });
+    await _onBarcodeDetected(barcode);
+  } catch(e) {
+    document.getElementById('scan-status').textContent = 'Error: ' + (e?.message || String(e));
+  }
+}
+
+async function _onBarcodeDetected(barcode) {
+  if (_scanResult) return; // already got one
+  _scanResult = barcode;
+  document.getElementById('scan-status').textContent = 'Looking up product…';
+  if (_scanner) _scanner.pause();
+
+  try {
+    const r = await fetch(`https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(barcode)}.json`);
+    const d = await r.json();
+    if (d.status === 1 && d.product) {
+      const name = d.product.product_name || d.product.product_name_en || '';
+      if (name) {
+        let qty = null, unit = null;
+        const rawQty = d.product.quantity || '';
+        const m = rawQty.match(/^(\d+(?:[.,]\d+)?)\s*([a-zA-Z]+)/);
+        if (m) { qty = parseFloat(m[1].replace(',', '.')); unit = m[2].toLowerCase(); }
+        _scanResult = { barcode, name, qty, unit };
+        const el = document.getElementById('scan-result');
+        el.textContent = name + (rawQty ? ' — ' + rawQty : '');
+        el.classList.add('visible');
+        document.getElementById('scan-use-btn').style.display = '';
+        document.getElementById('scan-status').textContent = 'Product found';
+      } else {
+        document.getElementById('scan-status').textContent = 'Product found but name is missing — enter manually';
+        _scanResult = null;
+        if (_scanner) _scanner.resume();
+      }
+    } else {
+      document.getElementById('scan-status').textContent = 'Product not found in database — enter manually';
+      _scanResult = null;
+      if (_scanner) _scanner.resume();
+    }
+  } catch(e) {
+    document.getElementById('scan-status').textContent = 'Lookup failed — check connection';
+    _scanResult = null;
+    if (_scanner) _scanner.resume();
+  }
+}
+
+function useScanResult() {
+  if (_scanResult && _scanResult.name) {
+    document.getElementById('p-food').value = _scanResult.name;
+    if (_scanResult.qty)  document.getElementById('p-qty').value  = _scanResult.qty;
+    if (_scanResult.unit) document.getElementById('p-unit').value = _scanResult.unit;
+    document.getElementById('p-food').focus();
+  }
+  closeScannerModal();
 }
 
 /* ── Grocery ── */
