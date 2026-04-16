@@ -11,6 +11,17 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+### Added
+- Cook Mode: fullscreen step-by-step overlay launched from the recipe drawer; tap or swipe to advance through instructions, progress dots, ingredients panel toggle, wake lock to keep screen on
+- Print view: printer-friendly recipe layout triggered from recipe drawer; ingredients in two columns, clean step list, hides all app chrome via @media print
+- Dark mode: full dark colour scheme toggle in Settings → Appearance; preference saved to localStorage; respects system prefers-color-scheme on first visit
+- Grocery list: items now grouped by category (Produce, Meat & Fish, Dairy & Eggs, Bakery, Dry Goods, Canned & Jarred, Frozen, Condiments & Spices); categories assigned by keyword lookup at insert time
+- AI nutrition estimation: "Estimate nutrition" button in recipe drawer sends ingredient list to AI and populates calories, protein, fat, carbs; stored in recipe JSON; re-estimate available once filled
+- Cook log: "Made It" button in recipe drawer logs cook date; history shown below instructions in drawer; add notes and serving count per entry
+- AI week plan generator: "AI Plan" button in Planner opens modal with meal/dietary/pantry options; generates a weekly plan from your own recipe library; preview before accepting
+- Meal plan templates: "Save Template" in Planner saves current week as a named template; load/delete templates from the panel below the week grid
+- RSS auto-fetch: configurable auto-fetch interval (6h / 12h / daily / weekly) in the RSS Feeds card; background thread fetches all configured feeds on schedule
+
 ## [v1.2.0] — 2026-04-15
 
 ### Added

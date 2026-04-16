@@ -6,6 +6,120 @@ from core.db import db, rows_to_list, row_to_dict
 from modules.meal_planner import get_aggregate_ingredients, _to_base
 from modules.pantry import list_pantry
 
+# Keyword rules — first match wins. Order matters: specific before generic.
+_CATEGORY_RULES = [
+    # Meat & Fish (before generic terms like "pepper")
+    ('chicken', 'Meat & Fish'), ('beef', 'Meat & Fish'), ('pork', 'Meat & Fish'),
+    ('lamb', 'Meat & Fish'), ('turkey', 'Meat & Fish'), ('duck', 'Meat & Fish'),
+    ('veal', 'Meat & Fish'), ('bacon', 'Meat & Fish'), ('ham', 'Meat & Fish'),
+    ('sausage', 'Meat & Fish'), ('salami', 'Meat & Fish'), ('pepperoni', 'Meat & Fish'),
+    ('steak', 'Meat & Fish'), ('mince', 'Meat & Fish'), ('brisket', 'Meat & Fish'),
+    ('salmon', 'Meat & Fish'), ('tuna', 'Meat & Fish'), ('shrimp', 'Meat & Fish'),
+    ('prawn', 'Meat & Fish'), ('cod', 'Meat & Fish'), ('tilapia', 'Meat & Fish'),
+    ('halibut', 'Meat & Fish'), ('crab', 'Meat & Fish'), ('lobster', 'Meat & Fish'),
+    ('scallop', 'Meat & Fish'), ('anchovy', 'Meat & Fish'), ('sardine', 'Meat & Fish'),
+    ('trout', 'Meat & Fish'), ('snapper', 'Meat & Fish'), ('mussels', 'Meat & Fish'),
+    # Dairy & Eggs
+    ('buttermilk', 'Dairy & Eggs'), ('mozzarella', 'Dairy & Eggs'), ('parmesan', 'Dairy & Eggs'),
+    ('cheddar', 'Dairy & Eggs'), ('ricotta', 'Dairy & Eggs'), ('feta', 'Dairy & Eggs'),
+    ('brie', 'Dairy & Eggs'), ('gouda', 'Dairy & Eggs'), ('gruyere', 'Dairy & Eggs'),
+    ('cream cheese', 'Dairy & Eggs'), ('sour cream', 'Dairy & Eggs'), ('cottage cheese', 'Dairy & Eggs'),
+    ('whipping cream', 'Dairy & Eggs'), ('heavy cream', 'Dairy & Eggs'),
+    ('milk', 'Dairy & Eggs'), ('cream', 'Dairy & Eggs'), ('butter', 'Dairy & Eggs'),
+    ('cheese', 'Dairy & Eggs'), ('egg', 'Dairy & Eggs'), ('yogurt', 'Dairy & Eggs'),
+    ('yoghurt', 'Dairy & Eggs'),
+    # Canned & Jarred (specific phrases before generic words)
+    ('tomato paste', 'Canned & Jarred'), ('tomato sauce', 'Canned & Jarred'),
+    ('diced tomato', 'Canned & Jarred'), ('crushed tomato', 'Canned & Jarred'),
+    ('coconut milk', 'Canned & Jarred'), ('chicken broth', 'Canned & Jarred'),
+    ('beef broth', 'Canned & Jarred'), ('vegetable broth', 'Canned & Jarred'),
+    ('broth', 'Canned & Jarred'), ('stock', 'Canned & Jarred'),
+    ('capers', 'Canned & Jarred'), ('passata', 'Canned & Jarred'),
+    ('peanut butter', 'Canned & Jarred'), ('tahini', 'Canned & Jarred'),
+    ('jam', 'Canned & Jarred'), ('olive', 'Canned & Jarred'),
+    # Condiments & Spices (oils before generic terms)
+    ('olive oil', 'Condiments & Spices'), ('vegetable oil', 'Condiments & Spices'),
+    ('coconut oil', 'Condiments & Spices'), ('sesame oil', 'Condiments & Spices'),
+    ('canola oil', 'Condiments & Spices'), (' oil', 'Condiments & Spices'),
+    ('soy sauce', 'Condiments & Spices'), ('fish sauce', 'Condiments & Spices'),
+    ('oyster sauce', 'Condiments & Spices'), ('hoisin', 'Condiments & Spices'),
+    ('worcestershire', 'Condiments & Spices'), ('sriracha', 'Condiments & Spices'),
+    ('hot sauce', 'Condiments & Spices'), ('tabasco', 'Condiments & Spices'),
+    ('vinegar', 'Condiments & Spices'), ('mustard', 'Condiments & Spices'),
+    ('ketchup', 'Condiments & Spices'), ('mayonnaise', 'Condiments & Spices'),
+    ('mayo', 'Condiments & Spices'), ('honey', 'Condiments & Spices'),
+    ('maple syrup', 'Condiments & Spices'), ('vanilla', 'Condiments & Spices'),
+    ('paprika', 'Condiments & Spices'), ('cumin', 'Condiments & Spices'),
+    ('turmeric', 'Condiments & Spices'), ('cinnamon', 'Condiments & Spices'),
+    ('nutmeg', 'Condiments & Spices'), ('oregano', 'Condiments & Spices'),
+    ('cayenne', 'Condiments & Spices'), ('chilli', 'Condiments & Spices'),
+    ('chili', 'Condiments & Spices'), ('curry powder', 'Condiments & Spices'),
+    ('curry', 'Condiments & Spices'), ('cardamom', 'Condiments & Spices'),
+    ('bay leaf', 'Condiments & Spices'), ('allspice', 'Condiments & Spices'),
+    ('star anise', 'Condiments & Spices'), ('sesame', 'Condiments & Spices'),
+    ('saffron', 'Condiments & Spices'), ('coriander', 'Condiments & Spices'),
+    ('salt', 'Condiments & Spices'), ('pepper', 'Condiments & Spices'),
+    # Bakery
+    ('sourdough', 'Bakery'), ('ciabatta', 'Bakery'), ('baguette', 'Bakery'),
+    ('tortilla', 'Bakery'), ('pita', 'Bakery'), ('bagel', 'Bakery'),
+    ('cracker', 'Bakery'), ('bread', 'Bakery'), ('bun', 'Bakery'), ('roll', 'Bakery'),
+    # Produce — herbs
+    ('basil', 'Produce'), ('parsley', 'Produce'), ('cilantro', 'Produce'),
+    ('thyme', 'Produce'), ('rosemary', 'Produce'), ('mint', 'Produce'),
+    ('chive', 'Produce'), ('dill', 'Produce'), ('tarragon', 'Produce'),
+    ('sage', 'Produce'), ('bay', 'Produce'),
+    # Produce — fruits
+    ('apple', 'Produce'), ('banana', 'Produce'), ('lemon', 'Produce'),
+    ('lime', 'Produce'), ('orange', 'Produce'), ('grape', 'Produce'),
+    ('strawberr', 'Produce'), ('blueberr', 'Produce'), ('raspberr', 'Produce'),
+    ('mango', 'Produce'), ('pineapple', 'Produce'), ('peach', 'Produce'),
+    ('pear', 'Produce'), ('cherry', 'Produce'), ('watermelon', 'Produce'),
+    ('avocado', 'Produce'), ('fig', 'Produce'), ('plum', 'Produce'),
+    # Produce — vegetables
+    ('tomato', 'Produce'), ('onion', 'Produce'), ('garlic', 'Produce'),
+    ('potato', 'Produce'), ('carrot', 'Produce'), ('celery', 'Produce'),
+    ('lettuce', 'Produce'), ('spinach', 'Produce'), ('kale', 'Produce'),
+    ('broccoli', 'Produce'), ('cauliflower', 'Produce'), ('capsicum', 'Produce'),
+    ('zucchini', 'Produce'), ('courgette', 'Produce'), ('cucumber', 'Produce'),
+    ('mushroom', 'Produce'), ('ginger', 'Produce'), ('corn', 'Produce'),
+    ('asparagus', 'Produce'), ('beetroot', 'Produce'), ('beet', 'Produce'),
+    ('cabbage', 'Produce'), ('eggplant', 'Produce'), ('aubergine', 'Produce'),
+    ('fennel', 'Produce'), ('leek', 'Produce'), ('pea', 'Produce'),
+    ('shallot', 'Produce'), ('squash', 'Produce'), ('pumpkin', 'Produce'),
+    ('sweet potato', 'Produce'), ('yam', 'Produce'), ('arugula', 'Produce'),
+    ('rocket', 'Produce'), ('bok choy', 'Produce'), ('spring onion', 'Produce'),
+    ('scallion', 'Produce'), ('radish', 'Produce'), ('turnip', 'Produce'),
+    ('artichoke', 'Produce'), ('endive', 'Produce'), ('watercress', 'Produce'),
+    # Dry Goods
+    ('spaghetti', 'Dry Goods'), ('fettuccine', 'Dry Goods'), ('penne', 'Dry Goods'),
+    ('rigatoni', 'Dry Goods'), ('lasagna', 'Dry Goods'), ('fusilli', 'Dry Goods'),
+    ('pasta', 'Dry Goods'), ('noodle', 'Dry Goods'), ('rice', 'Dry Goods'),
+    ('quinoa', 'Dry Goods'), ('barley', 'Dry Goods'), ('couscous', 'Dry Goods'),
+    ('polenta', 'Dry Goods'), ('lentil', 'Dry Goods'), ('chickpea', 'Dry Goods'),
+    ('black bean', 'Dry Goods'), ('kidney bean', 'Dry Goods'), ('white bean', 'Dry Goods'),
+    ('flour', 'Dry Goods'), ('sugar', 'Dry Goods'), ('brown sugar', 'Dry Goods'),
+    ('oat', 'Dry Goods'), ('breadcrumb', 'Dry Goods'), ('panko', 'Dry Goods'),
+    ('cornstarch', 'Dry Goods'), ('cornflour', 'Dry Goods'), ('cocoa', 'Dry Goods'),
+    ('chocolate', 'Dry Goods'), ('baking powder', 'Dry Goods'), ('baking soda', 'Dry Goods'),
+    ('yeast', 'Dry Goods'), ('almond', 'Dry Goods'), ('walnut', 'Dry Goods'),
+    ('cashew', 'Dry Goods'), ('pecan', 'Dry Goods'), ('pistachio', 'Dry Goods'),
+    ('pine nut', 'Dry Goods'), ('chia', 'Dry Goods'), ('flax', 'Dry Goods'),
+    ('sunflower seed', 'Dry Goods'), ('pumpkin seed', 'Dry Goods'),
+    # Frozen
+    ('frozen', 'Frozen'),
+    # Beverages
+    ('wine', 'Beverages'), ('beer', 'Beverages'), ('juice', 'Beverages'),
+]
+
+
+def _categorize(food: str) -> str:
+    """Return a grocery category for the given food name, or 'Other'."""
+    f = food.lower().strip()
+    for keyword, category in _CATEGORY_RULES:
+        if keyword in f:
+            return category
+    return 'Other'
+
 # Words that describe how an ingredient is prepared or sized, not what it is.
 # Stripped before matching so "large eggs" matches pantry "eggs", etc.
 _MODIFIERS = frozenset({
@@ -145,18 +259,18 @@ def generate_shopping_list(start_date: str, end_date: str, list_date: str = None
         conn.execute("DELETE FROM shopping_list WHERE list_date=?", (date_val,))
         for item in to_buy:
             conn.execute(
-                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered) VALUES (?,?,?,?,0)",
-                (item["food"], item.get("quantity"), item.get("unit"), date_val)
+                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category) VALUES (?,?,?,?,0,?)",
+                (item["food"], item.get("quantity"), item.get("unit"), date_val, _categorize(item["food"]))
             )
         for item in from_pantry:
             conn.execute(
-                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered) VALUES (?,?,?,?,1)",
-                (item["food"], item.get("quantity"), item.get("unit"), date_val)
+                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category) VALUES (?,?,?,?,1,?)",
+                (item["food"], item.get("quantity"), item.get("unit"), date_val, _categorize(item["food"]))
             )
         for item in manual_keep:
             conn.execute(
-                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered) VALUES (?,?,?,?,0)",
-                (item["food"], item.get("quantity"), item.get("unit"), date_val)
+                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category) VALUES (?,?,?,?,0,?)",
+                (item["food"], item.get("quantity"), item.get("unit"), date_val, _categorize(item["food"]))
             )
 
     return {
@@ -209,8 +323,8 @@ def check_item(item_id: int, checked: bool = True) -> bool:
 def add_manual_item(food: str, quantity: float = None, unit: str = None, list_date: str = None) -> dict:
     with db() as conn:
         cur = conn.execute(
-            "INSERT INTO shopping_list (food, quantity, unit, list_date, covered) VALUES (?,?,?,?,0)",
-            (food, quantity, unit, list_date)
+            "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category) VALUES (?,?,?,?,0,?)",
+            (food, quantity, unit, list_date, _categorize(food))
         )
         row = conn.execute("SELECT * FROM shopping_list WHERE id=?", (cur.lastrowid,)).fetchone()
     return row_to_dict(row)

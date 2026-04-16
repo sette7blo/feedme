@@ -13,13 +13,46 @@ from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
 from core.schema import init_db
-from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, mealie_importer, nostr_importer, nostr_publisher
+from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, mealie_importer, nostr_importer, nostr_publisher, cook_log, meal_plan_ai
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
 # ── Init ──────────────────────────────────────────────────────────────────────
 
 init_db()
+
+# ── RSS auto-fetch scheduler ──────────────────────────────────────────────────
+
+_rss_last_fetch = 0.0
+
+
+def _rss_auto_fetch_loop():
+    global _rss_last_fetch
+    while True:
+        time.sleep(300)  # check every 5 minutes
+        try:
+            hours_str = config.get("RSS_AUTO_FETCH_HOURS", "0")
+            hours = float(hours_str) if hours_str else 0
+            if hours <= 0:
+                continue
+            interval = hours * 3600
+            if time.time() - _rss_last_fetch < interval:
+                continue
+            feeds_raw = config.get("RSS_FEEDS", "")
+            if not feeds_raw:
+                continue
+            feeds = [f.strip() for f in feeds_raw.split("\n") if f.strip()]
+            for url in feeds:
+                try:
+                    rss_fetcher.fetch_and_stage(url)
+                except Exception:
+                    pass
+            _rss_last_fetch = time.time()
+        except Exception:
+            pass
+
+
+threading.Thread(target=_rss_auto_fetch_loop, daemon=True).start()
 
 # ── Frontend ──────────────────────────────────────────────────────────────────
 
@@ -357,6 +390,80 @@ def delete_pantry_item(item_id):
     return jsonify({"ok": ok})
 
 
+# ── Nutrition ────────────────────────────────────────────────────────────────
+
+@app.route("/api/recipes/<slug>/nutrition", methods=["POST"])
+def estimate_nutrition(slug):
+    api_key  = config.get("PPQ_API_KEY", "")
+    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
+    model    = config.get("PPQ_MODEL", "gpt-4o-mini")
+    if not api_key:
+        return jsonify({"error": "No API key configured"}), 400
+    recipe = importer.get_recipe(slug)
+    if not recipe:
+        return jsonify({"error": "Recipe not found"}), 404
+    full = recipe.get("full", {})
+    ingredients = full.get("recipeIngredient", [])
+    servings_raw = full.get("recipeYield", "")
+    servings = 1
+    import re
+    m = re.search(r"\d+", str(servings_raw))
+    if m:
+        servings = int(m.group(0))
+    if not ingredients:
+        return jsonify({"error": "Recipe has no ingredients"}), 400
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": (
+                    "You are a nutrition expert. Estimate nutritional information for a recipe based on its ingredients. "
+                    f"The recipe makes {servings} servings. Return ONLY a JSON object with these fields (numbers, per serving): "
+                    '{"calories": number, "proteinContent": "Xg", "fatContent": "Xg", "carbohydrateContent": "Xg", '
+                    '"fiberContent": "Xg", "sugarContent": "Xg", "sodiumContent": "Xmg"}. '
+                    "No markdown, no explanation — just the JSON object."
+                )},
+                {"role": "user", "content": f"Ingredients:\n" + "\n".join(ingredients)},
+            ],
+            max_tokens=300,
+            temperature=0,
+        )
+        text = resp.choices[0].message.content.strip()
+        import re as _re
+        m2 = _re.search(r'\{[\s\S]*\}', text)
+        if not m2:
+            return jsonify({"error": "AI returned unexpected format"}), 500
+        nutrition = json.loads(m2.group(0))
+        nutrition["@type"] = "NutritionInformation"
+        importer.update_recipe(slug, {"nutrition": nutrition})
+        return jsonify({"ok": True, "nutrition": nutrition})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Cook Log ─────────────────────────────────────────────────────────────────
+
+@app.route("/api/cooklog/<slug>", methods=["POST"])
+def log_cook(slug):
+    recipe = importer.get_recipe(slug)
+    if not recipe or recipe.get("status") != "active":
+        return jsonify({"error": "Recipe not found"}), 404
+    data = request.get_json() or {}
+    entry = cook_log.add_entry(
+        slug=slug,
+        servings=data.get("servings"),
+        notes=data.get("notes")
+    )
+    return jsonify(entry), 201
+
+
+@app.route("/api/cooklog/<slug>")
+def get_cook_log(slug):
+    return jsonify(cook_log.get_history(slug))
+
+
 # ── Meal Plan ─────────────────────────────────────────────────────────────────
 
 @app.route("/api/mealplan")
@@ -394,6 +501,61 @@ def plan_ingredients():
         return jsonify({"error": "start and end dates required"}), 400
     ingredients = meal_planner.get_aggregate_ingredients(start, end)
     return jsonify(ingredients)
+
+
+@app.route("/api/mealplan/generate", methods=["POST"])
+def ai_generate_week_plan():
+    data = request.get_json() or {}
+    try:
+        result = meal_plan_ai.generate_week_plan(
+            week_start=data.get("week_start", ""),
+            meals=data.get("meals", ["dinner"]),
+            people=data.get("people"),
+            max_weeknight_mins=data.get("max_weeknight_mins"),
+            dietary=data.get("dietary", []),
+            use_pantry=data.get("use_pantry", False),
+            prompt=data.get("prompt", ""),
+        )
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Generation failed: {e}"}), 500
+
+
+@app.route("/api/mealplan/templates")
+def list_templates():
+    from core.db import db, rows_to_list
+    with db() as conn:
+        rows = conn.execute("SELECT * FROM meal_plan_templates ORDER BY created_at DESC").fetchall()
+    return jsonify(rows_to_list(rows))
+
+
+@app.route("/api/mealplan/templates", methods=["POST"])
+def save_template():
+    from core.db import db, row_to_dict
+    data = request.get_json() or {}
+    name  = (data.get("name") or "").strip()
+    slots = data.get("slots", [])
+    if not name:
+        return jsonify({"error": "name required"}), 400
+    with db() as conn:
+        cur = conn.execute(
+            "INSERT INTO meal_plan_templates (name, slots) VALUES (?,?)",
+            (name, json.dumps(slots, ensure_ascii=False))
+        )
+        row = conn.execute("SELECT * FROM meal_plan_templates WHERE id=?", (cur.lastrowid,)).fetchone()
+    r = row_to_dict(row)
+    r["slots"] = json.loads(r["slots"])
+    return jsonify(r), 201
+
+
+@app.route("/api/mealplan/templates/<int:tmpl_id>", methods=["DELETE"])
+def delete_template(tmpl_id):
+    from core.db import db
+    with db() as conn:
+        conn.execute("DELETE FROM meal_plan_templates WHERE id=?", (tmpl_id,))
+    return jsonify({"ok": True})
 
 
 # ── Grocery ───────────────────────────────────────────────────────────────────
@@ -464,8 +626,9 @@ def get_settings():
         "mealie_token":     config.get("MEALIE_TOKEN", ""),
         "nostr_relay":      config.get("NOSTR_RELAY", ""),
         "nostr_nsec":       config.get("NOSTR_NSEC", ""),
-        "rss_feeds":        config.get("RSS_FEEDS", ""),
-        "equipment":        config.get("EQUIPMENT", ""),
+        "rss_feeds":           config.get("RSS_FEEDS", ""),
+        "rss_auto_fetch_hours": config.get("RSS_AUTO_FETCH_HOURS", "0"),
+        "equipment":           config.get("EQUIPMENT", ""),
     })
 
 
@@ -483,8 +646,9 @@ def save_settings():
         "mealie_token":     "MEALIE_TOKEN",
         "nostr_relay":      "NOSTR_RELAY",
         "nostr_nsec":       "NOSTR_NSEC",
-        "rss_feeds":        "RSS_FEEDS",
-        "equipment":        "EQUIPMENT",
+        "rss_feeds":              "RSS_FEEDS",
+        "rss_auto_fetch_hours":   "RSS_AUTO_FETCH_HOURS",
+        "equipment":              "EQUIPMENT",
     }
     for field, env_key in field_map.items():
         if field in data and data[field] is not None:

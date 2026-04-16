@@ -401,6 +401,30 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .d-img-shimmer.visible { display: block; }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+/* Cook Mode overlay */
+.cook-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(22,12,3,.97); display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+.cook-overlay.open { opacity: 1; pointer-events: all; }
+.cook-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 12px; flex-shrink: 0; }
+.cook-exit { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); cursor: pointer; color: rgba(255,255,255,.6); display: flex; align-items: center; justify-content: center; transition: background var(--tr); }
+.cook-exit:hover { background: rgba(255,255,255,.18); color: #fff; }
+.cook-counter { font-size: 10px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--amber); }
+.cook-ing-toggle { font-size: 11px; font-weight: 500; color: rgba(255,255,255,.45); background: none; border: 1px solid rgba(255,255,255,.18); border-radius: 20px; padding: 5px 13px; cursor: pointer; transition: all var(--tr); }
+.cook-ing-toggle:hover { color: rgba(255,255,255,.8); border-color: rgba(255,255,255,.4); }
+.cook-ing-toggle.active { color: var(--amber); border-color: var(--amber); }
+.cook-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 36px; cursor: pointer; user-select: none; text-align: center; }
+.cook-step-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 5vw, 34px); font-weight: 600; color: #fff; line-height: 1.6; max-width: 680px; }
+.cook-hint { margin-top: 32px; font-size: 11px; color: rgba(255,255,255,.2); letter-spacing: .5px; }
+.cook-foot { display: flex; align-items: center; gap: 16px; padding: 14px 24px 36px; flex-shrink: 0; }
+.cook-nav-btn { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.6); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all var(--tr); }
+.cook-nav-btn:hover:not(:disabled) { background: rgba(232,130,12,.25); border-color: var(--amber); color: var(--amber); }
+.cook-nav-btn:disabled { opacity: .2; cursor: not-allowed; }
+.cook-progress { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.cook-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.18); transition: all .2s ease; flex-shrink: 0; }
+.cook-dot.active { background: var(--amber); transform: scale(1.35); }
+.cook-dot.done { background: rgba(255,255,255,.4); }
+.cook-ing-panel { background: rgba(44,26,6,.96); border-top: 1px solid rgba(255,255,255,.08); padding: 16px 28px 24px; max-height: 42vh; overflow-y: auto; flex-shrink: 0; }
+.cook-ing-label { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
+.cook-ing-item { font-size: 14px; color: rgba(255,255,255,.75); padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.06); line-height: 1.4; }
 .d-head { padding: 16px 22px 13px 22px; border-bottom: 1px solid var(--border-soft); flex-shrink: 0; position: relative; }
 .d-head-close { position: absolute; top: 12px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--cream); border: 1px solid var(--border-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-mid); transition: all var(--tr); }
 .d-head-close:hover { background: var(--border-soft); color: var(--brown-dark); }
@@ -702,6 +726,139 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .scan-status { margin-top: 12px; font-size: 13px; color: var(--text-mid); text-align: center; min-height: 20px; }
 .scan-result { margin-top: 10px; background: var(--amber-pale); border: 1px solid var(--amber-soft); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--brown-dark); display: none; }
 .scan-result.visible { display: block; }
+
+/* ═══════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════ */
+[data-theme="dark"] {
+  --cream:       #1a1410;
+  --cream-deep:  #221c16;
+  --parchment:   #2e2620;
+  --amber:       #f09030;
+  --amber-mid:   #d07828;
+  --amber-pale:  #2a1e0e;
+  --amber-soft:  #3a2810;
+  --brown-dark:  #f0e8d8;
+  --brown-mid:   #c0a888;
+  --sage:        #8aaa78;
+  --border:      #3a3028;
+  --border-soft: #302820;
+  --text:        #f0e8d8;
+  --text-mid:    #c0a888;
+  --text-dim:    #907860;
+  --text-muted:  #605040;
+  --white:       #231e18;
+  --shadow-sm:   0 2px 12px rgba(0,0,0,.25);
+  --shadow-md:   0 6px 28px rgba(0,0,0,.40);
+}
+[data-theme="dark"] .topbar { background: #1e1812; border-color: #3a3028; }
+[data-theme="dark"] .sidebar { background: #1e1812; border-color: #3a3028; }
+[data-theme="dark"] .drawer { background: #231e18; border-color: #3a3028; }
+[data-theme="dark"] .modal { background: #231e18; }
+[data-theme="dark"] .modal-foot { background: #1e1812; }
+[data-theme="dark"] .d-foot { background: #1a1410; }
+[data-theme="dark"] .toast { background: #2e2620; border-color: #3a3028; }
+[data-theme="dark"] .bulk-bar { background: #1a1410; }
+[data-theme="dark"] .cook-overlay { background: rgba(10,7,3,.97); }
+[data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+  background: #2a2218 !important; color: #f0e8d8 !important; border-color: #3a3028 !important;
+}
+[data-theme="dark"] .search-wrap { background: #2a2218; border-color: #3a3028; }
+[data-theme="dark"] .settings-card { background: #231e18; }
+[data-theme="dark"] .conn-card { background: #231e18; }
+[data-theme="dark"] .gen-card { background: #231e18; }
+[data-theme="dark"] .adv-inner { background: #231e18; }
+[data-theme="dark"] .recipe-card { background: #231e18; border-color: #3a3028; }
+[data-theme="dark"] .mealie-modal { background: #231e18; }
+[data-theme="dark"] .mealie-modal-foot { background: #1e1812; }
+
+/* ═══════════════════════════════════════
+   PRINT
+═══════════════════════════════════════ */
+@media print {
+  .topbar, .sidebar, .overlay, .drawer, .toasts, .bulk-bar,
+  .cook-overlay, .mealie-modal-wrap, #scan-overlay, #scan-modal,
+  #modal-overlay, #add-modal, #picker-overlay, #picker-modal,
+  #nostr-overlay, #nostr-modal, .main { display: none !important; }
+  #print-view { display: block !important; }
+  body { overflow: visible !important; height: auto !important; }
+  html, body { height: auto !important; overflow: visible !important; }
+  @page { margin: 20mm; }
+}
+#print-view {
+  display: none;
+  font-family: 'Jost', sans-serif;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0;
+  color: #2c1a06;
+}
+.print-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c1a06;
+  margin-bottom: 6px;
+}
+.print-meta { font-size: 13px; color: #6a4a28; margin-bottom: 14px; display: flex; gap: 16px; flex-wrap: wrap; }
+.print-desc { font-size: 14px; color: #6a4a28; font-style: italic; margin-bottom: 18px; line-height: 1.7; }
+.print-sec { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #E8820C; margin: 18px 0 8px; border-bottom: 1px solid #ede7dc; padding-bottom: 5px; }
+.print-ing-list { list-style: none; padding: 0; column-count: 2; column-gap: 24px; }
+.print-ing-list li { font-size: 13px; color: #6a4a28; padding: 4px 0; border-bottom: 1px solid #f0ece4; break-inside: avoid; }
+.print-step-list { list-style: none; padding: 0; counter-reset: s; }
+.print-step-list li { counter-increment: s; display: flex; gap: 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.7; color: #6a4a28; }
+.print-step-list li::before { content: counter(s); background: #fdf0e0; color: #E8820C; border: 1px solid #f5d9a8; font-size: 11px; font-weight: 600; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+
+/* ═══════════════════════════════════════
+   GROCERY CATEGORIES
+═══════════════════════════════════════ */
+.grocery-cat-header {
+  font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-muted); margin: 16px 0 2px;
+  display: flex; align-items: center; gap: 8px;
+}
+.grocery-cat-header:first-child { margin-top: 0; }
+.grocery-cat-header::after { content: ''; flex: 1; height: 1px; background: var(--border-soft); }
+
+/* ═══════════════════════════════════════
+   COOK LOG
+═══════════════════════════════════════ */
+.cook-log-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-soft); }
+.cook-log-entry { display: flex; align-items: baseline; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-size: 13px; color: var(--text-mid); }
+.cook-log-date { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.cook-log-note { flex: 1; font-style: italic; color: var(--text-dim); font-size: 12px; }
+.last-cooked-label { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+/* ═══════════════════════════════════════
+   NUTRITION
+═══════════════════════════════════════ */
+.nutrition-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.nutrition-cell { background: var(--cream-deep); border-radius: var(--radius-sm); padding: 8px 10px; text-align: center; }
+.nutrition-val { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; color: var(--brown-dark); line-height: 1; }
+.nutrition-lbl { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 3px; }
+
+/* ═══════════════════════════════════════
+   WEEK PLAN MODAL
+═══════════════════════════════════════ */
+.wplan-section { margin-bottom: 16px; }
+.wplan-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+.wplan-meal-checks { display: flex; gap: 8px; }
+.wplan-meal-check { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1px solid var(--border-soft); border-radius: 20px; cursor: pointer; font-size: 12px; color: var(--text-mid); transition: all .15s; user-select: none; }
+.wplan-meal-check.active { border-color: var(--amber); color: var(--amber); background: var(--amber-pale); }
+.wplan-plan-list { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; }
+.wplan-plan-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--cream); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); }
+.wplan-plan-item.preview { border-color: var(--amber-soft); background: var(--amber-pale); }
+.wplan-day-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); min-width: 40px; }
+.wplan-meal-type { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--amber); min-width: 52px; }
+.wplan-recipe-name { font-family: 'Cormorant Garamond', serif; font-size: 15px; color: var(--brown-dark); flex: 1; }
+
+/* ═══════════════════════════════════════
+   MEAL PLAN TEMPLATES
+═══════════════════════════════════════ */
+.templates-panel { margin-top: 18px; border-top: 1px solid var(--border-soft); padding-top: 14px; }
+.template-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-soft); }
+.template-name { flex: 1; font-size: 14px; color: var(--text-mid); }
+.template-meta { font-size: 11px; color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -1108,6 +1265,16 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
                 <button class="btn btn-primary btn-sm" onclick="addFeed()">+ Add Feed</button>
               </div>
               <div id="feed-list" style="display:flex;flex-direction:column;gap:7px"></div>
+              <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+                <span style="font-size:12px;color:var(--text-muted)">Auto-fetch:</span>
+                <select class="form-input" id="rss-auto-fetch" style="width:130px;font-size:12px" onchange="saveRssAutoFetch(this.value)">
+                  <option value="0">Off</option>
+                  <option value="6">Every 6 hours</option>
+                  <option value="12">Every 12 hours</option>
+                  <option value="24">Daily</option>
+                  <option value="168">Weekly</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1161,12 +1328,24 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
           <button class="btn btn-ghost btn-sm" onclick="shiftWk(-1)">← Prev</button>
           <div class="week-label" id="week-label"></div>
           <button class="btn btn-ghost btn-sm" onclick="shiftWk(1)">Next →</button>
+          <button class="btn btn-ghost btn-sm" onclick="openWeekPlanModal()" title="AI week plan">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+            AI Plan
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="saveWeekTemplate()" title="Save this week as template">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Template
+          </button>
           <button class="btn btn-primary btn-sm" onclick="generateGroceryList()" style="margin-left:auto">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             Grocery List
           </button>
         </div>
         <div class="week-grid" id="week-grid"></div>
+        <div class="templates-panel" id="templates-panel" style="display:none">
+          <div class="sec-top" style="cursor:pointer" onclick="toggleTemplatesPanel()">Saved Templates</div>
+          <div id="templates-list"></div>
+        </div>
       </div>
 
       <!-- PANTRY -->
@@ -1281,6 +1460,13 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
               <button class="btn btn-ghost btn-sm" onclick="addCustomEquipment()">+ Add</button>
             </div>
             <div id="equip-custom-chips" class="chips" style="margin-top:8px;min-height:0"></div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-title">Appearance</div>
+            <div class="adv-sw-row">
+              <label class="adv-sw"><input type="checkbox" id="s-dark-mode" onchange="applyDarkMode(this.checked)"><span class="adv-sw-track"></span></label>
+              <span style="font-size:13px;color:var(--text-mid)">Dark mode</span>
+            </div>
           </div>
           <div style="display:flex;gap:10px">
             <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
@@ -1635,7 +1821,7 @@ function switchTab(tab) {
   if (tab === 'staging')     loadStaged();
   if (tab === 'settings')    loadSettings();
   if (tab === 'connections') loadConnections();
-  if (tab === 'planner')     loadPlanner();
+  if (tab === 'planner')     { loadPlanner(); loadTemplates(); }
   if (tab === 'pantry')      loadPantry();
   if (tab === 'grocery')     loadGrocery();
   if (tab === 'trash')       loadTrashed();
@@ -2041,17 +2227,39 @@ async function openDrawer(slug) {
     }
     const ingredients = full.recipeIngredient || r.ingredients || [];
     const steps = full.recipeInstructions || [];
+    const nutrition = full.nutrition || {};
+    const hasNutrition = nutrition.calories != null;
+    const nutHtml = hasNutrition ? `
+      <div class="d-sec">Nutrition <span style="font-size:10px;font-weight:400;color:var(--text-muted);letter-spacing:0;text-transform:none">per serving</span></div>
+      <div class="nutrition-grid">
+        <div class="nutrition-cell"><div class="nutrition-val">${Math.round(nutrition.calories)}</div><div class="nutrition-lbl">Cal</div></div>
+        <div class="nutrition-cell"><div class="nutrition-val">${(nutrition.proteinContent||'—').replace('g','')}</div><div class="nutrition-lbl">Protein</div></div>
+        <div class="nutrition-cell"><div class="nutrition-val">${(nutrition.fatContent||'—').replace('g','')}</div><div class="nutrition-lbl">Fat</div></div>
+        <div class="nutrition-cell"><div class="nutrition-val">${(nutrition.carbohydrateContent||'—').replace('g','')}</div><div class="nutrition-lbl">Carbs</div></div>
+      </div>
+      <div style="margin-top:6px;text-align:right"><button class="btn btn-ghost" style="font-size:11px;padding:3px 10px;border-radius:20px" onclick="estimateNutrition('${slug}')">Re-estimate</button></div>` : (r.status === 'active' ? `
+      <div style="margin-top:16px">
+        <button class="btn btn-ghost btn-sm" onclick="estimateNutrition('${slug}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Estimate nutrition
+        </button>
+      </div>` : '');
     document.getElementById('d-body').innerHTML = `
       ${r.description ? `<p class="d-desc">${r.description}</p>` : ''}
       ${(full.tools||[]).length ? `<div class="d-sec">Equipment</div><ul class="ing-list">${(full.tools).map(t=>`<li>${t}</li>`).join('')}</ul>` : ''}
       <div class="d-sec">Ingredients</div>
       <ul class="ing-list" id="d-ing-list">${ingredients.map(i=>`<li>${i}</li>`).join('') || '<li style="color:var(--text-muted)">Not specified</li>'}</ul>
       ${steps.length ? `<div class="d-sec">Method</div><ol class="step-list">${steps.map(s=>`<li>${typeof s==='string'?s:s.text}</li>`).join('')}</ol>` : ''}
+      ${nutHtml}
+      <div class="cook-log-section" id="d-cook-log"><div style="font-size:12px;color:var(--text-muted)">Loading cook history…</div></div>
       ${(full.source_url || r.mealie_id) ? `<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:7px">
         ${full.source_url ? `<a href="${full.source_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Original source</a>` : ''}
         ${r.mealie_id ? `<span style="font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Mealie ID: <code style="font-size:10px;background:var(--cream);padding:1px 4px;border-radius:3px;color:var(--text-mid)">${r.mealie_id}</code></span>` : ''}
         ${r.nostr_event_id ? `<span style="font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Nostr event: <code style="font-size:10px;background:var(--cream);padding:1px 4px;border-radius:3px;color:var(--text-mid)">${r.nostr_event_id.slice(0,16)}…</code></span>` : ''}
       </div>` : ''}`;
+    // Load cook history async
+    if (r.status === 'active') loadCookHistory(slug);
+    else { const el = document.getElementById('d-cook-log'); if (el) el.remove(); }
     const trashBtn = `<button class="btn btn-ghost btn-sm d-trash-btn" onclick="trashFromDrawer('${slug}')" title="Move to trash">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
     </button>`;
@@ -2072,6 +2280,14 @@ async function openDrawer(slug) {
         <button class="btn btn-ghost btn-sm cook-mode-btn" id="cook-mode-btn" onclick="toggleCookMode()" title="Keep screen on while cooking">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 5.5-4 7v2H9v-2c-2.5-1.5-4-4-4-7a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
           Cook Mode
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="markAsCooked('${slug}')" title="Mark as cooked today">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Made It
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="printRecipe()" title="Print recipe">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print
         </button>
         <button class="btn btn-ghost btn-sm" id="nostr-pub-btn" onclick="publishToNostr('${slug}')" title="${nostrLabel}">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -2336,21 +2552,44 @@ let _drawerOrigServings = null;
 let _drawerCurServings  = null;
 let _noSleepVid  = null;
 
-async function toggleCookMode() {
-  if (_wakeLock || _noSleepVid) { _releaseCookMode(); return; }
+let _cookSteps   = [];
+let _cookStep    = 0;
+let _cookIngOpen = false;
+let _cookSwipeX  = null;
+let _cookSwiped  = false;
 
-  // Wake Lock API — works on HTTPS / localhost on all modern browsers
+async function toggleCookMode() {
+  if (document.getElementById('cook-overlay').classList.contains('open')) {
+    closeCookMode(); return;
+  }
+  if (!_drawerData) return;
+  const full = _drawerData.full;
+  _cookSteps = (full.recipeInstructions || [])
+    .map(s => typeof s === 'string' ? s : (s.text || '')).filter(Boolean);
+  if (!_cookSteps.length) { toast('No instructions found', 'err'); return; }
+  _cookStep = 0;
+  _cookIngOpen = false;
+  const ings = full.recipeIngredient || [];
+  document.getElementById('cook-ing-panel').innerHTML =
+    `<div class="cook-ing-label">Ingredients</div>` +
+    ings.map(i => `<div class="cook-ing-item">${i}</div>`).join('');
+  document.getElementById('cook-ing-panel').style.display = 'none';
+  document.getElementById('cook-ing-toggle').classList.remove('active');
+  _renderCookStep();
+  document.getElementById('cook-overlay').classList.add('open');
+  _setCookModeUI(true);
+  await _acquireWakeLock();
+}
+
+async function _acquireWakeLock() {
+  if (_wakeLock || _noSleepVid) return;
   if ('wakeLock' in navigator) {
     try {
       _wakeLock = await navigator.wakeLock.request('screen');
       _wakeLock.addEventListener('release', _onWakeLockReleased);
-      _setCookModeUI(true);
-      toast('Cook Mode on — screen will stay awake', 'ok');
       return;
-    } catch(e) { /* secure context check failed — fall through */ }
+    } catch(e) {}
   }
-
-  // Fallback: looping video trick — buys extra time before sleep on most browsers
   try {
     _noSleepVid = document.createElement('video');
     _noSleepVid.setAttribute('playsinline', '');
@@ -2361,12 +2600,67 @@ async function toggleCookMode() {
     _noSleepVid.innerHTML = `<source src="data:video/webm;base64,GkXfowEAAAAAAAAfQoaBAUL3gQFC8oEEQvOBCEKChHdlYm1Ch4EEQoWBAhhTgGcBAAAAAAAVkhFNm3RALE27i1OrhBVJqWZTrIHfTbuMU6uEFlSua1OsggEwTbuMU6uEHFO7a1OsghV17AEAAAAAAACkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmAQAAAAAAAEUq17GDD0JATYCNTGF2ZjU1LjMzLjEwMFdBjUxhdmY1NS4zMy4xMDBzpJBlrrXf3DCDVB8KcgbMpcr+RImIQJBgAAAAAAAWVK5rAQAAAAAAD++uAQAAAAAAADLXgQFzxYEBnIEAIrWcg3VuZIaFVl9WUDiDgQEj44OEAmJaAOABAAAAAAAABrCBsLqBkK4BAAAAAAAPq9eBAnPFgQKcgQAitZyDdW5khohBX1ZPUkJJU4OBAuEBAAAAAAAAEZ+BArWIQOdwAAAAAABiZIEgY6JPbwIeVgF2b3JiaXMAAAAAAoC7AAAAAAAAgLUBAAAAAAC4AQN2b3JiaXMtAAAAWGlwaC5PcmcgbGliVm9yYmlzIEkgMjAxMDExMDEgKFNjaGF1ZmVudWdnZXQpAQAAABUAAABlbmNvZGVyPUxhdmM1NS41Mi4xMDIBBXZvcmJpcyVCQ1YBAEAAACRzGCpGpXMWhBAaQlAZ4xxCzmvsGUJMEYIcMkxbyyVzkCGkoEKIWyiB0JBVAABAAACHQXgUhIpBCCGEJT1YkoMnPQghhIg5eBSEaUEIIYQQQgghhBBCCCGERTlokoMnQQgdhOMwOAyD5Tj4HIRFOVgQgydB6CCED0K4moOsOQghhCQ1SFCDBjnoHITCLCiKgsQwuBaEBDUojILkMMjUgwtCiJqDSTX4GoRnQXgWhGlBCCGEJEFIkIMGQcgYhEZBWJKDBjm4FITLQagahCo5CB+EIDRkFQCQAACgoiiKoigKEBqyCgDIAAAQQFEUx3EcyZEcybEcCwgNWQUAAAEACAAAoEiKpEiO5EiSJFmSJVmSJVmS5omqLMuyLMuyLMsyEBqyCgBIAABQUQxFcRQHCA1ZBQBkAAAIoDiKpViKpWiK54iOCISGrAIAgAAABAAAEDRDUzxHlETPVFXXtm3btm3btm3btm3btm1blmUZCA1ZBQBAAAAQ0mlmqQaIMAMZBkJDVgEACAAAgBGKMMSA0JBVAABAAACAGEoOogmtOd+c46BZDppKsTkdnEi1eZKbirk555xzzsnmnDHOOeecopxZDJoJrTnnnMSgWQqaCa0555wnsXnQmiqtOeeccc7pYJwRxjnnnCateZCajbU555wFrWmOmkuxOeecSLl5UptLtTnnnHPOOeecc84555zqxekcnBPOOeecqL25lpvQxTnnnE/G6d6cEM4555xzzjnnnHPOOeecIDRkFQAABABAEIaNYdwpCNLnaCBGEWIaMulB9+gwCRqDnELq0ehopJQ6CCWVcVJKJwgNWQUAAAIAQAghhRRSSCGFFFJIIYUUYoghhhhyyimnoIJKKqmooowyyyyzzDLLLLPMOuyssw47DDHEEEMrrcRSU2011lhr7jnnmoO0VlprrbVSSimllFIKQkNWAQAgAAAEQgYZZJBRSCGFFGKIKaeccgoqqIDQkFUAACAAgAAAAABP8hzRER3RER3RER3RER3R8RzPESVREiVREi3TMjXTU0VVdWXXlnVZt31b2IVd933d933d+HVhWJZlWZZlWZZlWZZlWZZlWZYgNGQVAAACAAAghBBCSCGFFFJIKcYYc8w56CSUEAgNWQUAAAIACAAAAHAUR3EcyZEcSbIkS9IkzdIsT/M0TxM9URRF0zRV0RVdUTdtUTZl0zVdUzZdVVZtV5ZtW7Z125dl2/d93/d93/d93/d93/d9XQdCQ1YBABIAADqSIymSIimS4ziOJElAaMgqAEAGAEAAAIriKI7jOJIkSZIlaZJneZaomZrpmZ4qqkBoyCoAABAAQAAAAAAAAIqmeIqpeIqoeI7oiJJomZaoqZoryqbsuq7ruq7ruq7ruq7ruq7ruq7ruq7ruq7ruq7ruq7ruq7ruq4LhIasAgAkAAB0JEdyJEdSJEVSJEdygNCQVQCADACAAAAcwzEkRXIsy9I0T/M0TxM90RM901NFV3SB0JBVAAAgAIAAAAAAAAAMybAUy9EcTRIl1VItVVMt1VJF1VNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVN0zRNEwgNWQkAkAEAkBBTLS3GmgmLJGLSaqugYwxS7KWxSCpntbfKMYUYtV4ah5RREHupJGOKQcwtpNApJq3WVEKFFKSYYyoVUg5SIDRkhQAQmgHgcBxAsixAsiwAAAAAAAAAkDQN0DwPsDQPAAAAAAAAACRNAyxPAzTPAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABA0jRA8zxA8zwAAAAAAAAA0DwP8DwR8EQRAAAAAAAAACzPAzTRAzxRBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABA0jRA8zxA8zwAAAAAAAAAsDwP8EQR0DwRAAAAAAAAACzPAzxRBDzRAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAEOAAABBgIRQasiIAiBMAcEgSJAmSBM0DSJYFTYOmwTQBkmVB06BpME0AAAAAAAAAAAAAJE2DpkHTIIoASdOgadA0iCIAAAAAAAAAAAAAkqZB06BpEEWApGnQNGgaRBEAAAAAAAAAAAAAzzQhihBFmCbAM02IIkQRpgkAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAGHAAAAgwoQwUGrIiAIgTAHA4imUBAIDjOJYFAACO41gWAABYliWKAABgWZooAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAYcAAACDChDBQashIAiAIAcCiKZQHHsSzgOJYFJMmyAJYF0DyApgFEEQAIAAAocAAACLBBU2JxgEJDVgIAUQAABsWxLE0TRZKkaZoniiRJ0zxPFGma53meacLzPM80IYqiaJoQRVE0TZimaaoqME1VFQAAUOAAABBgg6bE4gCFhqwEAEICAByKYlma5nmeJ4qmqZokSdM8TxRF0TRNU1VJkqZ5niiKommapqqyLE3zPFEURdNUVVWFpnmeKIqiaaqq6sLzPE8URdE0VdV14XmeJ4qiaJqq6roQRVE0TdNUTVV1XSCKpmmaqqqqrgtETxRNU1Vd13WB54miaaqqq7ouEE3TVFVVdV1ZBpimaaqq68oyQFVV1XVdV5YBqqqqruu6sgxQVdd1XVmWZQCu67qyLMsCAAAOHAAAAoygk4wqi7DRhAsPQKEhKwKAKAAAwBimFFPKMCYhpBAaxiSEFEImJaXSUqogpFJSKRWEVEoqJaOUUmopVRBSKamUCkIqJZVSAADYgQMA2IGFUGjISgAgDwCAMEYpxhhzTiKkFGPOOScRUoox55yTSjHmnHPOSSkZc8w556SUzjnnnHNSSuacc845KaVzzjnnnJRSSuecc05KKSWEzkEnpZTSOeecEwAAVOAAABBgo8jmBCNBhYasBABSAQAMjmNZmuZ5omialiRpmud5niiapiZJmuZ5nieKqsnzPE8URdE0VZXneZ4oiqJpqirXFUXTNE1VVV2yLIqmaZqq6rowTdNUVdd1XZimaaqq67oubFtVVdV1ZRm2raqq6rqyDFzXdWXZloEsu67s2rIAAPAEBwCgAhtWRzgpGgssNGQlAJABAEAYg5BCCCFlEEIKIYSUUggJAAAYcAAACDChDBQashIASAUAAIyx1lprrbXWQGettdZaa62AzFprrbXWWmuttdZaa6211lJrrbXWWmuttdZaa6211lprrbXWWmuttdZaa6211lprrbXWWmuttdZaa6211lprrbXWWmstpZRSSimllFJKKaWUUkoppZRSSgUA+lU4APg/2LA6wknRWGChISsBgHAAAMAYpRhzDEIppVQIMeacdFRai7FCiDHnJKTUWmzFc85BKCGV1mIsnnMOQikpxVZjUSmEUlJKLbZYi0qho5JSSq3VWIwxqaTWWoutxmKMSSm01FqLMRYjbE2ptdhqq7EYY2sqLbQYY4zFCF9kbC2m2moNxggjWywt1VprMMYY3VuLpbaaizE++NpSLDHWXAAAd4MDAESCjTOsJJ0VjgYXGrISAAgJACAQUooxxhhzzjnnpFKMOeaccw5CCKFUijHGnHMOQgghlIwx5pxzEEIIIYRSSsaccxBCCCGEkFLqnHMQQgghhBBKKZ1zDkIIIYQQQimlgxBCCCGEEEoopaQUQgghhBBCCKmklEIIIYRSQighlZRSCCGEEEIpJaSUUgohhFJCCKGElFJKKYUQQgillJJSSimlEkoJJYQSUikppRRKCCGUUkpKKaVUSgmhhBJKKSWllFJKIYQQSikFAAAcOAAABBhBJxlVFmGjCRcegEJDVgIAZAAAkKKUUiktRYIipRikGEtGFXNQWoqocgxSzalSziDmJJaIMYSUk1Qy5hRCDELqHHVMKQYtlRhCxhik2HJLoXMOAAAAQQCAgJAAAAMEBTMAwOAA4XMQdAIERxsAgCBEZohEw0JweFAJEBFTAUBigkIuAFRYXKRdXECXAS7o4q4DIQQhCEEsDqCABByccMMTb3jCDU7QKSp1IAAAAAAADADwAACQXAAREdHMYWRobHB0eHyAhIiMkAgAAAAAABcAfAAAJCVAREQ0cxgZGhscHR4fICEiIyQBAIAAAgAAAAAggAAEBAQAAAAAAAIAAAAEBB9DtnUBAAAAAAAEPueBAKOFggAAgACjzoEAA4BwBwCdASqwAJAAAEcIhYWIhYSIAgIABhwJ7kPfbJyHvtk5D32ych77ZOQ99snIe+2TkPfbJyHvtk5D32ych77ZOQ99YAD+/6tQgKOFggADgAqjhYIAD4AOo4WCACSADqOZgQArADECAAEQEAAYABhYL/QACIBDmAYAAKOFggA6gA6jhYIAT4AOo5mBAFMAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCAGSADqOFggB6gA6jmYEAewAxAgABEBAAGAAYWC/0AAiAQ5gGAACjhYIAj4AOo5mBAKMAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCAKSADqOFggC6gA6jmYEAywAxAgABEBAAGAAYWC/0AAiAQ5gGAACjhYIAz4AOo4WCAOSADqOZgQDzADECAAEQEAAYABhYL/QACIBDmAYAAKOFggD6gA6jhYIBD4AOo5iBARsAEQIAARAQFGAAYWC/0AAiAQ5gGACjhYIBJIAOo4WCATqADqOZgQFDADECAAEQEAAYABhYL/QACIBDmAYAAKOFggFPgA6jhYIBZIAOo5mBAWsAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCAXqADqOFggGPgA6jmYEBkwAxAgABEBAAGAAYWC/0AAiAQ5gGAACjhYIBpIAOo4WCAbqADqOZgQG7ADECAAEQEAAYABhYL/QACIBDmAYAAKOFggHPgA6jmYEB4wAxAgABEBAAGAAYWC/0AAiAQ5gGAACjhYIB5IAOo4WCAfqADqOZgQILADECAAEQEAAYABhYL/QACIBDmAYAAKOFggIPgA6jhYICJIAOo5mBAjMAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCAjqADqOFggJPgA6jmYECWwAxAgABEBAAGAAYWC/0AAiAQ5gGAACjhYICZIAOo4WCAnqADqOZgQKDADECAAEQEAAYABhYL/QACIBDmAYAAKOFggKPgA6jhYICpIAOo5mBAqsAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCArqADqOFggLPgA6jmIEC0wARAgABEBAUYABhYL/QACIBDmAYAKOFggLkgA6jhYIC+oAOo5mBAvsAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCAw+ADqOZgQMjADECAAEQEAAYABhYL/QACIBDmAYAAKOFggMkgA6jhYIDOoAOo5mBA0sAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCA0+ADqOFggNkgA6jmYEDcwAxAgABEBAAGAAYWC/0AAiAQ5gGAACjhYIDeoAOo4WCA4+ADqOZgQObADECAAEQEAAYABhYL/QACIBDmAYAAKOFggOkgA6jhYIDuoAOo5mBA8MAMQIAARAQABgAGFgv9AAIgEOYBgAAo4WCA8+ADqOFggPkgA6jhYID+oAOo4WCBA+ADhxTu2sBAAAAAAAAEbuPs4EDt4r3gQHxghEr8IEK" type="video/webm"><source src="data:video/mp4;base64,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" type="video/mp4">`;
     document.body.appendChild(_noSleepVid);
     await _noSleepVid.play();
-    _setCookModeUI(true);
-    toast('Cook Mode on — screen will stay awake', 'ok');
   } catch(e) {
     if (_noSleepVid) { _noSleepVid.remove(); _noSleepVid = null; }
-    toast('Cook Mode not supported on this browser', 'err');
   }
+}
+
+function closeCookMode() {
+  document.getElementById('cook-overlay').classList.remove('open');
+  _releaseCookMode();
+}
+
+function _renderCookStep() {
+  const total = _cookSteps.length;
+  document.getElementById('cook-counter').textContent = `STEP ${_cookStep + 1} OF ${total}`;
+  document.getElementById('cook-step-text').textContent = _cookSteps[_cookStep];
+  document.getElementById('cook-hint').textContent = _cookStep === total - 1 ? 'Tap to finish' : 'Tap to continue';
+  document.getElementById('cook-prev').disabled = _cookStep === 0;
+  document.getElementById('cook-next').disabled = _cookStep === total - 1;
+  const show = Math.min(total, 12);
+  const off  = total <= 12 ? 0 : Math.max(0, Math.min(_cookStep - 5, total - 12));
+  document.getElementById('cook-progress').innerHTML =
+    Array.from({length: show}, (_, i) => {
+      const idx = off + i;
+      const cls = idx === _cookStep ? 'active' : idx < _cookStep ? 'done' : '';
+      return `<div class="cook-dot ${cls}"></div>`;
+    }).join('');
+}
+
+function nextCookStep() {
+  if (_cookStep < _cookSteps.length - 1) { _cookStep++; _renderCookStep(); }
+  else { closeCookMode(); toast('Enjoy your meal!', 'ok'); }
+}
+
+function prevCookStep() {
+  if (_cookStep > 0) { _cookStep--; _renderCookStep(); }
+}
+
+function cookBodyTap() {
+  if (!_cookSwiped) nextCookStep();
+  _cookSwiped = false;
+}
+
+function _cookSwipeStart(e) {
+  _cookSwipeX = e.touches[0].clientX;
+  _cookSwiped = false;
+}
+
+function _cookSwipeEnd(e) {
+  if (_cookSwipeX === null) return;
+  const dx = e.changedTouches[0].clientX - _cookSwipeX;
+  _cookSwipeX = null;
+  if (Math.abs(dx) > 50) {
+    _cookSwiped = true;
+    e.preventDefault();
+    if (dx < 0) nextCookStep(); else prevCookStep();
+  }
+}
+
+function toggleCookIngredients() {
+  _cookIngOpen = !_cookIngOpen;
+  document.getElementById('cook-ing-panel').style.display = _cookIngOpen ? 'block' : 'none';
+  document.getElementById('cook-ing-toggle').classList.toggle('active', _cookIngOpen);
 }
 
 function _releaseCookMode() {
@@ -2384,7 +2678,7 @@ function _setCookModeUI(active) {
   const btn = document.getElementById('cook-mode-btn');
   if (!btn) return;
   btn.classList.toggle('active', active);
-  btn.title = active ? 'Cook Mode on — tap to turn off' : 'Keep screen on while cooking';
+  btn.title = active ? 'Cook Mode on — tap to exit' : 'Step-by-step cook mode';
 }
 
 // Re-acquire wake lock when tab comes back to foreground (native API only)
@@ -3365,6 +3659,12 @@ async function loadSettings() {
     if (s.nostr_nsec) _loadNostrNpub();
     _setAiStatusBadge(s.ppq_api_key ? 'unchecked' : 'none');
     _loadEquipmentChips(s.equipment || '');
+    // Dark mode toggle state (reflects current theme, not server setting)
+    const dmCb = document.getElementById('s-dark-mode');
+    if (dmCb) dmCb.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+    // RSS auto-fetch
+    const autoFetchSel = document.getElementById('rss-auto-fetch');
+    if (autoFetchSel && s.rss_auto_fetch_hours != null) autoFetchSel.value = String(s.rss_auto_fetch_hours);
   } catch(e) { toast('Could not load settings', 'err'); }
 }
 
@@ -3535,7 +3835,7 @@ function renderPlanner(base) {
           : `<span class="day-num">${date.getDate()}</span>`}
       </div>
       ${MEALS.map(m => day[m]
-        ? `<div class="meal-slot filled">
+        ? `<div class="meal-slot filled" data-date="${dateStr}" data-meal="${m}" data-slug="${day[m].recipe_slug}">
              <div class="slot-lbl">${m}<span class="slot-remove" onclick="removeMealSlot(${day[m].id},'${dateStr}','${m}')" title="Remove">✕</span></div>
              <div class="slot-name">${day[m].recipe_name||day[m].recipe_slug}</div>
            </div>`
@@ -3809,12 +4109,25 @@ async function loadGrocery() {
 }
 
 function renderGrocery(items, pantryItems) {
-  const buyHtml = (items||[]).map(item => `
-    <div class="grocery-item ${item.checked?'checked':''}" id="gi-${item.id}">
-      <input type="checkbox" ${item.checked?'checked':''} onchange="toggleGrocery(${item.id},this.checked)">
-      <span class="g-food">${item.food}</span>
-      ${item.quantity != null ? `<span class="g-qty">${item.quantity} ${item.unit||''}</span>` : ''}
-    </div>`).join('');
+  // Group items by category
+  const catOrder = ['Produce','Meat & Fish','Dairy & Eggs','Bakery','Dry Goods','Canned & Jarred','Frozen','Condiments & Spices','Beverages','Other'];
+  const groups = {};
+  (items||[]).forEach(item => {
+    const cat = item.category || 'Other';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(item);
+  });
+  const orderedCats = [...catOrder.filter(c => groups[c]), ...Object.keys(groups).filter(c => !catOrder.includes(c))];
+  const buyHtml = orderedCats.map(cat => {
+    const catItems = groups[cat];
+    return `<div class="grocery-cat-header">${cat}</div>` +
+      catItems.map(item => `
+        <div class="grocery-item ${item.checked?'checked':''}" id="gi-${item.id}">
+          <input type="checkbox" ${item.checked?'checked':''} onchange="toggleGrocery(${item.id},this.checked)">
+          <span class="g-food">${item.food}</span>
+          ${item.quantity != null ? `<span class="g-qty">${item.quantity} ${item.unit||''}</span>` : ''}
+        </div>`).join('');
+  }).join('');
 
   const pantryHtml = (pantryItems||[]).length ? `
     <div class="pantry-covered-section">
@@ -3946,6 +4259,299 @@ function toast(msg, type='ok') {
   el.textContent = msg;
   document.getElementById('toasts').appendChild(el);
   setTimeout(() => el.remove(), 3200);
+}
+
+/* ── Dark mode ── */
+function applyDarkMode(on) {
+  document.documentElement.setAttribute('data-theme', on ? 'dark' : '');
+  localStorage.setItem('feedme-dark', on ? '1' : '0');
+  const cb = document.getElementById('s-dark-mode');
+  if (cb) cb.checked = on;
+}
+(function initDarkMode() {
+  const stored = localStorage.getItem('feedme-dark');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const on = stored !== null ? stored === '1' : prefersDark;
+  applyDarkMode(on);
+})();
+
+/* ── Print ── */
+function printRecipe() {
+  if (!_drawerData) return;
+  const r = _drawerData;
+  const full = r.full || {};
+  const ingredients = full.recipeIngredient || [];
+  const steps = full.recipeInstructions || [];
+  const meta = [
+    r.category ? r.category : null,
+    r.cuisine  ? r.cuisine  : null,
+    full.prepTime ? 'Prep: ' + _isoToDisplay(full.prepTime) : null,
+    full.cookTime ? 'Cook: ' + _isoToDisplay(full.cookTime) : null,
+    r.servings  ? r.servings + ' servings' : null,
+  ].filter(Boolean);
+  const pv = document.getElementById('print-view');
+  pv.innerHTML = `
+    <div class="print-title">${r.name || ''}</div>
+    ${meta.length ? `<div class="print-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>` : ''}
+    ${r.description ? `<div class="print-desc">${r.description}</div>` : ''}
+    ${ingredients.length ? `<div class="print-sec">Ingredients</div><ul class="print-ing-list">${ingredients.map(i=>`<li>${i}</li>`).join('')}</ul>` : ''}
+    ${steps.length ? `<div class="print-sec">Method</div><ol class="print-step-list">${steps.map(s=>`<li>${typeof s==='string'?s:s.text}</li>`).join('')}</ol>` : ''}
+  `;
+  window.print();
+}
+
+/* ── Nutrition ── */
+async function estimateNutrition(slug) {
+  const bodyEl = document.getElementById('d-body');
+  if (!bodyEl) return;
+  // Find or insert a nutrition placeholder
+  let nutEl = bodyEl.querySelector('.nutrition-estimating');
+  if (!nutEl) {
+    const btn = bodyEl.querySelector('button[onclick*="estimateNutrition"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Estimating…'; }
+  }
+  try {
+    const res = await apiPost(`/api/recipes/${slug}/nutrition`, {});
+    // Reload drawer to show new nutrition data
+    openDrawer(slug);
+    toast('Nutrition estimated', 'ok');
+  } catch(e) {
+    toast(e.message || 'Estimation failed', 'err');
+    const btn = bodyEl.querySelector('button[onclick*="estimateNutrition"]');
+    if (btn) { btn.disabled = false; btn.textContent = 'Estimate nutrition'; }
+  }
+}
+
+/* ── Cook log ── */
+async function markAsCooked(slug) {
+  const defaultServings = _drawerData?.servings || null;
+  try {
+    await apiPost(`/api/cooklog/${slug}`, { servings: defaultServings });
+    toast('Marked as cooked', 'ok');
+    loadCookHistory(slug);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function loadCookHistory(slug) {
+  const el = document.getElementById('d-cook-log');
+  if (!el) return;
+  try {
+    const history = await apiGet(`/api/cooklog/${slug}`);
+    if (!history.length) {
+      el.innerHTML = `<div class="d-sec" style="margin-top:16px">Cook History</div><div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">Not cooked yet</div>`;
+      return;
+    }
+    const fmt = iso => {
+      const d = new Date(iso);
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    const days = iso => {
+      const diff = Math.floor((Date.now() - new Date(iso)) / 86400000);
+      if (diff === 0) return 'today';
+      if (diff === 1) return 'yesterday';
+      return `${diff}d ago`;
+    };
+    el.innerHTML = `<div class="d-sec" style="margin-top:16px">Cook History</div>` +
+      history.map(e => `<div class="cook-log-entry">
+        <span class="cook-log-date">${fmt(e.cooked_at)} <span style="opacity:.6">(${days(e.cooked_at)})</span></span>
+        ${e.servings ? `<span style="font-size:12px;color:var(--text-muted)">${e.servings} srv</span>` : ''}
+        ${e.notes ? `<span class="cook-log-note">${e.notes}</span>` : ''}
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = '';
+  }
+}
+
+/* ── RSS auto-fetch setting ── */
+async function saveRssAutoFetch(val) {
+  try {
+    await apiPost('/api/settings', { rss_auto_fetch_hours: val });
+  } catch(e) { toast('Could not save auto-fetch setting', 'err'); }
+}
+
+/* ── Week plan modal ── */
+let _wplanMeals = new Set(['dinner']);
+let _wplanPlan  = [];
+
+function openWeekPlanModal() {
+  _wplanPlan = [];
+  document.getElementById('wplan-result').style.display = 'none';
+  document.getElementById('wplan-gen-btn').style.display = '';
+  document.getElementById('wplan-regen-btn').style.display = 'none';
+  document.getElementById('wplan-accept-btn').style.display = 'none';
+  document.getElementById('wplan-overlay').classList.add('open');
+  document.getElementById('wplan-modal').classList.add('open');
+}
+
+function closeWeekPlanModal() {
+  document.getElementById('wplan-overlay').classList.remove('open');
+  document.getElementById('wplan-modal').classList.remove('open');
+}
+
+function toggleWplanMeal(meal) {
+  if (_wplanMeals.has(meal)) {
+    if (_wplanMeals.size === 1) return; // keep at least one
+    _wplanMeals.delete(meal);
+  } else {
+    _wplanMeals.add(meal);
+  }
+  document.getElementById(`wpm-${meal}`).classList.toggle('active', _wplanMeals.has(meal));
+}
+
+async function generateWeekPlan() {
+  const genBtn  = document.getElementById('wplan-gen-btn');
+  const regenBtn = document.getElementById('wplan-regen-btn');
+  genBtn.disabled  = true;
+  genBtn.textContent = 'Generating…';
+  if (regenBtn) { regenBtn.disabled = true; }
+  try {
+    const dietary = Array.from(document.querySelectorAll('#wplan-dietary-chips .opt-chip.selected'))
+      .map(el => el.textContent.trim());
+    const res = await apiPost('/api/mealplan/generate', {
+      week_start:          (() => { const b = mondayOf(new Date()); b.setDate(b.getDate()+weekOffset*7); return isoDate(b); })(),
+      meals:               Array.from(_wplanMeals),
+      people:              parseInt(document.getElementById('wplan-people').value) || null,
+      max_weeknight_mins:  parseInt(document.getElementById('wplan-maxtime').value) || null,
+      dietary,
+      use_pantry:          document.getElementById('wplan-pantry').checked,
+      prompt:              document.getElementById('wplan-prompt').value.trim(),
+    });
+    _wplanPlan = res.plan || [];
+    _renderWplanResult();
+    document.getElementById('wplan-result').style.display = '';
+    document.getElementById('wplan-gen-btn').style.display = 'none';
+    document.getElementById('wplan-regen-btn').style.display = '';
+    document.getElementById('wplan-accept-btn').style.display = '';
+    regenBtn.disabled = false;
+  } catch(e) {
+    toast(e.message || 'Generation failed', 'err');
+  } finally {
+    genBtn.disabled = false;
+    genBtn.textContent = 'Generate';
+    if (regenBtn) regenBtn.disabled = false;
+  }
+}
+
+const _DAY_ABBR = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function _renderWplanResult() {
+  const list = document.getElementById('wplan-plan-list');
+  if (!_wplanPlan.length) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:8px 0">No plan generated — try relaxing constraints.</div>';
+    return;
+  }
+  const sorted = [..._wplanPlan].sort((a,b) => a.date.localeCompare(b.date) || a.meal_type.localeCompare(b.meal_type));
+  list.innerHTML = sorted.map((e,i) => {
+    const d = new Date(e.date + 'T00:00:00');
+    const dayLabel = _DAY_ABBR[d.getDay() === 0 ? 6 : d.getDay() - 1] || e.date.slice(5);
+    return `<div class="wplan-plan-item preview">
+      <span class="wplan-day-label">${dayLabel}</span>
+      <span class="wplan-meal-type">${e.meal_type}</span>
+      <span class="wplan-recipe-name">${e.recipe_name || e.recipe_slug}</span>
+    </div>`;
+  }).join('');
+}
+
+async function acceptWeekPlan() {
+  if (!_wplanPlan.length) return;
+  const btn = document.getElementById('wplan-accept-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await Promise.all(_wplanPlan.map(e => apiPost('/api/mealplan', {
+      date: e.date, meal_type: e.meal_type, recipe_slug: e.recipe_slug, servings: 1
+    })));
+    closeWeekPlanModal();
+    loadPlanner();
+    toast('Week plan added to planner', 'ok');
+  } catch(e) {
+    toast(e.message || 'Could not save plan', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Accept Plan';
+  }
+}
+
+/* ── Meal plan templates ── */
+async function saveWeekTemplate() {
+  const name = prompt('Template name:');
+  if (!name || !name.trim()) return;
+  // Collect current week slots from the planner data
+  const slots = [];
+  document.querySelectorAll('.meal-slot.filled').forEach(slot => {
+    const date = slot.dataset.date;
+    const meal = slot.dataset.meal;
+    const slug = slot.dataset.slug;
+    const recipeName = slot.querySelector('.slot-name')?.textContent || '';
+    if (date && meal && slug) slots.push({ date_offset: _dateOffset(date), meal_type: meal, recipe_slug: slug, recipe_name: recipeName });
+  });
+  if (!slots.length) { toast('No recipes in this week to save', 'err'); return; }
+  try {
+    await apiPost('/api/mealplan/templates', { name: name.trim(), slots });
+    toast('Template saved', 'ok');
+    loadTemplates();
+    document.getElementById('templates-panel').style.display = '';
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function _dateOffset(dateStr) {
+  const _wb = mondayOf(new Date()); _wb.setDate(_wb.getDate()+weekOffset*7); const start = new Date(isoDate(_wb) + 'T00:00:00');
+  const d = new Date(dateStr + 'T00:00:00');
+  return Math.round((d - start) / 86400000);
+}
+
+async function loadTemplates() {
+  try {
+    const templates = await apiGet('/api/mealplan/templates');
+    renderTemplates(templates);
+    if (templates.length) document.getElementById('templates-panel').style.display = '';
+  } catch(e) { /* silent */ }
+}
+
+function renderTemplates(templates) {
+  const list = document.getElementById('templates-list');
+  if (!list) return;
+  if (!templates.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:8px 0">No saved templates.</div>';
+    return;
+  }
+  list.innerHTML = templates.map(t => {
+    const slots = typeof t.slots === 'string' ? JSON.parse(t.slots) : (t.slots || []);
+    return `<div class="template-row">
+      <span class="template-name">${t.name}</span>
+      <span class="template-meta">${slots.length} meal${slots.length===1?'':'s'}</span>
+      <button class="btn btn-ghost btn-xs" onclick="applyTemplate(${t.id})">Load</button>
+      <button class="btn btn-xs" style="color:#c05040;border-color:transparent" onclick="deleteTemplate(${t.id})">Delete</button>
+    </div>`;
+  }).join('');
+}
+
+async function applyTemplate(id) {
+  if (!confirm('Load this template into the current week? Existing entries will not be removed.')) return;
+  try {
+    const templates = await apiGet('/api/mealplan/templates');
+    const tmpl = templates.find(t => t.id === id);
+    if (!tmpl) { toast('Template not found', 'err'); return; }
+    const slots = typeof tmpl.slots === 'string' ? JSON.parse(tmpl.slots) : (tmpl.slots || []);
+    const _wb = mondayOf(new Date()); _wb.setDate(_wb.getDate()+weekOffset*7); const start = new Date(isoDate(_wb) + 'T00:00:00');
+    await Promise.all(slots.map(s => {
+      const d = new Date(start.getTime() + s.date_offset * 86400000);
+      const dateStr = d.toISOString().slice(0,10);
+      return apiPost('/api/mealplan', { date: dateStr, meal_type: s.meal_type, recipe_slug: s.recipe_slug, servings: 1 });
+    }));
+    loadPlanner();
+    toast('Template loaded', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteTemplate(id) {
+  try {
+    await apiDel(`/api/mealplan/templates/${id}`);
+    toast('Template deleted', 'ok');
+    loadTemplates();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function toggleTemplatesPanel() {
+  const list = document.getElementById('templates-list');
+  if (list) list.style.display = list.style.display === 'none' ? '' : 'none';
 }
 
 /* ── Init ── */
@@ -4229,6 +4835,104 @@ async function bulkPublishNostr() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     Publish to Nostr
   </button>
+</div>
+
+<!-- PRINT VIEW (hidden; shown only via @media print) -->
+<div id="print-view"></div>
+
+<!-- WEEK PLAN MODAL -->
+<div class="modal-overlay" id="wplan-overlay" onclick="closeWeekPlanModal()"></div>
+<div class="modal" id="wplan-modal" style="width:580px">
+  <div class="modal-head">
+    <div class="modal-title">Generate Week Plan</div>
+    <button class="modal-close" onclick="closeWeekPlanModal()">
+      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+  </div>
+  <div class="modal-body" id="wplan-body">
+    <div class="wplan-section">
+      <div class="wplan-label">Meals to plan</div>
+      <div class="wplan-meal-checks">
+        <div class="wplan-meal-check" id="wpm-breakfast" onclick="toggleWplanMeal('breakfast')">Breakfast</div>
+        <div class="wplan-meal-check" id="wpm-lunch" onclick="toggleWplanMeal('lunch')">Lunch</div>
+        <div class="wplan-meal-check active" id="wpm-dinner" onclick="toggleWplanMeal('dinner')">Dinner</div>
+      </div>
+    </div>
+    <div class="wplan-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div class="wplan-label">People</div>
+        <input class="form-input" id="wplan-people" type="number" min="1" max="12" value="4" style="width:80px">
+      </div>
+      <div>
+        <div class="wplan-label">Max weeknight cook time</div>
+        <select class="form-input" id="wplan-maxtime" style="width:140px">
+          <option value="">Any</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1 hour</option>
+        </select>
+      </div>
+    </div>
+    <div class="wplan-section">
+      <div class="wplan-label">Dietary</div>
+      <div class="chips" id="wplan-dietary-chips" style="margin-bottom:0">
+        <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Vegetarian</div>
+        <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Vegan</div>
+        <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Gluten-free</div>
+        <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Dairy-free</div>
+        <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Nut-free</div>
+      </div>
+    </div>
+    <div class="wplan-section" style="display:flex;align-items:center;gap:10px">
+      <label class="adv-sw"><input type="checkbox" id="wplan-pantry"><span class="adv-sw-track"></span></label>
+      <span style="font-size:13px;color:var(--text-mid)">Prioritise pantry ingredients</span>
+    </div>
+    <div class="wplan-section">
+      <div class="wplan-label">Custom instructions (optional)</div>
+      <textarea class="form-input" id="wplan-prompt" placeholder="e.g. avoid repeating proteins, include one pasta dish" rows="2" style="resize:none"></textarea>
+    </div>
+    <div id="wplan-result" style="display:none">
+      <div class="wplan-label" style="margin-bottom:8px">Proposed plan</div>
+      <div class="wplan-plan-list" id="wplan-plan-list"></div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-ghost btn-sm" onclick="closeWeekPlanModal()">Cancel</button>
+    <button class="btn btn-ghost btn-sm" id="wplan-regen-btn" style="display:none" onclick="generateWeekPlan()">Regenerate</button>
+    <button class="btn btn-primary btn-sm" id="wplan-gen-btn" onclick="generateWeekPlan()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      Generate
+    </button>
+    <button class="btn btn-primary btn-sm" id="wplan-accept-btn" style="display:none" onclick="acceptWeekPlan()">Accept Plan</button>
+  </div>
+</div>
+
+<!-- COOK MODE OVERLAY -->
+<div class="cook-overlay" id="cook-overlay">
+  <div class="cook-head">
+    <button class="cook-exit" onclick="closeCookMode()">
+      <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+    <span class="cook-counter" id="cook-counter">STEP 1 OF 1</span>
+    <button class="cook-ing-toggle" id="cook-ing-toggle" onclick="toggleCookIngredients()">Ingredients</button>
+  </div>
+  <div class="cook-body" id="cook-body"
+    onclick="cookBodyTap()"
+    ontouchstart="_cookSwipeStart(event)"
+    ontouchend="_cookSwipeEnd(event)">
+    <div class="cook-step-text" id="cook-step-text"></div>
+    <div class="cook-hint" id="cook-hint">Tap to continue</div>
+  </div>
+  <div class="cook-ing-panel" id="cook-ing-panel" style="display:none"></div>
+  <div class="cook-foot">
+    <button class="cook-nav-btn" id="cook-prev" onclick="prevCookStep()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="cook-progress" id="cook-progress"></div>
+    <button class="cook-nav-btn" id="cook-next" onclick="nextCookStep()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
 </div>
 
 </body>

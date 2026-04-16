@@ -63,10 +63,27 @@ CREATE TABLE IF NOT EXISTS settings (
     value       TEXT
 );
 
+CREATE TABLE IF NOT EXISTS cook_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_slug TEXT NOT NULL,
+    cooked_at   TEXT DEFAULT (datetime('now')),
+    servings    INTEGER,
+    notes       TEXT,
+    FOREIGN KEY (recipe_slug) REFERENCES recipes(slug) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS meal_plan_templates (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    slots       TEXT NOT NULL DEFAULT '[]',
+    created_at  TEXT DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_recipes_status ON recipes(status);
 CREATE INDEX IF NOT EXISTS idx_recipes_slug ON recipes(slug);
 CREATE INDEX IF NOT EXISTS idx_meal_plan_date ON meal_plan(date);
 CREATE INDEX IF NOT EXISTS idx_shopping_list_checked ON shopping_list(checked);
+CREATE INDEX IF NOT EXISTS idx_cook_log_slug ON cook_log(recipe_slug);
 """
 
 
@@ -78,6 +95,8 @@ MIGRATIONS = [
     # Track external platform IDs for sync/export
     "ALTER TABLE recipes ADD COLUMN mealie_id TEXT",
     "ALTER TABLE recipes ADD COLUMN nostr_event_id TEXT",
+    # Category grouping on shopping list
+    "ALTER TABLE shopping_list ADD COLUMN category TEXT",
 ]
 
 
