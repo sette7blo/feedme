@@ -22,6 +22,15 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Meal plan templates: "Save Template" in Planner saves current week as a named template; load/delete templates from the panel below the week grid
 - RSS auto-fetch: configurable auto-fetch interval (6h / 12h / daily / weekly) in the RSS Feeds card; background thread fetches all configured feeds on schedule
 
+### Fixed
+- Grocery list: "garlic, minced" no longer mis-categorised as Meat & Fish; removed ambiguous "mince" keyword
+- Grocery list: bare "oil" now correctly categorised as Condiments & Spices (was missed due to leading-space bug)
+- Grocery list: similar ingredients (e.g. "garlic, minced" + "garlic cloves") now merge into one line with summed quantity
+- Grocery list: quantities now display in friendly units (cups, tbsp, tsp, oz) instead of raw grams/ml
+- Print view: recipe image now included at the top of the printed page
+- Nutrition estimation: improved AI prompt with recipe name, explicit per-serving division, and realistic calorie range hints for more consistent results
+- iOS: content no longer cut off at the bottom on devices with home indicator; uses dynamic viewport height and safe-area-inset padding
+
 ## [v1.2.0] — 2026-04-15
 
 ### Added

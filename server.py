@@ -415,17 +415,24 @@ def estimate_nutrition(slug):
     try:
         from openai import OpenAI
         client = OpenAI(api_key=api_key, base_url=base_url)
+        recipe_name = full.get("name") or recipe.get("name", slug)
         resp = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": (
-                    "You are a nutrition expert. Estimate nutritional information for a recipe based on its ingredients. "
-                    f"The recipe makes {servings} servings. Return ONLY a JSON object with these fields (numbers, per serving): "
+                    "You are a nutrition expert. Estimate per-serving nutritional values for a recipe.\n"
+                    "IMPORTANT:\n"
+                    f"- The recipe is: {recipe_name}\n"
+                    f"- Total yield: {servings} serving(s)\n"
+                    "- Calculate the TOTAL nutrition for ALL ingredients combined, then DIVIDE by the number of servings.\n"
+                    "- Return values for ONE serving only.\n"
+                    "- Calories should be a realistic number (typical main dish: 400-800 kcal/serving, side dish: 150-350 kcal/serving).\n"
+                    "Return ONLY a JSON object with these exact fields:\n"
                     '{"calories": number, "proteinContent": "Xg", "fatContent": "Xg", "carbohydrateContent": "Xg", '
-                    '"fiberContent": "Xg", "sugarContent": "Xg", "sodiumContent": "Xmg"}. '
+                    '"fiberContent": "Xg", "sugarContent": "Xg", "sodiumContent": "Xmg"}\n'
                     "No markdown, no explanation — just the JSON object."
                 )},
-                {"role": "user", "content": f"Ingredients:\n" + "\n".join(ingredients)},
+                {"role": "user", "content": f"Recipe: {recipe_name} ({servings} servings)\nIngredients:\n" + "\n".join(ingredients)},
             ],
             max_tokens=300,
             temperature=0,

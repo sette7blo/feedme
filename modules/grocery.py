@@ -3,7 +3,7 @@ modules/grocery.py — Pantry diff → shopping list generation
 """
 import re
 from core.db import db, rows_to_list, row_to_dict
-from modules.meal_planner import get_aggregate_ingredients, _to_base
+from modules.meal_planner import get_aggregate_ingredients, _to_base, _from_base
 from modules.pantry import list_pantry
 
 # Keyword rules — first match wins. Order matters: specific before generic.
@@ -13,7 +13,7 @@ _CATEGORY_RULES = [
     ('lamb', 'Meat & Fish'), ('turkey', 'Meat & Fish'), ('duck', 'Meat & Fish'),
     ('veal', 'Meat & Fish'), ('bacon', 'Meat & Fish'), ('ham', 'Meat & Fish'),
     ('sausage', 'Meat & Fish'), ('salami', 'Meat & Fish'), ('pepperoni', 'Meat & Fish'),
-    ('steak', 'Meat & Fish'), ('mince', 'Meat & Fish'), ('brisket', 'Meat & Fish'),
+    ('steak', 'Meat & Fish'), ('brisket', 'Meat & Fish'),
     ('salmon', 'Meat & Fish'), ('tuna', 'Meat & Fish'), ('shrimp', 'Meat & Fish'),
     ('prawn', 'Meat & Fish'), ('cod', 'Meat & Fish'), ('tilapia', 'Meat & Fish'),
     ('halibut', 'Meat & Fish'), ('crab', 'Meat & Fish'), ('lobster', 'Meat & Fish'),
@@ -40,7 +40,7 @@ _CATEGORY_RULES = [
     # Condiments & Spices (oils before generic terms)
     ('olive oil', 'Condiments & Spices'), ('vegetable oil', 'Condiments & Spices'),
     ('coconut oil', 'Condiments & Spices'), ('sesame oil', 'Condiments & Spices'),
-    ('canola oil', 'Condiments & Spices'), (' oil', 'Condiments & Spices'),
+    ('canola oil', 'Condiments & Spices'), ('oil', 'Condiments & Spices'),
     ('soy sauce', 'Condiments & Spices'), ('fish sauce', 'Condiments & Spices'),
     ('oyster sauce', 'Condiments & Spices'), ('hoisin', 'Condiments & Spices'),
     ('worcestershire', 'Condiments & Spices'), ('sriracha', 'Condiments & Spices'),

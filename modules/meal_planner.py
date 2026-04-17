@@ -31,6 +31,29 @@ def _to_base(qty: float, unit: str) -> tuple[float, str]:
     return qty, unit
 
 
+def _from_base(qty: float, unit: str) -> tuple[float, str]:
+    """Convert base units (g/ml) back to a human-friendly unit."""
+    if unit == 'g':
+        if qty >= 1000:
+            return round(qty / 1000, 2), 'kg'
+        if qty < 28:
+            return round(qty, 1), 'g'
+        if qty < 200:
+            return round(qty / 28.35, 1), 'oz'
+        return round(qty, 0), 'g'
+    if unit == 'ml':
+        if qty >= 1000:
+            return round(qty / 1000, 2), 'L'
+        if qty >= 200:
+            return round(qty / 240, 2), 'cups'
+        if qty >= 40:
+            return round(qty / 14.79, 1), 'tbsp'
+        if qty >= 4:
+            return round(qty / 4.93, 1), 'tsp'
+        return round(qty, 1), 'ml'
+    return qty, unit
+
+
 # Known units for ingredient parsing
 _UNITS = {
     'g', 'kg', 'mg',
@@ -133,11 +156,40 @@ def remove_from_plan(plan_id: int) -> bool:
     return cur.rowcount > 0
 
 
+_MODIFIERS = frozenset({
+    'fresh', 'dried', 'frozen', 'canned', 'cooked', 'raw', 'whole',
+    'chopped', 'sliced', 'diced', 'minced', 'ground', 'grated', 'shredded',
+    'peeled', 'pitted', 'rinsed', 'drained', 'softened', 'melted', 'crushed',
+    'boneless', 'skinless', 'lean',
+    'large', 'medium', 'small', 'extra', 'big',
+    'organic', 'unsalted', 'salted', 'sweetened', 'unsweetened',
+    'low', 'high', 'reduced', 'full', 'fat', 'free',
+    'packed', 'heaping', 'level', 'plain', 'regular',
+})
+
+
+def _core(text: str) -> str:
+    """Strip modifier words and normalise plurals for dedup keying."""
+    words = re.sub(r'[^a-z\s]', '', text.lower()).split()
+    result = []
+    for w in words:
+        if w in _MODIFIERS:
+            continue
+        if len(w) > 4 and w.endswith('ies'):
+            w = w[:-3] + 'y'
+        elif len(w) > 3 and w.endswith('s'):
+            w = w[:-1]
+        result.append(w)
+    return ' '.join(result)
+
+
 def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
     """
     Get all ingredients needed for planned meals in date range.
     Parses raw ingredient strings into {food, quantity, unit} and sums
     quantities when the same ingredient appears across multiple recipes.
+    Uses _core() to merge similar ingredients (e.g. "garlic, minced" + "garlic cloves").
+    Converts to base units for summing, then back to friendly units for display.
     Returns list of {food, quantity, unit, raw}.
     """
     with db() as conn:
@@ -148,7 +200,7 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
             WHERE mp.date >= ? AND mp.date <= ?
         """, (start_date, end_date)).fetchall()
 
-    # aggregated[name_key] = {food, quantity, unit, raw}
+    # aggregated[core_key] = {food, quantity, unit, raw}
     aggregated = {}
     for row in rows:
         ingredients = json.loads(row["ingredients"] or "[]")
@@ -158,34 +210,45 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
             if not raw or not raw.strip():
                 continue
             parsed = parse_ingredient(raw.strip())
-            name_key = parsed['name'].lower().strip()
+            name_key = _core(parsed['name']) or parsed['name'].lower().strip()
             if not name_key:
                 continue
 
             qty = (parsed['quantity'] * scale) if parsed['quantity'] is not None else None
 
-            # Normalise to base unit before storing/summing
+            # Normalise to base unit for summing
             if qty is not None:
-                qty, unit = _to_base(qty, parsed['unit'])
+                base_qty, base_unit = _to_base(qty, parsed['unit'])
             else:
-                unit = parsed['unit']
+                base_qty, base_unit = None, parsed['unit']
 
             if name_key not in aggregated:
                 aggregated[name_key] = {
                     'food':     parsed['name'],
-                    'quantity': qty,
-                    'unit':     unit,
+                    'quantity': base_qty,
+                    'unit':     base_unit,
                     'raw':      raw.strip(),
                 }
             else:
                 existing = aggregated[name_key]
-                if qty is not None and existing['quantity'] is not None:
-                    ex_qty, ex_unit = _to_base(existing['quantity'], existing['unit'])
-                    if ex_unit == unit:
-                        existing['quantity'] = round(ex_qty + qty, 3)
-                        existing['unit'] = unit
-                elif qty is not None and existing['quantity'] is None:
-                    existing['quantity'] = qty
-                    existing['unit'] = unit
+                if base_qty is not None and existing['quantity'] is not None:
+                    if existing['unit'] == base_unit:
+                        existing['quantity'] = round(existing['quantity'] + base_qty, 3)
+                    else:
+                        # Incompatible units — convert existing to base too
+                        ex_qty, ex_unit = _to_base(existing['quantity'], existing['unit'])
+                        if ex_unit == base_unit:
+                            existing['quantity'] = round(ex_qty + base_qty, 3)
+                            existing['unit'] = base_unit
+                elif base_qty is not None and existing['quantity'] is None:
+                    existing['quantity'] = base_qty
+                    existing['unit'] = base_unit
 
-    return list(aggregated.values())
+    # Convert base units back to friendly display units
+    result = []
+    for item in aggregated.values():
+        if item['quantity'] is not None and item['unit'] in ('g', 'ml'):
+            item['quantity'], item['unit'] = _from_base(item['quantity'], item['unit'])
+        result.append(item)
+
+    return result
