@@ -595,6 +595,10 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 /* Filled slot remove button */
 .slot-remove { float: right; width: 14px; height: 14px; border-radius: 50%; background: rgba(192,80,64,.15); color: #c05040; font-size: 9px; line-height: 14px; text-align: center; cursor: pointer; transition: background var(--tr); }
 .slot-remove:hover { background: rgba(192,80,64,.35); }
+.slot-servings { display: flex; align-items: center; gap: 4px; margin-top: 3px; }
+.slot-servings button { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border); background: var(--cream); color: var(--text-mid); font-size: 10px; line-height: 14px; text-align: center; cursor: pointer; padding: 0; transition: all var(--tr); }
+.slot-servings button:hover { border-color: var(--amber); color: var(--amber); }
+.slot-servings span { font-size: 9px; color: var(--text-mid); min-width: 20px; text-align: center; }
 .g-food { flex: 1; font-size: 14px; color: var(--text-mid); }
 .g-qty { font-size: 12px; color: var(--text-muted); }
 /* RSS feed rows */
@@ -773,41 +777,31 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 [data-theme="dark"] .mealie-modal-foot { background: #1e1812; }
 
 /* ═══════════════════════════════════════
-   PRINT
+   PRINT — prints the open drawer as-is
 ═══════════════════════════════════════ */
 @media print {
-  .topbar, .sidebar, .overlay, .drawer, .toasts, .bulk-bar,
+  body, html { height: auto !important; overflow: visible !important; }
+  .topbar, .sidebar, .overlay, .toasts, .bulk-bar,
   .cook-overlay, .mealie-modal-wrap, #scan-overlay, #scan-modal,
   #modal-overlay, #add-modal, #picker-overlay, #picker-modal,
   #nostr-overlay, #nostr-modal, .main { display: none !important; }
-  #print-view { display: block !important; }
-  body { overflow: visible !important; height: auto !important; }
-  html, body { height: auto !important; overflow: visible !important; }
-  @page { margin: 20mm; }
+  .drawer {
+    position: static !important;
+    width: 100% !important;
+    max-width: 640px !important;
+    height: auto !important;
+    box-shadow: none !important;
+    transform: none !important;
+    overflow: visible !important;
+    margin: 0 auto !important;
+  }
+  .d-head-close, .d-fav-btn, .d-foot, .d-img-regen, .d-img-shimmer,
+  .cook-log-section, .nutrition-grid + div { display: none !important; }
+  .d-body { overflow: visible !important; height: auto !important; }
+  .d-img-ph { height: auto !important; max-height: 260px !important; }
+  .d-img-ph img { position: static !important; width: 100% !important; height: auto !important; max-height: 260px !important; object-fit: cover !important; }
+  @page { margin: 18mm; }
 }
-#print-view {
-  display: none;
-  font-family: 'Jost', sans-serif;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 0;
-  color: #2c1a06;
-}
-.print-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: #2c1a06;
-  margin-bottom: 6px;
-}
-.print-meta { font-size: 13px; color: #6a4a28; margin-bottom: 14px; display: flex; gap: 16px; flex-wrap: wrap; }
-.print-desc { font-size: 14px; color: #6a4a28; font-style: italic; margin-bottom: 18px; line-height: 1.7; }
-.print-sec { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #E8820C; margin: 18px 0 8px; border-bottom: 1px solid #ede7dc; padding-bottom: 5px; }
-.print-ing-list { list-style: none; padding: 0; column-count: 2; column-gap: 24px; }
-.print-ing-list li { font-size: 13px; color: #6a4a28; padding: 4px 0; border-bottom: 1px solid #f0ece4; break-inside: avoid; }
-.print-step-list { list-style: none; padding: 0; counter-reset: s; }
-.print-step-list li { counter-increment: s; display: flex; gap: 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.7; color: #6a4a28; }
-.print-step-list li::before { content: counter(s); background: #fdf0e0; color: #E8820C; border: 1px solid #f5d9a8; font-size: 11px; font-weight: 600; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
 
 /* ═══════════════════════════════════════
    GROCERY CATEGORIES
@@ -1460,6 +1454,17 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
               <button class="btn btn-ghost btn-sm" onclick="addCustomEquipment()">+ Add</button>
             </div>
             <div id="equip-custom-chips" class="chips" style="margin-top:8px;min-height:0"></div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-title">Preferred Units</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+              Choose your preferred measurement system for the grocery list. Leave on "No preference" to keep original recipe units.
+            </div>
+            <select class="form-input" id="s-preferred-units" style="width:200px">
+              <option value="">No preference</option>
+              <option value="metric">Metric (g, kg, ml, L)</option>
+              <option value="imperial">Imperial (oz, lb, cups, tsp)</option>
+            </select>
           </div>
           <div class="settings-card">
             <div class="settings-card-title">Appearance</div>
@@ -3097,6 +3102,8 @@ async function loadConnections() {
     // RSS
     const feeds = (s.rss_feeds || '').split(',').map(f => f.trim()).filter(Boolean);
     renderFeedList(feeds);
+    const autoFetchSel = document.getElementById('rss-auto-fetch');
+    if (autoFetchSel && s.rss_auto_fetch_hours != null) autoFetchSel.value = String(s.rss_auto_fetch_hours);
     // Mealie
     const mealieActions = document.getElementById('mealie-conn-actions');
     const mealieStatus  = document.getElementById('mealie-conn-status');
@@ -3665,6 +3672,9 @@ async function loadSettings() {
     // RSS auto-fetch
     const autoFetchSel = document.getElementById('rss-auto-fetch');
     if (autoFetchSel && s.rss_auto_fetch_hours != null) autoFetchSel.value = String(s.rss_auto_fetch_hours);
+    // Preferred units
+    const prefUnits = document.getElementById('s-preferred-units');
+    if (prefUnits) prefUnits.value = s.preferred_units || '';
   } catch(e) { toast('Could not load settings', 'err'); }
 }
 
@@ -3777,6 +3787,7 @@ async function saveSettings() {
     nostr_nsec:       document.getElementById('s-nostr-nsec').value,
     rss_feeds:        existing.rss_feeds || '',
     equipment:        _readEquipmentChips(),
+    preferred_units:  document.getElementById('s-preferred-units').value,
   };
   try {
     await apiPost('/api/settings', body);
@@ -3836,8 +3847,13 @@ function renderPlanner(base) {
       </div>
       ${MEALS.map(m => day[m]
         ? `<div class="meal-slot filled" data-date="${dateStr}" data-meal="${m}" data-slug="${day[m].recipe_slug}">
-             <div class="slot-lbl">${m}<span class="slot-remove" onclick="removeMealSlot(${day[m].id},'${dateStr}','${m}')" title="Remove">✕</span></div>
+             <div class="slot-lbl">${m}<span class="slot-remove" onclick="removeMealSlot(${day[m].id},'${dateStr}','${m}')" title="Remove">&#x2715;</span></div>
              <div class="slot-name">${day[m].recipe_name||day[m].recipe_slug}</div>
+             <div class="slot-servings">
+               <button onclick="event.stopPropagation();updateMealServings(${day[m].id},${(day[m].servings||1)-1})">-</button>
+               <span>${day[m].servings||1} srv</span>
+               <button onclick="event.stopPropagation();updateMealServings(${day[m].id},${(day[m].servings||1)+1})">+</button>
+             </div>
            </div>`
         : `<div class="meal-slot" onclick="openPicker('${dateStr}','${m}')"><div class="slot-lbl">${m}</div><div class="slot-add">+ Add</div></div>`
       ).join('')}
@@ -3924,6 +3940,14 @@ async function pickRecipe(slug) {
     closePicker();
     await loadPlanner();
     toast('Added to plan', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function updateMealServings(id, newServings) {
+  if (newServings < 1) return;
+  try {
+    await apiPut(`/api/mealplan/${id}`, { servings: newServings });
+    await loadPlanner();
   } catch(e) { toast(e.message, 'err'); }
 }
 
@@ -4278,26 +4302,6 @@ function applyDarkMode(on) {
 /* ── Print ── */
 function printRecipe() {
   if (!_drawerData) return;
-  const r = _drawerData;
-  const full = r.full || {};
-  const ingredients = full.recipeIngredient || [];
-  const steps = full.recipeInstructions || [];
-  const meta = [
-    r.category ? r.category : null,
-    r.cuisine  ? r.cuisine  : null,
-    full.prepTime ? 'Prep: ' + _isoToDisplay(full.prepTime) : null,
-    full.cookTime ? 'Cook: ' + _isoToDisplay(full.cookTime) : null,
-    r.servings  ? r.servings + ' servings' : null,
-  ].filter(Boolean);
-  const pv = document.getElementById('print-view');
-  pv.innerHTML = `
-    ${r.image_url ? `<img src="${r.image_url}" style="max-width:100%;max-height:260px;border-radius:8px;margin-bottom:12px;display:block">` : ''}
-    <div class="print-title">${r.name || ''}</div>
-    ${meta.length ? `<div class="print-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>` : ''}
-    ${r.description ? `<div class="print-desc">${r.description}</div>` : ''}
-    ${ingredients.length ? `<div class="print-sec">Ingredients</div><ul class="print-ing-list">${ingredients.map(i=>`<li>${i}</li>`).join('')}</ul>` : ''}
-    ${steps.length ? `<div class="print-sec">Method</div><ol class="print-step-list">${steps.map(s=>`<li>${typeof s==='string'?s:s.text}</li>`).join('')}</ol>` : ''}
-  `;
   window.print();
 }
 
@@ -4458,7 +4462,7 @@ async function acceptWeekPlan() {
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
     await Promise.all(_wplanPlan.map(e => apiPost('/api/mealplan', {
-      date: e.date, meal_type: e.meal_type, recipe_slug: e.recipe_slug, servings: 1
+      date: e.date, meal_type: e.meal_type, recipe_slug: e.recipe_slug
     })));
     closeWeekPlanModal();
     loadPlanner();
@@ -4535,7 +4539,7 @@ async function applyTemplate(id) {
     await Promise.all(slots.map(s => {
       const d = new Date(start.getTime() + s.date_offset * 86400000);
       const dateStr = d.toISOString().slice(0,10);
-      return apiPost('/api/mealplan', { date: dateStr, meal_type: s.meal_type, recipe_slug: s.recipe_slug, servings: 1 });
+      return apiPost('/api/mealplan', { date: dateStr, meal_type: s.meal_type, recipe_slug: s.recipe_slug });
     }));
     loadPlanner();
     toast('Template loaded', 'ok');
@@ -4838,8 +4842,6 @@ async function bulkPublishNostr() {
   </button>
 </div>
 
-<!-- PRINT VIEW (hidden; shown only via @media print) -->
-<div id="print-view"></div>
 
 <!-- WEEK PLAN MODAL -->
 <div class="modal-overlay" id="wplan-overlay" onclick="closeWeekPlanModal()"></div>

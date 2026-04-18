@@ -100,6 +100,17 @@ MIGRATIONS = [
 ]
 
 
+_DATA_FIXES = [
+    # Fix meal_plan entries where servings=1 was wrongly used as default
+    # instead of the recipe's actual yield
+    ("fix_mealplan_servings_v1", """UPDATE meal_plan SET servings = (
+        SELECT COALESCE(r.servings, 1) FROM recipes r WHERE r.slug = meal_plan.recipe_slug
+    ) WHERE servings = 1 AND EXISTS (
+        SELECT 1 FROM recipes r WHERE r.slug = meal_plan.recipe_slug AND r.servings > 1
+    )"""),
+]
+
+
 def init_db():
     conn = get_connection()
     conn.executescript(SCHEMA)
@@ -110,6 +121,16 @@ def init_db():
             conn.commit()
         except Exception:
             pass  # Column already exists — safe to ignore
+    # Run one-time data fixes, tracked by key in settings table
+    for key, sql in _DATA_FIXES:
+        row = conn.execute("SELECT 1 FROM settings WHERE key=?", (f"_fix_{key}",)).fetchone()
+        if not row:
+            try:
+                conn.execute(sql)
+                conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, '1')", (f"_fix_{key}",))
+                conn.commit()
+            except Exception:
+                pass
     conn.close()
     print("Database initialized: chef.db")
 

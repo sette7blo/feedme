@@ -193,14 +193,32 @@ def get_week(start_date: str) -> list:
     return rows_to_list(rows)
 
 
-def add_to_plan(date: str, meal_type: str, recipe_slug: str, servings: int = 1) -> dict:
+def add_to_plan(date: str, meal_type: str, recipe_slug: str, servings: int = None) -> dict:
     with db() as conn:
+        if servings is None:
+            row = conn.execute("SELECT servings FROM recipes WHERE slug=?", (recipe_slug,)).fetchone()
+            servings = (row["servings"] if row and row["servings"] else 1)
         cur = conn.execute(
             "INSERT INTO meal_plan (date, meal_type, recipe_slug, servings) VALUES (?,?,?,?)",
             (date, meal_type, recipe_slug, servings)
         )
-        row = conn.execute("SELECT * FROM meal_plan WHERE id=?", (cur.lastrowid,)).fetchone()
+        row = conn.execute("""
+            SELECT mp.*, r.name as recipe_name, r.image_url, r.cook_time, r.servings as recipe_servings
+            FROM meal_plan mp JOIN recipes r ON r.slug = mp.recipe_slug
+            WHERE mp.id=?
+        """, (cur.lastrowid,)).fetchone()
     return row_to_dict(row)
+
+
+def update_plan_servings(plan_id: int, servings: int) -> dict | None:
+    with db() as conn:
+        conn.execute("UPDATE meal_plan SET servings=? WHERE id=?", (servings, plan_id))
+        row = conn.execute("""
+            SELECT mp.*, r.name as recipe_name, r.image_url, r.cook_time, r.servings as recipe_servings
+            FROM meal_plan mp JOIN recipes r ON r.slug = mp.recipe_slug
+            WHERE mp.id=?
+        """, (plan_id,)).fetchone()
+    return row_to_dict(row) if row else None
 
 
 def remove_from_plan(plan_id: int) -> bool:

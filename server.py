@@ -28,6 +28,8 @@ _rss_last_fetch = 0.0
 
 def _rss_auto_fetch_loop():
     global _rss_last_fetch
+    import logging
+    log = logging.getLogger("rss_auto_fetch")
     while True:
         time.sleep(300)  # check every 5 minutes
         try:
@@ -41,15 +43,17 @@ def _rss_auto_fetch_loop():
             feeds_raw = config.get("RSS_FEEDS", "")
             if not feeds_raw:
                 continue
-            feeds = [f.strip() for f in feeds_raw.split("\n") if f.strip()]
+            feeds = [f.strip() for f in feeds_raw.split(",") if f.strip()]
+            log.info("Auto-fetching %d RSS feeds", len(feeds))
             for url in feeds:
                 try:
                     rss_fetcher.fetch_and_stage(url)
-                except Exception:
-                    pass
+                except Exception as e:
+                    log.warning("Auto-fetch failed for %s: %s", url, e)
             _rss_last_fetch = time.time()
-        except Exception:
-            pass
+            log.info("Auto-fetch complete")
+        except Exception as e:
+            log.warning("Auto-fetch loop error: %s", e)
 
 
 threading.Thread(target=_rss_auto_fetch_loop, daemon=True).start()
@@ -489,9 +493,21 @@ def add_meal_plan():
         date=data["date"],
         meal_type=data["meal_type"],
         recipe_slug=data["recipe_slug"],
-        servings=data.get("servings", 1)
+        servings=data.get("servings")
     )
     return jsonify(entry), 201
+
+
+@app.route("/api/mealplan/<int:plan_id>", methods=["PUT"])
+def update_meal_plan(plan_id):
+    data = request.get_json()
+    servings = data.get("servings")
+    if servings is None or servings < 1:
+        return jsonify({"error": "servings required (>= 1)"}), 400
+    entry = meal_planner.update_plan_servings(plan_id, servings)
+    if not entry:
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(entry)
 
 
 @app.route("/api/mealplan/<int:plan_id>", methods=["DELETE"])
@@ -636,6 +652,7 @@ def get_settings():
         "rss_feeds":           config.get("RSS_FEEDS", ""),
         "rss_auto_fetch_hours": config.get("RSS_AUTO_FETCH_HOURS", "0"),
         "equipment":           config.get("EQUIPMENT", ""),
+        "preferred_units":     config.get("PREFERRED_UNITS", ""),
     })
 
 
@@ -656,6 +673,7 @@ def save_settings():
         "rss_feeds":              "RSS_FEEDS",
         "rss_auto_fetch_hours":   "RSS_AUTO_FETCH_HOURS",
         "equipment":              "EQUIPMENT",
+        "preferred_units":        "PREFERRED_UNITS",
     }
     for field, env_key in field_map.items():
         if field in data and data[field] is not None:
