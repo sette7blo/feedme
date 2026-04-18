@@ -1,0 +1,10 @@
+.git/
+__pycache__/
+*.pyc
+*.pyo
+data/
+.env
+CLAUDE.md
+.github/
+.gitignore
+*.md

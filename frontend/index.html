@@ -10,8 +10,6 @@
 <meta name="apple-mobile-web-app-title" content="Feedme">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
 <style>
 :root {
   --cream:       #faf7f2;
@@ -4002,19 +4000,45 @@ async function deletePantryItem(id) {
 let _scanner = null;
 let _scannerStarted = false;
 let _scanResult = null;
+let _scanLibsLoaded = false;
 
-function openScannerModal() {
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function _ensureScanLibs() {
+  if (_scanLibsLoaded) return;
+  await _loadScript('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js');
+  await _loadScript('https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js');
+  _scanLibsLoaded = true;
+}
+
+async function openScannerModal() {
   _scanResult = null;
   _scannerStarted = false;
   document.getElementById('scan-result').classList.remove('visible');
   document.getElementById('scan-result').textContent = '';
   document.getElementById('scan-use-btn').style.display = 'none';
-  document.getElementById('scan-status').textContent = 'Point your camera at a barcode';
+  document.getElementById('scan-status').textContent = _scanLibsLoaded ? 'Point your camera at a barcode' : 'Loading scanner…';
   document.getElementById('scan-overlay').classList.add('open');
   document.getElementById('scan-modal').classList.add('open');
   const fileInput = document.getElementById('scan-file-input');
   fileInput.value = '';
   fileInput.onchange = () => scanFromFile(fileInput);
+
+  try {
+    await _ensureScanLibs();
+  } catch(e) {
+    document.getElementById('scan-status').textContent = 'Failed to load scanner library';
+    return;
+  }
+  document.getElementById('scan-status').textContent = 'Point your camera at a barcode';
 
   _scanner = new Html5Qrcode('scan-reader');
   _scanner.start(
@@ -4053,7 +4077,7 @@ async function scanFromFile(input) {
   let tmp = document.getElementById('_scan_file_tmp');
   if (!tmp) { tmp = document.createElement('div'); tmp.id = '_scan_file_tmp'; tmp.style.display = 'none'; document.body.appendChild(tmp); }
   try {
-    if (typeof Quagga === 'undefined') throw new Error('Quagga not loaded');
+    await _ensureScanLibs();
     document.getElementById('scan-status').textContent = 'Scanning (' + Math.round(file.size/1024) + 'KB, ' + file.type + ')…';
     const objectUrl = URL.createObjectURL(file);
     const barcode = await new Promise((resolve, reject) => {

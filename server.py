@@ -2,6 +2,8 @@
 server.py — Feedme Flask application
 Run: python server.py
 """
+import gzip
+import io
 import json
 import os
 import threading
@@ -16,6 +18,44 @@ from core.schema import init_db
 from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, mealie_importer, nostr_importer, nostr_publisher, cook_log, meal_plan_ai
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
+
+
+@app.after_request
+def compress_and_cache(response):
+    # Skip non-success or already encoded
+    if (response.status_code < 200 or response.status_code >= 300
+            or 'Content-Encoding' in response.headers):
+        return response
+
+    # Gzip compressible responses if client accepts it
+    ct = response.content_type or ''
+    if ('gzip' in request.headers.get('Accept-Encoding', '')
+            and any(t in ct for t in ('text/', 'application/json', 'application/javascript', 'image/svg'))):
+        # For streamed/passthrough responses, read the data first
+        if response.direct_passthrough:
+            response.direct_passthrough = False
+        data = response.get_data()
+        if len(data) >= 512:
+            buf = io.BytesIO()
+            with gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=6) as f:
+                f.write(data)
+            compressed = buf.getvalue()
+            if len(compressed) < len(data):
+                response.set_data(compressed)
+                response.headers['Content-Encoding'] = 'gzip'
+                response.headers['Content-Length'] = len(compressed)
+                response.headers['Vary'] = 'Accept-Encoding'
+
+    # Cache headers for static assets
+    path = request.path
+    if path.startswith('/images/'):
+        response.headers['Cache-Control'] = 'public, max-age=86400'
+    elif path in ('/favicon.svg', '/apple-touch-icon.png'):
+        response.headers['Cache-Control'] = 'public, max-age=604800'
+    elif path == '/':
+        response.headers['Cache-Control'] = 'no-cache'
+
+    return response
 
 # ── Init ──────────────────────────────────────────────────────────────────────
 
