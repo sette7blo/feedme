@@ -4,7 +4,7 @@ modules/grocery.py — Pantry diff → shopping list generation
 import re
 from core.db import db, rows_to_list, row_to_dict
 import core.config as config
-from modules.meal_planner import get_aggregate_ingredients, _to_base, _from_base, _convert_display
+from modules.meal_planner import get_aggregate_ingredients, _to_base, _display
 from modules.pantry import list_pantry
 
 # Keyword rules — first match wins. Order matters: specific before generic.
@@ -229,41 +229,26 @@ def generate_shopping_list(start_date: str, end_date: str, list_date: str = None
             from_pantry.append(item)
             continue
 
-        converted = False
         if p_unit != n_unit:
-            # Try normalising both to a base unit before giving up
             p_qty, p_unit = _to_base(p_qty, p_unit)
             n_qty, n_unit = _to_base(n_qty, n_unit)
             if p_unit != n_unit:
-                # Still incompatible (e.g. g vs ml) — flag as needed
                 to_buy.append(item)
                 continue
-            converted = True
 
         deficit = round(n_qty - p_qty, 3)
         if deficit <= 0:
             from_pantry.append(item)
         else:
-            if converted:
-                # Units were converted to base for comparison — convert back for display
-                def_qty, def_unit = _from_base(deficit, n_unit)
-                pan_qty, pan_unit = _from_base(p_qty, p_unit)
-                to_buy.append({**item, 'quantity': def_qty, 'unit': def_unit})
-                from_pantry.append({**item, 'quantity': pan_qty, 'unit': pan_unit})
-            else:
-                to_buy.append({**item, 'quantity': deficit})
-                from_pantry.append({**item, 'quantity': p_qty})
+            to_buy.append({**item, 'quantity': deficit, 'unit': n_unit})
+            from_pantry.append({**item, 'quantity': p_qty, 'unit': p_unit})
 
-    # Apply preferred-units conversion if set
+    # Convert all quantities to preferred display units
     preferred = config.get("PREFERRED_UNITS", "")
-    if preferred in ("metric", "imperial"):
-        for item in to_buy:
-            if item.get("quantity") is not None and item.get("unit"):
-                item["quantity"], item["unit"] = _convert_display(
-                    item["quantity"], item["unit"], preferred)
-        for item in from_pantry:
-            if item.get("quantity") is not None and item.get("unit"):
-                item["quantity"], item["unit"] = _convert_display(
+    for lst in (to_buy, from_pantry):
+        for item in lst:
+            if item.get("quantity") is not None and item.get("unit") in ("g", "ml"):
+                item["quantity"], item["unit"] = _display(
                     item["quantity"], item["unit"], preferred)
 
     date_val = list_date or end_date

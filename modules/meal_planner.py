@@ -5,7 +5,11 @@ import json
 import re
 from core.db import db, rows_to_list, row_to_dict
 
-# Unit conversion tables — base units are grams (mass) and ml (volume)
+# ── Unit conversion ──────────────────────────────────────────────────────────
+# Single base: mass → grams, volume → ml. All summing happens in base units.
+# Display conversion picks the best human-friendly unit based on magnitude
+# and the user's preferred system (metric / imperial / auto).
+
 _TO_GRAMS = {'mg': 0.001, 'g': 1, 'kg': 1000, 'oz': 28.35, 'lb': 453.59, 'lbs': 453.59}
 _TO_ML    = {
     'ml': 1, 'cl': 10, 'dl': 100, 'l': 1000,
@@ -19,10 +23,7 @@ _TO_ML    = {
 
 
 def _to_base(qty: float, unit: str) -> tuple[float, str]:
-    """
-    Convert (qty, unit) to a canonical base unit for comparison.
-    Mass → grams, Volume → ml. Unknown units returned unchanged.
-    """
+    """Convert any known unit to base (g or ml). Unknown units pass through."""
     u = (unit or '').lower().strip()
     if u in _TO_GRAMS:
         return round(qty * _TO_GRAMS[u], 4), 'g'
@@ -31,30 +32,54 @@ def _to_base(qty: float, unit: str) -> tuple[float, str]:
     return qty, unit
 
 
-def _from_base(qty: float, unit: str) -> tuple[float, str]:
-    """Convert base units (g/ml) back to a human-friendly unit."""
+def _display(qty: float, unit: str, system: str = '') -> tuple[float, str]:
+    """
+    Convert base units (g/ml) to the best human-friendly display unit.
+    system: 'metric', 'imperial', or '' (auto — picks the most natural).
+    """
     if unit == 'g':
+        if system == 'imperial':
+            lb = qty / 453.59
+            if lb >= 1:
+                return round(lb, 2), 'lb'
+            return round(lb * 16, 1), 'oz'
+        # metric / auto
         if qty >= 1000:
             return round(qty / 1000, 2), 'kg'
-        if qty < 28:
-            return round(qty, 1), 'g'
-        if qty < 200:
-            return round(qty / 28.35, 1), 'oz'
-        return round(qty, 0), 'g'
+        return round(qty, 1), 'g'
+
     if unit == 'ml':
+        if system == 'imperial':
+            cups = qty / 240
+            if cups >= 4:
+                return round(cups / 4, 2), 'qt'
+            if cups >= 0.5:
+                return round(cups, 2), 'cups'
+            tbsp = qty / 14.79
+            if tbsp >= 1:
+                return round(tbsp, 1), 'tbsp'
+            return round(qty / 4.93, 1), 'tsp'
+        # metric / auto
         if qty >= 1000:
             return round(qty / 1000, 2), 'L'
-        if qty >= 200:
-            return round(qty / 240, 2), 'cups'
-        if qty >= 40:
-            return round(qty / 14.79, 1), 'tbsp'
-        if qty >= 4:
-            return round(qty / 4.93, 1), 'tsp'
-        return round(qty, 1), 'ml'
+        if system == 'metric':
+            return round(qty, 1), 'ml'
+        # auto: pick the most natural unit
+        cups = qty / 240
+        if cups >= 0.5:
+            return round(cups, 2), 'cups'
+        tbsp = qty / 14.79
+        if tbsp >= 1:
+            return round(tbsp, 1), 'tbsp'
+        if qty > 10:
+            return round(qty, 1), 'ml'
+        return round(qty / 4.93, 1), 'tsp'
+
     return qty, unit
 
 
-# Known units for ingredient parsing
+# ── Ingredient parsing ───────────────────────────────────────────────────────
+
 _UNITS = {
     'g', 'kg', 'mg',
     'ml', 'l', 'dl', 'cl',
@@ -76,11 +101,11 @@ def _parse_quantity(qty_str: str) -> float | None:
     """Parse '1', '1/2', '1 1/2', '0.5' into a float."""
     qty_str = qty_str.strip()
     try:
-        if ' ' in qty_str:          # mixed number: "1 1/2"
+        if ' ' in qty_str:
             whole, frac = qty_str.split(None, 1)
             num, den = frac.split('/')
             return float(whole) + float(num) / float(den)
-        elif '/' in qty_str:        # simple fraction: "1/2"
+        elif '/' in qty_str:
             num, den = qty_str.split('/')
             return float(num) / float(den)
         else:
@@ -93,18 +118,16 @@ def parse_ingredient(text: str) -> dict:
     """
     Parse a raw ingredient string into {name, quantity, unit}.
     Examples:
-      "200g pasta"        → name="pasta",       qty=200,  unit="g"
-      "2 cups flour"      → name="flour",        qty=2,    unit="cups"
-      "3 eggs"            → name="eggs",         qty=3,    unit=None
-      "1/2 tsp salt"      → name="salt",         qty=0.5,  unit="tsp"
-      "salt to taste"     → name="salt to taste",qty=None, unit=None
+      "200g pasta"        -> name="pasta",       qty=200,  unit="g"
+      "2 cups flour"      -> name="flour",        qty=2,    unit="cups"
+      "3 eggs"            -> name="eggs",         qty=3,    unit=None
+      "1/2 tsp salt"      -> name="salt",         qty=0.5,  unit="tsp"
+      "salt to taste"     -> name="salt to taste",qty=None, unit=None
     """
     text = text.strip()
-    # Normalise unicode fractions
-    for uni, rep in [('½','1/2'),('¼','1/4'),('¾','3/4'),('⅓','1/3'),('⅔','2/3')]:
+    for uni, rep in [('\u00bd','1/2'),('\u00bc','1/4'),('\u00be','3/4'),('\u2153','1/3'),('\u2154','2/3')]:
         text = text.replace(uni, rep)
 
-    # Match optional leading number (integer / fraction / mixed / decimal)
     num_re = r'^(\d+(?:\s+\d+/\d+|\.\d+|/\d+)?)\s*'
     m = re.match(num_re, text)
     if not m:
@@ -122,39 +145,12 @@ def parse_ingredient(text: str) -> dict:
             unit = words[0]
             name = words[1].strip() if len(words) > 1 else ''
         if not name:
-            name = text  # fallback to full string
+            name = text
 
     return {'name': name, 'quantity': quantity, 'unit': unit}
 
 
-def get_week(start_date: str) -> list:
-    """Get all meal plan entries for a 7-day window starting at start_date."""
-    with db() as conn:
-        rows = conn.execute("""
-            SELECT mp.*, r.name as recipe_name, r.image_url, r.cook_time, r.servings as recipe_servings
-            FROM meal_plan mp
-            JOIN recipes r ON r.slug = mp.recipe_slug
-            WHERE mp.date >= ? AND mp.date < date(?, '+7 days')
-            ORDER BY mp.date, mp.meal_type
-        """, (start_date, start_date)).fetchall()
-    return rows_to_list(rows)
-
-
-def add_to_plan(date: str, meal_type: str, recipe_slug: str, servings: int = 1) -> dict:
-    with db() as conn:
-        cur = conn.execute(
-            "INSERT INTO meal_plan (date, meal_type, recipe_slug, servings) VALUES (?,?,?,?)",
-            (date, meal_type, recipe_slug, servings)
-        )
-        row = conn.execute("SELECT * FROM meal_plan WHERE id=?", (cur.lastrowid,)).fetchone()
-    return row_to_dict(row)
-
-
-def remove_from_plan(plan_id: int) -> bool:
-    with db() as conn:
-        cur = conn.execute("DELETE FROM meal_plan WHERE id=?", (plan_id,))
-    return cur.rowcount > 0
-
+# ── Fuzzy ingredient dedup ───────────────────────────────────────────────────
 
 _MODIFIERS = frozenset({
     'fresh', 'dried', 'frozen', 'canned', 'cooked', 'raw', 'whole',
@@ -183,13 +179,43 @@ def _core(text: str) -> str:
     return ' '.join(result)
 
 
+# ── Meal plan CRUD ───────────────────────────────────────────────────────────
+
+def get_week(start_date: str) -> list:
+    with db() as conn:
+        rows = conn.execute("""
+            SELECT mp.*, r.name as recipe_name, r.image_url, r.cook_time, r.servings as recipe_servings
+            FROM meal_plan mp
+            JOIN recipes r ON r.slug = mp.recipe_slug
+            WHERE mp.date >= ? AND mp.date < date(?, '+7 days')
+            ORDER BY mp.date, mp.meal_type
+        """, (start_date, start_date)).fetchall()
+    return rows_to_list(rows)
+
+
+def add_to_plan(date: str, meal_type: str, recipe_slug: str, servings: int = 1) -> dict:
+    with db() as conn:
+        cur = conn.execute(
+            "INSERT INTO meal_plan (date, meal_type, recipe_slug, servings) VALUES (?,?,?,?)",
+            (date, meal_type, recipe_slug, servings)
+        )
+        row = conn.execute("SELECT * FROM meal_plan WHERE id=?", (cur.lastrowid,)).fetchone()
+    return row_to_dict(row)
+
+
+def remove_from_plan(plan_id: int) -> bool:
+    with db() as conn:
+        cur = conn.execute("DELETE FROM meal_plan WHERE id=?", (plan_id,))
+    return cur.rowcount > 0
+
+
+# ── Ingredient aggregation ───────────────────────────────────────────────────
+
 def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
     """
-    Get all ingredients needed for planned meals in date range.
-    Parses raw ingredient strings into {food, quantity, unit} and sums
-    quantities when the same ingredient appears across multiple recipes.
-    Uses _core() to merge similar ingredients (e.g. "garlic, minced" + "garlic cloves").
-    Converts to base units for summing, then back to friendly units for display.
+    Aggregate ingredients across planned meals in a date range.
+    All quantities normalised to base units (g / ml) for summing,
+    then converted back to friendly display units at the end.
     Returns list of {food, quantity, unit, raw}.
     """
     with db() as conn:
@@ -200,7 +226,6 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
             WHERE mp.date >= ? AND mp.date <= ?
         """, (start_date, end_date)).fetchall()
 
-    # aggregated[core_key] = {food, quantity, unit, raw}
     aggregated = {}
     for row in rows:
         ingredients = json.loads(row["ingredients"] or "[]")
@@ -216,11 +241,10 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
 
             qty = (parsed['quantity'] * scale) if parsed['quantity'] is not None else None
 
-            # Normalise to base unit for summing
-            if qty is not None:
+            if qty is not None and parsed['unit']:
                 base_qty, base_unit = _to_base(qty, parsed['unit'])
             else:
-                base_qty, base_unit = None, parsed['unit']
+                base_qty, base_unit = qty, parsed['unit']
 
             if name_key not in aggregated:
                 aggregated[name_key] = {
@@ -235,7 +259,7 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
                     if existing['unit'] == base_unit:
                         existing['quantity'] = round(existing['quantity'] + base_qty, 3)
                     else:
-                        # Incompatible units — convert existing to base too
+                        # Different base units — convert existing to match
                         ex_qty, ex_unit = _to_base(existing['quantity'], existing['unit'])
                         if ex_unit == base_unit:
                             existing['quantity'] = round(ex_qty + base_qty, 3)
@@ -244,11 +268,11 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
                     existing['quantity'] = base_qty
                     existing['unit'] = base_unit
 
-    # Convert base units back to friendly display units
+    # Convert base units to friendly display
     result = []
     for item in aggregated.values():
         if item['quantity'] is not None and item['unit'] in ('g', 'ml'):
-            item['quantity'], item['unit'] = _from_base(item['quantity'], item['unit'])
+            item['quantity'], item['unit'] = _display(item['quantity'], item['unit'])
         result.append(item)
 
     return result
