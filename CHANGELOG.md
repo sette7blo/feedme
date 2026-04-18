@@ -11,6 +11,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.3.0] — 2026-04-18
+
 ### Added
 - Cook Mode: fullscreen step-by-step overlay launched from the recipe drawer; tap or swipe to advance through instructions, progress dots, ingredients panel toggle, wake lock to keep screen on
 - Print view: printer-friendly recipe layout triggered from recipe drawer; ingredients in two columns, clean step list, hides all app chrome via @media print
@@ -32,6 +34,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Print view: recipe image now included at the top of the printed page
 - Nutrition estimation: improved AI prompt with recipe name, explicit per-serving division, and realistic calorie range hints for more consistent results
 - iOS: content no longer cut off at the bottom on devices with home indicator; uses dynamic viewport height and safe-area-inset padding
+
+---
 
 ## [v1.2.0] — 2026-04-15
 
@@ -93,7 +97,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.3.0...HEAD
+[v1.3.0]: https://github.com/sette7blo/feedme/compare/v1.2.0...v1.3.0
 [v1.2.0]: https://github.com/sette7blo/feedme/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/sette7blo/feedme/releases/tag/v1.1.0
 [v1.0.0]: https://github.com/sette7blo/feedme/releases/tag/v1.0.0
