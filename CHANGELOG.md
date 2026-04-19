@@ -11,6 +11,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.4.0] — 2026-04-19
+
 ### Added
 - Mealie export: browse your Feedme recipes in the Connections section, select and push to Mealie; already-exported recipes shown shaded with "In Mealie" tag
 - Grocery list: each item now shows which recipe(s) it comes from as clickable tags; click opens the recipe drawer
@@ -114,7 +116,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.4.0...HEAD
+[v1.4.0]: https://github.com/sette7blo/feedme/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/sette7blo/feedme/compare/v1.2.0...v1.3.0
 [v1.2.0]: https://github.com/sette7blo/feedme/compare/v1.1.0...v1.2.0
 [v1.1.0]: https://github.com/sette7blo/feedme/releases/tag/v1.1.0
