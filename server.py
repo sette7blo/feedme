@@ -15,7 +15,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
 from core.schema import init_db
-from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, mealie_importer, nostr_importer, nostr_publisher, cook_log, meal_plan_ai
+from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, mealie_importer, mealie_exporter, nostr_importer, nostr_publisher, cook_log, meal_plan_ai
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -385,6 +385,31 @@ def import_from_mealie():
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:
         return jsonify({"error": f"Import failed: {exc}"}), 500
+
+
+@app.route("/api/export/mealie/browse")
+def browse_mealie_export():
+    page = int(request.args.get("page", 1))
+    return jsonify(mealie_exporter.browse_for_export(page))
+
+
+@app.route("/api/export/mealie", methods=["POST"])
+def export_to_mealie():
+    base_url = config.get("MEALIE_URL", "").strip()
+    token    = config.get("MEALIE_TOKEN", "").strip()
+    if not base_url or not token:
+        return jsonify({"error": "Mealie URL and token are required. Configure them in Settings."}), 400
+    data = request.get_json()
+    slugs = data.get("slugs", [])
+    if not slugs:
+        return jsonify({"error": "No recipes selected"}), 400
+    try:
+        result = mealie_exporter.export_recipes(base_url, token, slugs)
+        return jsonify(result)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        return jsonify({"error": f"Export failed: {exc}"}), 500
 
 
 @app.route("/api/import/nostr", methods=["POST"])
