@@ -97,6 +97,8 @@ MIGRATIONS = [
     "ALTER TABLE recipes ADD COLUMN nostr_event_id TEXT",
     # Category grouping on shopping list
     "ALTER TABLE shopping_list ADD COLUMN category TEXT",
+    # Track which recipes each grocery item comes from
+    "ALTER TABLE shopping_list ADD COLUMN recipes TEXT",
 ]
 
 

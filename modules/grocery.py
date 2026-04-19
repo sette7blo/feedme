@@ -1,10 +1,11 @@
 """
 modules/grocery.py — Pantry diff → shopping list generation
 """
+import json
 import re
 from core.db import db, rows_to_list, row_to_dict
 import core.config as config
-from modules.meal_planner import get_aggregate_ingredients, _to_base, _display
+from modules.meal_planner import get_aggregate_ingredients, _to_base, _display, _core
 from modules.pantry import list_pantry
 
 # Keyword rules — first match wins. Order matters: specific before generic.
@@ -259,19 +260,21 @@ def generate_shopping_list(start_date: str, end_date: str, list_date: str = None
             "SELECT food, quantity, unit FROM shopping_list WHERE list_date=? AND covered=0",
             (date_val,)
         ).fetchall()
-        manual_keep = [dict(r) for r in manual if r["food"].lower().strip() not in
-                       {i["food"].lower().strip() for i in to_buy}]
+        buy_keys = {_core(i["food"]) for i in to_buy} | {_core(i["food"]) for i in from_pantry}
+        manual_keep = [dict(r) for r in manual if _core(r["food"]) not in buy_keys]
 
         conn.execute("DELETE FROM shopping_list WHERE list_date=?", (date_val,))
         for item in to_buy:
+            recipes_json = json.dumps(item.get("recipes", [])) if item.get("recipes") else None
             conn.execute(
-                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category) VALUES (?,?,?,?,0,?)",
-                (item["food"], item.get("quantity"), item.get("unit"), date_val, _categorize(item["food"]))
+                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category, recipes) VALUES (?,?,?,?,0,?,?)",
+                (item["food"], item.get("quantity"), item.get("unit"), date_val, _categorize(item["food"]), recipes_json)
             )
         for item in from_pantry:
+            recipes_json = json.dumps(item.get("recipes", [])) if item.get("recipes") else None
             conn.execute(
-                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category) VALUES (?,?,?,?,1,?)",
-                (item["food"], item.get("quantity"), item.get("unit"), date_val, _categorize(item["food"]))
+                "INSERT INTO shopping_list (food, quantity, unit, list_date, covered, category, recipes) VALUES (?,?,?,?,1,?,?)",
+                (item["food"], item.get("quantity"), item.get("unit"), date_val, _categorize(item["food"]), recipes_json)
             )
         for item in manual_keep:
             conn.execute(
@@ -287,6 +290,17 @@ def generate_shopping_list(start_date: str, end_date: str, list_date: str = None
     }
 
 
+def _parse_grocery_rows(rows):
+    result = rows_to_list(rows)
+    for item in result:
+        if isinstance(item.get("recipes"), str):
+            try:
+                item["recipes"] = json.loads(item["recipes"])
+            except (json.JSONDecodeError, TypeError):
+                item["recipes"] = []
+    return result
+
+
 def get_shopping_list(list_date: str = None) -> list[dict]:
     """Items to buy (covered=0)."""
     with db() as conn:
@@ -299,7 +313,7 @@ def get_shopping_list(list_date: str = None) -> list[dict]:
             rows = conn.execute(
                 "SELECT * FROM shopping_list WHERE covered=0 ORDER BY checked, food"
             ).fetchall()
-    return rows_to_list(rows)
+    return _parse_grocery_rows(rows)
 
 
 def get_pantry_covered(list_date: str = None) -> list[dict]:
@@ -314,7 +328,7 @@ def get_pantry_covered(list_date: str = None) -> list[dict]:
             rows = conn.execute(
                 "SELECT * FROM shopping_list WHERE covered=1 ORDER BY food"
             ).fetchall()
-    return rows_to_list(rows)
+    return _parse_grocery_rows(rows)
 
 
 def check_item(item_id: int, checked: bool = True) -> bool:

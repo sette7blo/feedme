@@ -10,9 +10,11 @@ from core.db import db, rows_to_list, row_to_dict
 # Display conversion picks the best human-friendly unit based on magnitude
 # and the user's preferred system (metric / imperial / auto).
 
-_TO_GRAMS = {'mg': 0.001, 'g': 1, 'kg': 1000, 'oz': 28.35, 'lb': 453.59, 'lbs': 453.59}
+_TO_GRAMS = {'mg': 0.001, 'g': 1, 'kg': 1000, 'lb': 453.59, 'lbs': 453.59, 'pound': 453.59, 'pounds': 453.59}
 _TO_ML    = {
     'ml': 1, 'cl': 10, 'dl': 100, 'l': 1000,
+    'oz': 29.57, 'ounce': 29.57, 'ounces': 29.57,
+    'fl': 29.57,
     'tsp': 4.93, 'teaspoon': 4.93, 'teaspoons': 4.93,
     'tbsp': 14.79, 'tablespoon': 14.79, 'tablespoons': 14.79,
     'cup': 240, 'cups': 240,
@@ -32,13 +34,21 @@ def _to_base(qty: float, unit: str) -> tuple[float, str]:
     return qty, unit
 
 
-def _display(qty: float, unit: str, system: str = '') -> tuple[float, str]:
+_OZ_UNITS = {'oz', 'ounce', 'ounces', 'fl'}
+_CUP_UNITS = {'cup', 'cups'}
+
+
+def _display(qty: float, unit: str, system: str = '', orig_unit: str = '') -> tuple[float, str]:
     """
     Convert base units (g/ml) to the best human-friendly display unit.
     system: 'metric', 'imperial', or '' (auto — picks the most natural).
+    orig_unit: the original recipe unit, used as a hint to prefer oz vs cups.
     """
+    _LB_UNITS = {'lb', 'lbs', 'pound', 'pounds'}
     if unit == 'g':
-        if system == 'imperial':
+        orig_low = orig_unit.lower().rstrip('.') if orig_unit else ''
+        prefer_lb = orig_low in _LB_UNITS
+        if system == 'imperial' or prefer_lb:
             lb = qty / 453.59
             if lb >= 1:
                 return round(lb, 2), 'lb'
@@ -50,11 +60,13 @@ def _display(qty: float, unit: str, system: str = '') -> tuple[float, str]:
 
     if unit == 'ml':
         if system == 'imperial':
-            cups = qty / 240
-            if cups >= 4:
-                return round(cups / 4, 2), 'qt'
-            if cups >= 0.5:
-                return round(cups, 2), 'cups'
+            fl_oz = qty / 29.57
+            if fl_oz >= 32:
+                return round(fl_oz / 32, 2), 'qt'
+            if fl_oz >= 8:
+                return round(fl_oz, 1), 'oz'
+            if fl_oz >= 1:
+                return round(fl_oz, 1), 'oz'
             tbsp = qty / 14.79
             if tbsp >= 1:
                 return round(tbsp, 1), 'tbsp'
@@ -64,10 +76,22 @@ def _display(qty: float, unit: str, system: str = '') -> tuple[float, str]:
             return round(qty / 1000, 2), 'L'
         if system == 'metric':
             return round(qty, 1), 'ml'
-        # auto: pick the most natural unit
+        # auto: respect original unit family, then pick most natural
+        orig_low = orig_unit.lower().rstrip('.') if orig_unit else ''
+        prefer_oz = orig_low in _OZ_UNITS
+        prefer_cups = orig_low in _CUP_UNITS
         cups = qty / 240
+        fl_oz = qty / 29.57
+        if cups >= 4:
+            return round(cups / 4, 2), 'qt'
+        if prefer_oz and fl_oz >= 1:
+            return round(fl_oz, 1), 'oz'
+        if prefer_cups and cups > 0:
+            return round(cups, 2), 'cups'
         if cups >= 0.5:
             return round(cups, 2), 'cups'
+        if fl_oz >= 1:
+            return round(fl_oz, 1), 'oz'
         tbsp = qty / 14.79
         if tbsp >= 1:
             return round(tbsp, 1), 'tbsp'
@@ -83,7 +107,7 @@ def _display(qty: float, unit: str, system: str = '') -> tuple[float, str]:
 _UNITS = {
     'g', 'kg', 'mg',
     'ml', 'l', 'dl', 'cl',
-    'oz', 'lb', 'lbs',
+    'oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds',
     'tsp', 'tbsp', 'teaspoon', 'teaspoons', 'tablespoon', 'tablespoons',
     'cup', 'cups',
     'pt', 'qt', 'pint', 'quart', 'gallon', 'gal',
@@ -93,6 +117,7 @@ _UNITS = {
     'package', 'packages', 'pack', 'packs',
     'bunch', 'bunches', 'sprig', 'sprigs',
     'stalk', 'stalks', 'head', 'heads',
+    'jar', 'jars', 'bottle', 'bottles',
     'large', 'medium', 'small',
 }
 
@@ -126,6 +151,7 @@ def parse_ingredient(text: str) -> dict:
     """
     text = text.strip()
     for uni, rep in [('\u00bd','1/2'),('\u00bc','1/4'),('\u00be','3/4'),('\u2153','1/3'),('\u2154','2/3')]:
+        text = re.sub(r'(\d)' + re.escape(uni), r'\1 ' + rep, text)
         text = text.replace(uni, rep)
 
     num_re = r'^(\d+(?:\s+\d+/\d+|\.\d+|/\d+)?)\s*'
@@ -135,6 +161,27 @@ def parse_ingredient(text: str) -> dict:
 
     quantity = _parse_quantity(m.group(1))
     remainder = text[m.end():].strip()
+
+    # Handle parenthetical size: "1 (24 ounce) jar marinara sauce"
+    # When inner measurement exists, prefer it over the container count
+    paren_re = r'^\((\d+(?:\.\d+|/\d+)?)\s*([a-zA-Z.]+)\)\s*'
+    pm = re.match(paren_re, remainder)
+    if pm:
+        inner_qty = _parse_quantity(pm.group(1))
+        inner_unit_raw = pm.group(2).lower().rstrip('.')
+        if inner_unit_raw in _UNITS and (inner_unit_raw in _TO_GRAMS or inner_unit_raw in _TO_ML):
+            # Use the precise measurement instead of container count
+            quantity = (quantity or 1) * (inner_qty or 1)
+            remainder = remainder[pm.end():].strip()
+            # Skip the container word (jar, can, etc.)
+            words = remainder.split(None, 1)
+            if words and words[0].lower().rstrip('.') in _UNITS:
+                remainder = words[1].strip() if len(words) > 1 else ''
+            return {
+                'name': remainder or text,
+                'quantity': quantity,
+                'unit': pm.group(2),
+            }
 
     unit = None
     name = remainder or text
@@ -238,7 +285,8 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
     """
     with db() as conn:
         rows = conn.execute("""
-            SELECT mp.servings, r.ingredients, r.servings as base_servings
+            SELECT mp.servings, r.ingredients, r.servings as base_servings,
+                   r.name as recipe_name, r.slug as recipe_slug
             FROM meal_plan mp
             JOIN recipes r ON r.slug = mp.recipe_slug
             WHERE mp.date >= ? AND mp.date <= ?
@@ -248,6 +296,7 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
     for row in rows:
         ingredients = json.loads(row["ingredients"] or "[]")
         scale = (row["servings"] or 1) / max(row["base_servings"] or 1, 1)
+        recipe_ref = {'name': row['recipe_name'], 'slug': row['recipe_slug']}
 
         for raw in ingredients:
             if not raw or not raw.strip():
@@ -269,15 +318,18 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
                     'food':     parsed['name'],
                     'quantity': base_qty,
                     'unit':     base_unit,
+                    'orig_unit': parsed['unit'] or '',
                     'raw':      raw.strip(),
+                    'recipes':  [recipe_ref],
                 }
             else:
                 existing = aggregated[name_key]
+                if recipe_ref not in existing['recipes']:
+                    existing['recipes'].append(recipe_ref)
                 if base_qty is not None and existing['quantity'] is not None:
                     if existing['unit'] == base_unit:
                         existing['quantity'] = round(existing['quantity'] + base_qty, 3)
                     else:
-                        # Different base units — convert existing to match
                         ex_qty, ex_unit = _to_base(existing['quantity'], existing['unit'])
                         if ex_unit == base_unit:
                             existing['quantity'] = round(ex_qty + base_qty, 3)
@@ -286,11 +338,12 @@ def get_aggregate_ingredients(start_date: str, end_date: str) -> list[dict]:
                     existing['quantity'] = base_qty
                     existing['unit'] = base_unit
 
-    # Convert base units to friendly display
+    # Convert base units to friendly display, preserving orig_unit for downstream
     result = []
     for item in aggregated.values():
         if item['quantity'] is not None and item['unit'] in ('g', 'ml'):
-            item['quantity'], item['unit'] = _display(item['quantity'], item['unit'])
+            item['quantity'], item['unit'] = _display(
+                item['quantity'], item['unit'], orig_unit=item.get('orig_unit', ''))
         result.append(item)
 
     return result
