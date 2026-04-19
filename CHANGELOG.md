@@ -11,6 +11,23 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+### Added
+- Mealie export: browse your Feedme recipes in the Connections section, select and push to Mealie; already-exported recipes shown shaded with "In Mealie" tag
+- Grocery list: each item now shows which recipe(s) it comes from as clickable tags; click opens the recipe drawer
+- Meal planner: filled slots are now clickable to open the recipe detail drawer directly
+
+### Changed
+- Docker image switched from python:3.11-slim to python:3.11-alpine for smaller footprint
+- SQLite performance pragmas: NORMAL synchronous, 8MB cache, memory temp store, 64MB mmap
+- Cook Mode wake-lock videos extracted from inline base64 to separate cached files
+
+### Fixed
+- Grocery list: parenthetical sizes like "1 (24 ounce) jar marinara sauce" now parsed correctly as 24 oz instead of losing the unit
+- Grocery list: "ounce"/"pound" spelled-out units now recognized (were only matching abbreviations oz/lb)
+- Grocery list: oz treated as fluid ounces (volume) for sauces and liquids instead of weight; display respects original unit (cups stay cups, oz stays oz)
+- Grocery list: unicode fractions like 2½ now parse correctly (was reading "2½" as 10.5 instead of 2.5)
+- Grocery list: regenerating no longer creates duplicate entries from stale previous data
+
 ## [v1.3.0] — 2026-04-18
 
 ### Added
