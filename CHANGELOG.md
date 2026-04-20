@@ -11,6 +11,21 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+### Added
+- Recipes: sort dropdown in filter bar (Newest / A-Z / Cook time)
+- Recipes: "Showing X of Y recipes" count when filters or search are active
+- Favorites: "Surprise me" button picks a random favorite and opens it
+- Favorites: quick-add to meal plan button on cards (calendar icon, pick day + meal type)
+- Favorites: "Last made X ago" / "Never cooked" shown on each card using cook log data
+- Connections: Mealie card shows sync summary (e.g. "11 of 67 recipes exported")
+- Connections: RSS feeds show imported recipe count per feed
+
+### Changed
+- Recipe card time and servings icons replaced from emoji to SVG line art for consistent cross-platform rendering
+
+### Fixed
+- Recipe grid: filtering to zero results no longer shows "No recipes yet" onboarding message; shows "No recipes match your filters" with a clear-filters link instead
+
 ## [v1.4.0] — 2026-04-19
 
 ### Added
