@@ -289,6 +289,7 @@ def get_recipe(slug: str) -> dict | None:
 
 
 def list_recipes(status: str = "active", page: int = 1, per_page: int = 24) -> dict:
+    from modules.cook_log import get_last_cooked
     offset = (page - 1) * per_page
     with db() as conn:
         if status == "favorited":
@@ -307,8 +308,13 @@ def list_recipes(status: str = "active", page: int = 1, per_page: int = 24) -> d
                 "SELECT * FROM recipes WHERE status=? ORDER BY updated_at DESC LIMIT ? OFFSET ?",
                 (status, per_page, offset)
             ).fetchall()
+    recipes = rows_to_list(rows)
+    slugs = [r["slug"] for r in recipes]
+    last_cooked = get_last_cooked(slugs)
+    for r in recipes:
+        r["last_cooked"] = last_cooked.get(r["slug"])
     return {
-        "recipes": rows_to_list(rows),
+        "recipes": recipes,
         "total": total,
         "page": page,
         "per_page": per_page,

@@ -254,6 +254,25 @@ def recipe_regenerate_image(slug):
 
 # ── Import ────────────────────────────────────────────────────────────────────
 
+@app.route("/api/import/rss/stats")
+def rss_feed_stats():
+    from core.db import db
+    from urllib.parse import urlparse
+    feeds_raw = config.get("RSS_FEEDS", "")
+    feeds = [f.strip() for f in feeds_raw.split(",") if f.strip()]
+    result = {}
+    with db() as conn:
+        for feed_url in feeds:
+            domain = urlparse(feed_url).netloc
+            if domain:
+                count = conn.execute(
+                    "SELECT COUNT(*) FROM recipes WHERE source_type='rss' AND source_url LIKE ?",
+                    (f"%{domain}%",)
+                ).fetchone()[0]
+                result[feed_url] = count
+    return jsonify(result)
+
+
 @app.route("/api/import/rss", methods=["POST"])
 def import_rss():
     data = request.get_json()
@@ -385,6 +404,15 @@ def import_from_mealie():
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:
         return jsonify({"error": f"Import failed: {exc}"}), 500
+
+
+@app.route("/api/export/mealie/stats")
+def mealie_export_stats():
+    from core.db import db
+    with db() as conn:
+        total = conn.execute("SELECT COUNT(*) FROM recipes WHERE status='active'").fetchone()[0]
+        exported = conn.execute("SELECT COUNT(*) FROM recipes WHERE status='active' AND mealie_id IS NOT NULL").fetchone()[0]
+    return jsonify({"total": total, "exported": exported})
 
 
 @app.route("/api/export/mealie/browse")

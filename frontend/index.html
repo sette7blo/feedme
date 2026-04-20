@@ -346,6 +346,8 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .cook-tonight-chip { color: var(--sage) !important; border-color: var(--sage) !important; }
 .cook-tonight-chip:hover { background: rgba(122,144,104,.08) !important; }
 .cook-tonight-chip.active { background: var(--sage) !important; border-color: var(--sage) !important; color: #fff !important; }
+.sort-select { flex-shrink: 0; margin-left: auto; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border-soft); font-size: 12px; font-family: 'Jost', sans-serif; font-weight: 500; color: var(--text-mid); background: var(--white); cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a4a28' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 26px; }
+.sort-select:hover { border-color: var(--amber); color: var(--amber); }
 .coverage-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 10px; background: rgba(122,144,104,.12); color: var(--sage); font-size: 10px; font-weight: 600; border: 1px solid rgba(122,144,104,.25); white-space: nowrap; }
 .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 15px; }
 .recipe-card { background: var(--white); border: 1px solid var(--border-soft); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: all var(--tr); box-shadow: var(--shadow-sm); position: relative; }
@@ -373,6 +375,12 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .card-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--brown-dark); line-height: 1.3; margin-bottom: 9px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--text-dim); }
 .card-meta { display: flex; gap: 8px; }
+.card-last-cooked { font-size: 10px; color: var(--text-muted); padding-top: 4px; }
+.quick-plan-btn { position: absolute; top: 7px; right: 40px; background: rgba(255,255,255,.82); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: transform .15s, background .15s; z-index: 2; }
+.quick-plan-btn:hover { transform: scale(1.2); background: rgba(255,255,255,.97); }
+.quick-plan-pop { position: absolute; top: 38px; right: 8px; background: var(--white); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); padding: 10px; z-index: 10; min-width: 170px; }
+.quick-plan-pop select { width: 100%; margin-bottom: 6px; font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); font-family: 'Jost', sans-serif; background: var(--white); }
+.quick-plan-pop button { width: 100%; }
 .staged-actions { display: flex; gap: 5px; padding: 0 11px 11px; }
 .heart-btn { position: absolute; top: 7px; right: 8px; background: rgba(255,255,255,.82); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: transform .15s, background .15s; z-index: 2; }
 .heart-btn:hover { transform: scale(1.2); background: rgba(255,255,255,.97); }
@@ -1062,13 +1070,18 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
           <div class="page-title">Recipes</div>
         </div>
         <div class="filter-bar" id="filter-bar"></div>
+        <div id="recipe-count" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;display:none"></div>
         <div class="recipe-grid" id="recipe-grid"></div>
       </div>
 
       <!-- FAVORITES -->
       <div class="tab-panel" id="tab-favorites">
-        <div class="page-header">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
           <div class="page-title">Favorites</div>
+          <button class="btn btn-ghost btn-sm" onclick="surpriseMe()" id="surprise-btn" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.6-8.6c.8-1.1 2-1.7 3.3-1.7H22"/><path d="M18 2l4 4-4 4"/><path d="M2 6h1.4c1.3 0 2.5.6 3.3 1.7l6.6 8.6c.8 1.1 2 1.7 3.3 1.7H22"/><path d="M18 14l4 4-4 4"/></svg>
+            Surprise me
+          </button>
         </div>
         <div class="recipe-grid" id="favorites-grid"></div>
       </div>
@@ -1900,6 +1913,7 @@ let recipesData = [];
 
 /* ── Recipe filters ── */
 let _filters = { max_time: null, servings: null, protein: null };
+let _sort = 'newest';
 let _cookTonight = false;
 let _pantryCache = null;
 
@@ -1969,6 +1983,12 @@ function buildFilterChips() {
   html += `<div class="filter-sep"></div>`;
   html += _PROTEINS.map(p => chip(p, 'protein', p, _filters.protein === p)).join('');
 
+  html += `<select class="sort-select" onchange="_sort=this.value;renderRecipes()">
+    <option value="newest"${_sort==='newest'?' selected':''}>Newest</option>
+    <option value="az"${_sort==='az'?' selected':''}>A – Z</option>
+    <option value="cook_time"${_sort==='cook_time'?' selected':''}>Cook time</option>
+  </select>`;
+
   bar.innerHTML = html;
 }
 
@@ -2014,18 +2034,34 @@ function renderRecipes() {
     if (protein && _recipeProtein(r) !== protein) return false;
     return true;
   });
+  const isFiltered = q || max_time || servings || protein || _cookTonight;
+  const countEl = document.getElementById('recipe-count');
+  if (countEl) {
+    if (isFiltered && list.length > 0) {
+      countEl.textContent = `Showing ${list.length} of ${recipesData.length} recipes`;
+      countEl.style.display = '';
+    } else {
+      countEl.style.display = 'none';
+    }
+  }
   if (!list.length) {
-    document.getElementById('recipe-grid').innerHTML =
-      `<div style="color:var(--text-muted);padding:24px;font-style:italic">No recipes yet. Generate one with AI or import from RSS.</div>`;
+    const hasRecipes = recipesData.length > 0;
+    document.getElementById('recipe-grid').innerHTML = hasRecipes
+      ? `<div style="color:var(--text-muted);padding:24px;font-style:italic">No recipes match your filters. <a href="#" onclick="clearFilters();return false" style="color:var(--amber)">Clear filters</a></div>`
+      : `<div style="color:var(--text-muted);padding:24px;font-style:italic">No recipes yet. Generate one with AI or import from RSS.</div>`;
     return;
   }
 
-  let renderList = list;
+  let renderList = [...list];
   if (_cookTonight && _pantryCache) {
-    renderList = list
+    renderList = renderList
       .map(r => ({ ...r, _cov: _computeCoverage(r) }))
       .filter(r => r._cov.matched > 0)
       .sort((a, b) => (b._cov.matched / Math.max(b._cov.total, 1)) - (a._cov.matched / Math.max(a._cov.total, 1)));
+  } else if (_sort === 'az') {
+    renderList.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  } else if (_sort === 'cook_time') {
+    renderList.sort((a, b) => (_parseTimeMinutes(a.cook_time || a.total_time) || 999) - (_parseTimeMinutes(b.cook_time || b.total_time) || 999));
   }
 
   const selCheck = `<div class="sel-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
@@ -2053,14 +2089,25 @@ function renderRecipes() {
         <div class="card-name">${r.name}</div>
         <div class="card-foot">
           <div class="card-meta">
-            ${(r.total_time||r.cook_time) ? `<span>⏱ ${r.total_time||r.cook_time}</span>` : ''}
-            ${r.servings  ? `<span>👤 ${r.servings}</span>` : ''}
+            ${(r.total_time||r.cook_time) ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${r.total_time||r.cook_time}</span>` : ''}
+            ${r.servings  ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${r.servings}</span>` : ''}
           </div>
           ${covBadge}
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+function _daysAgo(iso) {
+  if (!iso) return null;
+  const d = Math.floor((Date.now() - new Date(iso + 'Z').getTime()) / 86400000);
+  if (d < 1) return 'today';
+  if (d === 1) return 'yesterday';
+  if (d < 7) return d + ' days ago';
+  if (d < 30) return Math.floor(d / 7) + (Math.floor(d / 7) === 1 ? ' week ago' : ' weeks ago');
+  if (d < 365) return Math.floor(d / 30) + (Math.floor(d / 30) === 1 ? ' month ago' : ' months ago');
+  return Math.floor(d / 365) + (Math.floor(d / 365) === 1 ? ' year ago' : ' years ago');
 }
 
 /* ── Favorites ── */
@@ -2081,6 +2128,8 @@ function renderFavorites() {
     (r.cuisine||'').toLowerCase().includes(q) ||
     (r.category||'').toLowerCase().includes(q)
   );
+  const surpriseBtn = document.getElementById('surprise-btn');
+  if (surpriseBtn) surpriseBtn.style.display = favoritesData.length >= 2 ? '' : 'none';
   if (!list.length) {
     document.getElementById('favorites-grid').innerHTML =
       `<div style="color:var(--text-muted);padding:24px;font-style:italic">No favorites yet. Press the heart on any recipe to save it here.</div>`;
@@ -2101,6 +2150,7 @@ function renderFavorites() {
         </div>
         ${_selMode ? selCheck : srcBadge(r.source_type)}
         ${_selMode ? '' : heartBtn(r.slug, true)}
+        ${_selMode ? '' : `<button class="quick-plan-btn" onclick="event.stopPropagation();toggleQuickPlan(this,'${r.slug}')" title="Add to meal plan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-mid)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg></button>`}
         ${nostrDot(r.nostr_event_id)}
       </div>
       <div class="card-body">
@@ -2108,13 +2158,62 @@ function renderFavorites() {
         <div class="card-name">${r.name}</div>
         <div class="card-foot">
           <div class="card-meta">
-            ${(r.total_time||r.cook_time) ? `<span>⏱ ${r.total_time||r.cook_time}</span>` : ''}
-            ${r.servings ? `<span>👤 ${r.servings}</span>` : ''}
+            ${(r.total_time||r.cook_time) ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${r.total_time||r.cook_time}</span>` : ''}
+            ${r.servings ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${r.servings}</span>` : ''}
           </div>
         </div>
+        ${r.last_cooked ? `<div class="card-last-cooked">Last made ${_daysAgo(r.last_cooked)}</div>` : `<div class="card-last-cooked" style="color:var(--text-muted);opacity:.6">Never cooked</div>`}
       </div>
     </div>`;
   }).join('');
+}
+
+function toggleQuickPlan(btn, slug) {
+  const existing = btn.parentElement.querySelector('.quick-plan-pop');
+  if (existing) { existing.remove(); return; }
+  document.querySelectorAll('.quick-plan-pop').forEach(p => p.remove());
+  const today = new Date();
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const iso = d.toISOString().slice(0, 10);
+    const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    days.push(`<option value="${iso}">${label}</option>`);
+  }
+  const pop = document.createElement('div');
+  pop.className = 'quick-plan-pop';
+  pop.onclick = e => e.stopPropagation();
+  pop.innerHTML = `
+    <select id="qp-day">${days.join('')}</select>
+    <select id="qp-meal"><option value="breakfast">Breakfast</option><option value="lunch">Lunch</option><option value="dinner" selected>Dinner</option></select>
+    <button class="btn btn-primary btn-xs" onclick="doQuickPlan('${slug}')">Add to plan</button>`;
+  btn.parentElement.appendChild(pop);
+}
+
+async function doQuickPlan(slug) {
+  const day = document.getElementById('qp-day').value;
+  const meal = document.getElementById('qp-meal').value;
+  try {
+    await apiPost('/api/mealplan', { date: day, meal_type: meal, recipe_slug: slug });
+    document.querySelectorAll('.quick-plan-pop').forEach(p => p.remove());
+    toast('Added to meal plan', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+document.addEventListener('click', () => document.querySelectorAll('.quick-plan-pop').forEach(p => p.remove()));
+
+function surpriseMe() {
+  if (!favoritesData.length) return;
+  const pick = favoritesData[Math.floor(Math.random() * favoritesData.length)];
+  const card = document.querySelector(`#favorites-grid .recipe-card[data-slug="${pick.slug}"]`);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.transition = 'box-shadow .3s';
+    card.style.boxShadow = '0 0 0 3px var(--amber), var(--shadow-md)';
+    setTimeout(() => { card.style.boxShadow = ''; }, 1500);
+  }
+  openDrawer(pick.slug);
 }
 
 async function toggleFavorite(slug) {
@@ -2185,7 +2284,7 @@ function renderStaged() {
       <div class="card-body">
         <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
         <div class="card-name">${r.name}</div>
-        <div class="card-foot"><div class="card-meta">${(r.total_time||r.cook_time)?`<span>⏱ ${r.total_time||r.cook_time}</span>`:''} ${r.servings?`<span>👤 ${r.servings}</span>`:''}</div></div>
+        <div class="card-foot"><div class="card-meta">${(r.total_time||r.cook_time)?`<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${r.total_time||r.cook_time}</span>`:''} ${r.servings?`<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${r.servings}</span>`:''}</div></div>
       </div>
       ${_selMode ? '' : `
       <div class="staged-actions" onclick="event.stopPropagation()">
@@ -2254,7 +2353,7 @@ async function openDrawer(slug) {
     _drawerOrigServings = origServings;
     _drawerCurServings  = origServings;
     document.getElementById('d-meta').innerHTML =
-      `${(r.total_time||r.cook_time) ? `<span>⏱ ${r.total_time||r.cook_time}</span>` : ''}
+      `${(r.total_time||r.cook_time) ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${r.total_time||r.cook_time}</span>` : ''}
        ${origServings ? `<div class="d-servings-stepper">
          <button onclick="scaleDrawer(-1)">−</button>
          <span id="d-servings-val">${origServings}</span>
@@ -3142,6 +3241,17 @@ async function loadConnections() {
     // RSS
     const feeds = (s.rss_feeds || '').split(',').map(f => f.trim()).filter(Boolean);
     renderFeedList(feeds);
+    if (feeds.length) {
+      apiGet('/api/import/rss/stats').then(stats => {
+        for (const [url, count] of Object.entries(stats)) {
+          const fid = btoa(url).replace(/[^a-zA-Z0-9]/g, '');
+          const el = document.getElementById(`fs-${fid}`);
+          if (el && count > 0) {
+            el.textContent += ` · ${count} recipe${count === 1 ? '' : 's'}`;
+          }
+        }
+      }).catch(() => {});
+    }
     const autoFetchSel = document.getElementById('rss-auto-fetch');
     if (autoFetchSel && s.rss_auto_fetch_hours != null) autoFetchSel.value = String(s.rss_auto_fetch_hours);
     // Mealie
@@ -3155,6 +3265,9 @@ async function loadConnections() {
       mealieSubtitle.textContent = s.mealie_url;
       mealieActions.style.display = 'flex';
       if (mealieBrowse) mealieBrowse.disabled = false;
+      apiGet('/api/export/mealie/stats').then(st => {
+        if (st.exported > 0) mealieSubtitle.textContent = `${s.mealie_url} — ${st.exported} of ${st.total} recipes exported`;
+      }).catch(() => {});
     } else {
       mealieStatus.textContent = 'Not connected';
       mealieStatus.className = 'conn-status conn-status--off';
