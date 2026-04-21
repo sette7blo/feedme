@@ -11,6 +11,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.5.0] — 2026-04-21
+
 ### Added
 - Recipes: sort dropdown in filter bar (Newest / A-Z / Cook time)
 - Recipes: "Showing X of Y recipes" count when filters or search are active
@@ -133,7 +135,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.5.0...HEAD
+[v1.5.0]: https://github.com/sette7blo/feedme/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/sette7blo/feedme/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/sette7blo/feedme/compare/v1.2.0...v1.3.0
 [v1.2.0]: https://github.com/sette7blo/feedme/compare/v1.1.0...v1.2.0
