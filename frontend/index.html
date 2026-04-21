@@ -1405,6 +1405,15 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
                 </button>
               </div>
             </div>
+            <div class="form-group">
+              <label class="form-label">Credit ID <span style="opacity:.5;font-weight:300">(for balance check)</span></label>
+              <div class="secret-wrap">
+                <input type="password" id="s-ppq-credit-id" class="form-input" placeholder="Enter your credit ID…">
+                <button type="button" class="secret-eye" onclick="toggleSecret('s-ppq-credit-id',this)" tabindex="-1">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
             <div class="form-group"><label class="form-label">Base URL</label><input id="s-ppq-url" class="form-input" value="https://api.ppq.ai/v1"></div>
             <div class="form-row">
               <div class="form-group"><label class="form-label">Recipe Model</label><input id="s-ppq-model" class="form-input" placeholder="gpt-4o-mini"></div>
@@ -1412,7 +1421,11 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
               <div class="form-group"><label class="form-label">Vision Model</label><input id="s-ppq-vision-model" class="form-input" placeholder="gpt-4o"></div>
             </div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Vision model is used for Import from Image. Must support image inputs (e.g. gpt-4o).</div>
-            <button class="btn btn-ghost btn-sm" id="ai-test-btn" onclick="testAiConnection()" style="margin-top:0">Test Connection</button>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:0">
+              <button class="btn btn-ghost btn-sm" id="ai-test-btn" onclick="testAiConnection()">Test Connection</button>
+              <span id="ai-balance" style="font-size:12px;font-weight:600;color:var(--text-mid);display:none"></span>
+              <button class="btn btn-ghost btn-xs" id="topup-btn" onclick="openTopup()" style="display:none">Top Up</button>
+            </div>
           </div>
           <div class="settings-card">
             <div class="settings-card-title">Mealie Integration <span style="opacity:.5;font-weight:300">(optional)</span></div>
@@ -1667,6 +1680,55 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   <div class="modal-foot">
     <button class="btn btn-ghost btn-sm" onclick="closeScannerModal()">Cancel</button>
     <button class="btn btn-primary btn-sm" id="scan-use-btn" style="display:none" onclick="useScanResult()">Use This</button>
+  </div>
+</div>
+
+<!-- TOP-UP MODAL -->
+<div class="modal-overlay" id="topup-overlay" onclick="closeTopup()"></div>
+<div class="modal" id="topup-modal" style="width:480px">
+  <div class="modal-head">
+    <div class="modal-title">Top Up Balance</div>
+    <button class="modal-close" onclick="closeTopup()">
+      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+  </div>
+  <div class="modal-body" id="topup-body">
+    <!-- Step 1: create invoice -->
+    <div id="topup-step1">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;color:var(--text-mid)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M5 17V9l7 7 7-7v8"/></svg>
+        Pay with Monero
+      </div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px">Amount (USD)</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="opt-chip" onclick="_topupAmount(5)">$5</button>
+        <button class="opt-chip" onclick="_topupAmount(10)">$10</button>
+        <button class="opt-chip" onclick="_topupAmount(25)">$25</button>
+      </div>
+      <input type="number" id="topup-amount" class="form-input" placeholder="Enter amount…" min="5" step="0.01" max="10000" style="margin-bottom:6px">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px">Min $5 · Max $10,000</div>
+      <div id="topup-err" style="font-size:12px;color:#c05040;margin-bottom:8px;display:none"></div>
+      <button class="btn btn-primary" id="topup-create-btn" onclick="createTopup()" style="width:100%">Create Invoice</button>
+    </div>
+    <!-- Step 2: payment -->
+    <div id="topup-step2" style="display:none">
+      <iframe id="topup-iframe" style="width:100%;height:420px;border:1px solid var(--border-soft);border-radius:8px;margin-bottom:10px" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--cream);border-radius:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;color:var(--text-muted)">Amount</div>
+          <div id="topup-pay-amount" style="font-size:15px;font-weight:600;color:var(--brown-dark)">$0.00</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text-muted)">Status</div>
+          <div id="topup-pay-status" style="font-size:13px;font-weight:600;color:var(--text-mid)">Waiting…</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--text-muted)">Expires</div>
+          <div id="topup-timer" style="font-size:15px;font-weight:600;color:var(--brown-dark)">--:--</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="_topupBack()" style="width:100%">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -3073,13 +3135,45 @@ function _stopRobot() {
   document.getElementById('gen-loader').classList.remove('active');
 }
 
+function _findDuplicateRecipes(text) {
+  if (!text || !recipesData.length) return [];
+  const q = text.toLowerCase().trim();
+  return recipesData.filter(r => {
+    const name = (r.name || '').toLowerCase();
+    return name.includes(q) || q.includes(name);
+  });
+}
+
 async function generateRecipe() {
   const rawPrompt = document.getElementById('gen-prompt').value.trim();
   if (!rawPrompt && !_advOpen) { toast('Describe a recipe or open Advanced options', 'err'); return; }
   const base = rawPrompt || 'Create a recipe';
+
+  // check for duplicate recipes before calling AI
+  const res = document.getElementById('gen-result');
+  if (rawPrompt && !generateRecipe._confirmed) {
+    const dupes = _findDuplicateRecipes(rawPrompt);
+    if (dupes.length) {
+      const names = dupes.slice(0, 3).map(r => r.name).join(', ');
+      const extra = dupes.length > 3 ? ` and ${dupes.length - 3} more` : '';
+      res.style.display = 'block';
+      res.innerHTML = `
+        <div style="background:#fff8ee;border:1px solid #f0d9a0;border-radius:8px;padding:14px 16px">
+          <div style="font-size:13px;color:var(--brown-dark);margin-bottom:10px">
+            You already have <strong>${names}${extra}</strong> — generate anyway?
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-xs" onclick="generateRecipe._confirmed=true;generateRecipe()">Continue</button>
+            <button class="btn btn-ghost btn-xs" onclick="generateRecipe._confirmed=false;document.getElementById('gen-result').style.display='none'">Cancel</button>
+          </div>
+        </div>`;
+      return;
+    }
+  }
+  generateRecipe._confirmed = false;
+
   const prompt = buildEnhancedPrompt(base);
   const btn = document.getElementById('gen-btn');
-  const res = document.getElementById('gen-result');
   btn.disabled = true;
   btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg> Generating…';
   res.style.display = 'none'; res.innerHTML = '';
@@ -3227,12 +3321,12 @@ function _timeAgo(ts) {
 }
 
 function _feedStatusHtml(st) {
-  if (!st || !st.ts) return { dot: '', text: 'Never fetched' };
-  if (st.error) return { dot: 'err', text: `Failed · ${_timeAgo(st.ts)}` };
+  if (!st || !st.ts) return { dot: '', text: 'Never fetched', tooltip: '' };
+  if (st.error) return { dot: 'err', text: `Failed · ${_timeAgo(st.ts)}`, tooltip: st.error };
   const parts = [`${_timeAgo(st.ts)}`];
   if (st.staged > 0) parts.push(`${st.staged} staged`);
   else parts.push('0 new recipes');
-  return { dot: 'ok', text: parts.join(' · ') };
+  return { dot: 'ok', text: parts.join(' · '), tooltip: 'Last fetch succeeded' };
 }
 
 async function loadConnections() {
@@ -3245,9 +3339,10 @@ async function loadConnections() {
       apiGet('/api/import/rss/stats').then(stats => {
         for (const [url, count] of Object.entries(stats)) {
           const fid = btoa(url).replace(/[^a-zA-Z0-9]/g, '');
-          const el = document.getElementById(`fs-${fid}`);
+          const el = document.getElementById(`fc-${fid}`);
           if (el && count > 0) {
-            el.textContent += ` · ${count} recipe${count === 1 ? '' : 's'}`;
+            el.textContent = `${count} recipe${count === 1 ? '' : 's'} imported`;
+            el.style.display = '';
           }
         }
       }).catch(() => {});
@@ -3309,10 +3404,11 @@ function renderFeedList(feeds) {
     const fid = btoa(f).replace(/[^a-zA-Z0-9]/g, '');
     return `
     <div class="feed-row" id="fr-${fid}">
-      <div class="feed-dot ${st.dot}" id="fd-${fid}"></div>
+      <div class="feed-dot ${st.dot}" id="fd-${fid}" ${st.tooltip ? `title="${st.tooltip.replace(/"/g,'&quot;')}"` : ''}></div>
       <div class="feed-info">
         <div class="feed-url" title="${f}">${f}</div>
         <div class="feed-status" id="fs-${fid}">${st.text}</div>
+        <div class="feed-recipe-count" id="fc-${fid}" style="font-size:10px;color:var(--text-muted);margin-top:1px;display:none"></div>
       </div>
       <div class="feed-actions">
         <button class="btn btn-primary btn-xs" id="fb-${fid}" onclick="fetchOneFeed('${f}','${fid}')">Fetch</button>
@@ -3332,14 +3428,14 @@ async function _doFetch(url, fid) {
     const result = await apiPost('/api/import/rss', { url });
     setRssStatus(url, { ts: Date.now(), staged: result.staged, error: null });
     const st = _feedStatusHtml(getRssStatus()[url]);
-    if (dot)  { dot.className = `feed-dot ${st.dot}`; }
+    if (dot)  { dot.className = `feed-dot ${st.dot}`; dot.title = st.tooltip || ''; }
     if (stat) stat.textContent = st.text;
     const stageData = await apiGet('/api/recipes?status=staged&per_page=1');
     updateStageBadge(stageData.total || 0);
     return result.staged;
   } catch(e) {
     setRssStatus(url, { ts: Date.now(), error: e.message });
-    if (dot)  dot.className = 'feed-dot err';
+    if (dot)  { dot.className = 'feed-dot err'; dot.title = e.message; }
     if (stat) stat.textContent = `Failed · ${e.message}`;
     return 0;
   } finally {
@@ -3935,6 +4031,7 @@ async function loadSettings() {
   try {
     const s = await apiGet('/api/settings');
     document.getElementById('s-ppq-key').value           = s.ppq_api_key      || '';
+    document.getElementById('s-ppq-credit-id').value     = s.ppq_credit_id    || '';
     document.getElementById('s-ppq-url').value            = s.ppq_base_url     || 'https://api.ppq.ai/v1';
     document.getElementById('s-ppq-model').value          = s.ppq_model        || '';
     document.getElementById('s-ppq-image-model').value    = s.ppq_image_model  || '';
@@ -3945,6 +4042,7 @@ async function loadSettings() {
     document.getElementById('s-nostr-nsec').value         = s.nostr_nsec       || '';
     if (s.nostr_nsec) _loadNostrNpub();
     _setAiStatusBadge(s.ppq_api_key ? 'unchecked' : 'none');
+    if (s.ppq_credit_id) _fetchBalance();
     _loadEquipmentChips(s.equipment || '');
     // Dark mode toggle state (reflects current theme, not server setting)
     const dmCb = document.getElementById('s-dark-mode');
@@ -3985,6 +4083,20 @@ function _setAiStatusBadge(state, model) {
   }
 }
 
+async function _fetchBalance() {
+  const el = document.getElementById('ai-balance');
+  const topupBtn = document.getElementById('topup-btn');
+  try {
+    const r = await apiGet('/api/ai/balance');
+    if (r.ok) {
+      el.textContent = `Balance: $${r.balance.toFixed(2)}`;
+      el.style.display = '';
+      el.style.color = r.balance < 1 ? '#c05040' : 'var(--text-mid)';
+      if (topupBtn) topupBtn.style.display = '';
+    } else { el.style.display = 'none'; if (topupBtn) topupBtn.style.display = 'none'; }
+  } catch { el.style.display = 'none'; if (topupBtn) topupBtn.style.display = 'none'; }
+}
+
 async function testAiConnection() {
   const btn = document.getElementById('ai-test-btn');
   btn.disabled = true; btn.textContent = 'Testing…';
@@ -3998,6 +4110,112 @@ async function testAiConnection() {
     toast('Connection test failed', 'err');
   }
   btn.disabled = false; btn.textContent = 'Test Connection';
+}
+
+/* ── Top-Up Modal ── */
+let _topupState = { method: 'btc-lightning', invoiceId: null, pollTimer: null, countdownTimer: null };
+
+function openTopup() {
+  _topupState = { method: 'xmr', invoiceId: null, pollTimer: null, countdownTimer: null };
+  document.getElementById('topup-step1').style.display = '';
+  document.getElementById('topup-step2').style.display = 'none';
+  document.getElementById('topup-amount').value = '';
+  document.getElementById('topup-err').style.display = 'none';
+  document.getElementById('topup-overlay').classList.add('open');
+  document.getElementById('topup-modal').classList.add('open');
+}
+
+function closeTopup() {
+  document.getElementById('topup-overlay').classList.remove('open');
+  document.getElementById('topup-modal').classList.remove('open');
+  document.getElementById('topup-iframe').src = '';
+  if (_topupState.pollTimer) clearInterval(_topupState.pollTimer);
+  if (_topupState.countdownTimer) clearInterval(_topupState.countdownTimer);
+}
+
+
+function _topupAmount(val) {
+  document.getElementById('topup-amount').value = val;
+  document.querySelectorAll('#topup-step1 .opt-chip').forEach(c => {
+    if (c.textContent.trim() === `$${val}`) c.classList.add('selected');
+    else if (c.textContent.trim().startsWith('$') && c.textContent.trim().match(/^\$\d+$/)) c.classList.remove('selected');
+  });
+}
+
+async function createTopup() {
+  const amount = parseFloat(document.getElementById('topup-amount').value);
+  const errEl = document.getElementById('topup-err');
+  if (!amount || isNaN(amount)) { errEl.textContent = 'Enter an amount'; errEl.style.display = ''; return; }
+  if (amount < 5 || amount > 10000) { errEl.textContent = 'Amount must be $5-$10,000'; errEl.style.display = ''; return; }
+  errEl.style.display = 'none';
+
+  const btn = document.getElementById('topup-create-btn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const r = await apiPost('/api/ai/topup', { method: 'xmr', amount, currency: 'USD' });
+    if (!r.ok) { errEl.textContent = r.error || 'Failed to create invoice'; errEl.style.display = ''; return; }
+    _topupState.invoiceId = r.invoice_id;
+
+    // Load checkout page in iframe
+    document.getElementById('topup-step1').style.display = 'none';
+    document.getElementById('topup-step2').style.display = '';
+    if (r.checkout_url) document.getElementById('topup-iframe').src = r.checkout_url;
+    document.getElementById('topup-pay-amount').textContent = `$${amount.toFixed(2)}`;
+    document.getElementById('topup-pay-status').textContent = 'Waiting for payment…';
+    document.getElementById('topup-pay-status').style.color = 'var(--text-mid)';
+
+    // Countdown timer
+    const expiresAt = r.expires_at * 1000;
+    _topupState.countdownTimer = setInterval(() => {
+      const remaining = Math.max(0, expiresAt - Date.now());
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      const timerEl = document.getElementById('topup-timer');
+      timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      timerEl.style.color = remaining < 120000 ? '#c05040' : 'var(--brown-dark)';
+      if (remaining <= 0) {
+        clearInterval(_topupState.countdownTimer);
+        clearInterval(_topupState.pollTimer);
+        document.getElementById('topup-pay-status').textContent = 'Expired';
+        document.getElementById('topup-pay-status').style.color = '#c05040';
+      }
+    }, 1000);
+
+    // Poll status
+    _topupState.pollTimer = setInterval(async () => {
+      try {
+        const st = await apiGet(`/api/ai/topup/status/${_topupState.invoiceId}`);
+        if (st.status === 'Settled' || st.status === 'Complete') {
+          clearInterval(_topupState.pollTimer);
+          clearInterval(_topupState.countdownTimer);
+          document.getElementById('topup-pay-status').textContent = 'Paid';
+          document.getElementById('topup-pay-status').style.color = '#3a6a40';
+          toast('Payment received — balance updated', 'ok');
+          _fetchBalance();
+          setTimeout(closeTopup, 1500);
+        } else if (st.status === 'Expired' || st.status === 'Invalid') {
+          clearInterval(_topupState.pollTimer);
+          clearInterval(_topupState.countdownTimer);
+          document.getElementById('topup-pay-status').textContent = st.status;
+          document.getElementById('topup-pay-status').style.color = '#c05040';
+        }
+      } catch {}
+    }, 5000);
+  } catch(e) {
+    errEl.textContent = e.message || 'Failed to create invoice';
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Invoice';
+  }
+}
+
+
+function _topupBack() {
+  if (_topupState.pollTimer) clearInterval(_topupState.pollTimer);
+  if (_topupState.countdownTimer) clearInterval(_topupState.countdownTimer);
+  document.getElementById('topup-iframe').src = '';
+  document.getElementById('topup-step1').style.display = '';
+  document.getElementById('topup-step2').style.display = 'none';
 }
 
 /* ── Equipment chips ── */
@@ -4057,6 +4275,7 @@ async function saveSettings() {
   const existing = await apiGet('/api/settings').catch(() => ({}));
   const body = {
     ppq_api_key:      document.getElementById('s-ppq-key').value,
+    ppq_credit_id:    document.getElementById('s-ppq-credit-id').value,
     ppq_base_url:     document.getElementById('s-ppq-url').value,
     ppq_model:        document.getElementById('s-ppq-model').value,
     ppq_image_model:  document.getElementById('s-ppq-image-model').value,

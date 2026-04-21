@@ -206,6 +206,85 @@ def ai_test():
         return jsonify({"ok": False, "error": str(e)})
 
 
+@app.route("/api/ai/balance", methods=["GET"])
+def ai_balance():
+    credit_id = config.get("PPQ_CREDIT_ID", "")
+    if not credit_id:
+        return jsonify({"ok": False, "error": "No credit ID configured"})
+    try:
+        import urllib.request, json as _json
+        body = _json.dumps({"credit_id": credit_id}).encode()
+        rq = urllib.request.Request("https://api.ppq.ai/credits/balance",
+                                    data=body,
+                                    headers={"Content-Type": "application/json"},
+                                    method="POST")
+        with urllib.request.urlopen(rq, timeout=10) as resp:
+            data = _json.loads(resp.read())
+        return jsonify({"ok": True, "balance": data.get("balance", 0)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+
+TOPUP_METHODS = {
+    "xmr": {"min": 5, "max": 10000},
+}
+
+@app.route("/api/ai/topup", methods=["POST"])
+def ai_topup():
+    api_key = config.get("PPQ_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "No API key configured"}), 400
+    data = request.get_json()
+    method = data.get("method", "")
+    amount = data.get("amount")
+    currency = data.get("currency", "USD")
+    if method not in TOPUP_METHODS:
+        return jsonify({"ok": False, "error": f"Unsupported method. Use: {', '.join(TOPUP_METHODS)}"}), 400
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "Invalid amount"}), 400
+    limits = TOPUP_METHODS[method]
+    if currency == "USD" and (amount < limits["min"] or amount > limits["max"]):
+        return jsonify({"ok": False, "error": f"Amount must be ${limits['min']}-${limits['max']} for {method}"}), 400
+    try:
+        import urllib.request, json as _json
+        body = _json.dumps({"amount": amount, "currency": currency}).encode()
+        rq = urllib.request.Request(f"https://api.ppq.ai/topup/create/{method}",
+                                    data=body,
+                                    headers={"Content-Type": "application/json",
+                                             "Authorization": f"Bearer {api_key}"},
+                                    method="POST")
+        with urllib.request.urlopen(rq, timeout=15) as resp:
+            result = _json.loads(resp.read())
+        return jsonify({"ok": True, **result})
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode() if e.fp else str(e)
+        return jsonify({"ok": False, "error": err_body}), e.code
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/ai/topup/status/<invoice_id>", methods=["GET"])
+def ai_topup_status(invoice_id):
+    api_key = config.get("PPQ_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "No API key configured"}), 400
+    try:
+        import urllib.request, json as _json
+        rq = urllib.request.Request(f"https://api.ppq.ai/topup/status/{invoice_id}",
+                                    headers={"Authorization": f"Bearer {api_key}"},
+                                    method="GET")
+        with urllib.request.urlopen(rq, timeout=10) as resp:
+            result = _json.loads(resp.read())
+        return jsonify({"ok": True, **result})
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode() if e.fp else str(e)
+        return jsonify({"ok": False, "error": err_body}), e.code
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
 @app.route("/api/ai/generate", methods=["POST"])
 def ai_generate():
     data = request.get_json()
@@ -734,6 +813,7 @@ def clear_grocery_all():
 def get_settings():
     return jsonify({
         "ppq_api_key":      config.get("PPQ_API_KEY", ""),
+        "ppq_credit_id":    config.get("PPQ_CREDIT_ID", ""),
         "ppq_base_url":     config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1"),
         "ppq_model":        config.get("PPQ_MODEL", "gpt-4o-mini"),
         "ppq_image_model":  config.get("PPQ_IMAGE_MODEL", "dall-e-3"),
@@ -755,6 +835,7 @@ def save_settings():
     updates = {}
     field_map = {
         "ppq_api_key":      "PPQ_API_KEY",
+        "ppq_credit_id":    "PPQ_CREDIT_ID",
         "ppq_base_url":     "PPQ_BASE_URL",
         "ppq_model":        "PPQ_MODEL",
         "ppq_image_model":  "PPQ_IMAGE_MODEL",
