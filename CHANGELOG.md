@@ -22,6 +22,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ### Changed
 - Recipe card time and servings icons replaced from emoji to SVG line art for consistent cross-platform rendering
+- Top-up: removed Lightning payment option; Monero checkout now opens in an embedded iframe instead of broken QR codes
+- Top-up: removed ~300 lines of unused QR encoder code
 
 ### Fixed
 - Recipe grid: filtering to zero results no longer shows "No recipes yet" onboarding message; shows "No recipes match your filters" with a clear-filters link instead
