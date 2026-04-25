@@ -84,7 +84,10 @@ def generate_recipe(prompt: str) -> dict:
     # Generate image (best-effort — never blocks recipe save)
     slug = recipe_data["slug"]
     image_model = config.get("PPQ_IMAGE_MODEL", "dall-e-3")
-    image_path = _generate_image(recipe_data, slug, api_key, base_url, image_model)
+    try:
+        image_path = _generate_image(recipe_data, slug, api_key, base_url, image_model)
+    except Exception:
+        image_path = None
     if image_path:
         recipe_data["image"] = f"images/{image_path.name}"
 
@@ -152,11 +155,11 @@ def extract_recipe_from_text(text: str) -> dict:
     return recipe_data
 
 
-def _generate_image(recipe_data: dict, slug: str, api_key: str, base_url: str, model: str) -> Path | None:
+def _generate_image(recipe_data: dict, slug: str, api_key: str, base_url: str, model: str) -> Path:
     """
     Generate a food photo for the recipe via the images API.
-    Downloads and saves to images/<slug>.jpg.
-    Returns the Path on success, None on any failure.
+    Downloads and saves to images/<slug>.png.
+    Returns the Path on success, raises on any failure.
     """
     IMAGES_DIR.mkdir(exist_ok=True)
     dest = IMAGES_DIR / f"{slug}.png"
@@ -173,20 +176,20 @@ def _generate_image(recipe_data: dict, slug: str, api_key: str, base_url: str, m
         + ". Overhead shot, natural light, styled on a wooden surface, high resolution."
     )
 
-    try:
-        client = OpenAI(api_key=api_key, base_url=base_url)
-        response = client.images.generate(
-            model=model,
-            prompt=prompt,
-            n=1,
-            size="1024x1024",
-        )
-        image_url = response.data[0].url
-    except Exception:
-        return None
-
-    try:
-        urllib.request.urlretrieve(image_url, dest)
-        return dest
-    except Exception:
-        return None
+    client = OpenAI(api_key=api_key, base_url=base_url, timeout=60.0)
+    gpt_image_models = {"gpt-image-1", "gpt-image-1.5", "gpt-image-2"}
+    kwargs = dict(model=model, prompt=prompt, n=1)
+    if model in gpt_image_models:
+        kwargs["quality"] = "low"
+    else:
+        kwargs["size"] = "1:1"
+    response = client.images.generate(**kwargs)
+    item = response.data[0]
+    if getattr(item, "b64_json", None):
+        import base64
+        dest.write_bytes(base64.b64decode(item.b64_json))
+    elif getattr(item, "url", None):
+        urllib.request.urlretrieve(item.url, dest)
+    else:
+        raise ValueError("Image API returned no url or b64_json data")
+    return dest

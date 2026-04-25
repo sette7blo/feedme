@@ -407,30 +407,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .d-img-shimmer.visible { display: block; }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Cook Mode overlay */
-.cook-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(22,12,3,.97); display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
-.cook-overlay.open { opacity: 1; pointer-events: all; }
-.cook-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 12px; flex-shrink: 0; }
-.cook-exit { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); cursor: pointer; color: rgba(255,255,255,.6); display: flex; align-items: center; justify-content: center; transition: background var(--tr); }
-.cook-exit:hover { background: rgba(255,255,255,.18); color: #fff; }
-.cook-counter { font-size: 10px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--amber); }
-.cook-ing-toggle { font-size: 11px; font-weight: 500; color: rgba(255,255,255,.45); background: none; border: 1px solid rgba(255,255,255,.18); border-radius: 20px; padding: 5px 13px; cursor: pointer; transition: all var(--tr); }
-.cook-ing-toggle:hover { color: rgba(255,255,255,.8); border-color: rgba(255,255,255,.4); }
-.cook-ing-toggle.active { color: var(--amber); border-color: var(--amber); }
-.cook-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 36px; cursor: pointer; user-select: none; text-align: center; }
-.cook-step-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 5vw, 34px); font-weight: 600; color: #fff; line-height: 1.6; max-width: 680px; }
-.cook-hint { margin-top: 32px; font-size: 11px; color: rgba(255,255,255,.2); letter-spacing: .5px; }
-.cook-foot { display: flex; align-items: center; gap: 16px; padding: 14px 24px 36px; flex-shrink: 0; }
-.cook-nav-btn { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.6); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all var(--tr); }
-.cook-nav-btn:hover:not(:disabled) { background: rgba(232,130,12,.25); border-color: var(--amber); color: var(--amber); }
-.cook-nav-btn:disabled { opacity: .2; cursor: not-allowed; }
-.cook-progress { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; }
-.cook-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.18); transition: all .2s ease; flex-shrink: 0; }
-.cook-dot.active { background: var(--amber); transform: scale(1.35); }
-.cook-dot.done { background: rgba(255,255,255,.4); }
-.cook-ing-panel { background: rgba(44,26,6,.96); border-top: 1px solid rgba(255,255,255,.08); padding: 16px 28px 24px; max-height: 42vh; overflow-y: auto; flex-shrink: 0; }
-.cook-ing-label { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
-.cook-ing-item { font-size: 14px; color: rgba(255,255,255,.75); padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.06); line-height: 1.4; }
+/* Cook Mode */
 .d-head { padding: 16px 22px 13px 22px; border-bottom: 1px solid var(--border-soft); flex-shrink: 0; position: relative; }
 .d-head-close { position: absolute; top: 12px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--cream); border: 1px solid var(--border-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-mid); transition: all var(--tr); }
 .d-head-close:hover { background: var(--border-soft); color: var(--brown-dark); }
@@ -772,7 +749,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 [data-theme="dark"] .d-foot { background: #1a1410; }
 [data-theme="dark"] .toast { background: #2e2620; border-color: #3a3028; }
 [data-theme="dark"] .bulk-bar { background: #1a1410; }
-[data-theme="dark"] .cook-overlay { background: rgba(10,7,3,.97); }
 [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
   background: #2a2218 !important; color: #f0e8d8 !important; border-color: #3a3028 !important;
 }
@@ -791,7 +767,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 @media print {
   body, html { height: auto !important; overflow: visible !important; }
   .topbar, .sidebar, .overlay, .toasts, .bulk-bar,
-  .cook-overlay, .mealie-modal-wrap, #scan-overlay, #scan-modal,
+  .mealie-modal-wrap, #scan-overlay, #scan-modal,
   #modal-overlay, #add-modal, #picker-overlay, #picker-modal,
   #nostr-overlay, #nostr-modal, .main { display: none !important; }
   .drawer {
@@ -2139,7 +2115,7 @@ function renderRecipes() {
     <div class="recipe-card${_selMode ? ' selectable' : ''}${isSel ? ' selected' : ''}" data-slug="${r.slug}" onclick="${clickAction}">
       <div class="card-img-wrap">
         <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}" alt="${r.name}" onerror="this.remove()">` : ''}
+          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
           ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
         </div>
         ${_selMode ? selCheck : srcBadge(r.source_type)}
@@ -2207,7 +2183,7 @@ function renderFavorites() {
     <div class="recipe-card${_selMode ? ' selectable' : ''}${isSel ? ' selected' : ''}" data-slug="${r.slug}" onclick="${clickAction}">
       <div class="card-img-wrap">
         <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}" alt="${r.name}" onerror="this.remove()">` : ''}
+          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
           ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
         </div>
         ${_selMode ? selCheck : srcBadge(r.source_type)}
@@ -2337,7 +2313,7 @@ function renderStaged() {
     <div class="recipe-card staged-card${_selMode ? ' selectable' : ''}${isSel ? ' selected' : ''}" data-slug="${r.slug}" onclick="${clickAction}">
       <div class="card-img-wrap">
         <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}" alt="${r.name}" onerror="this.remove()">` : ''}
+          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
           ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
         </div>
         ${_selMode ? selCheck : srcBadge(r.source_type)}
@@ -2392,7 +2368,8 @@ async function openDrawer(slug) {
     const full = r.full || r;
     _drawerData = { slug, full };
     const src = r.source_type || 'manual';
-    const imageUrl = r.image_url || _extract_ld_image(full.image);
+    const rawImageUrl = r.image_url || _extract_ld_image(full.image);
+    const imageUrl = rawImageUrl && !rawImageUrl.startsWith('http') ? `${rawImageUrl}?t=${Date.now()}` : rawImageUrl;
     document.getElementById('d-img').innerHTML = `
       <div class="d-img-ph">
         ${imageUrl ? `<img src="${imageUrl}" alt="${r.name}" onerror="this.remove()">` : ''}
@@ -2733,9 +2710,25 @@ async function regenImage() {
   try {
     const res = await apiPost(`/api/recipes/${slug}/regenerate-image`, {});
     if (res.image) {
-      document.getElementById('d-img').querySelector('img')?.setAttribute('src', res.image + '?t=' + Date.now());
+      const src = res.image + '?t=' + Date.now();
+      // Update drawer image
+      const ph = document.getElementById('d-img').querySelector('.d-img-ph');
+      if (ph) {
+        let img = ph.querySelector('img');
+        if (img) { img.src = src; } else { ph.insertAdjacentHTML('afterbegin', `<img src="${src}" alt="" onerror="this.remove()">`); }
+      }
+      // Update recipe card in grid
+      const card = document.querySelector(`.recipe-card[data-slug="${slug}"]`);
+      if (card) {
+        const cardPh = card.querySelector('.card-ph');
+        if (cardPh) {
+          let img = cardPh.querySelector('img');
+          if (img) { img.src = src; } else { cardPh.insertAdjacentHTML('afterbegin', `<img src="${src}" alt="" onerror="this.remove()">`); }
+        }
+      }
+      // Update edit form preview
       const preview = document.getElementById('ef-img-preview');
-      if (preview) preview.innerHTML = `<img src="${res.image}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover">`;
+      if (preview) preview.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover">`;
       toast('Image regenerated', 'ok');
     }
   } catch(e) { toast(e.message || 'Image generation failed', 'err'); }
@@ -2758,31 +2751,10 @@ let _drawerOrigServings = null;
 let _drawerCurServings  = null;
 let _noSleepVid  = null;
 
-let _cookSteps   = [];
-let _cookStep    = 0;
-let _cookIngOpen = false;
-let _cookSwipeX  = null;
-let _cookSwiped  = false;
-
 async function toggleCookMode() {
-  if (document.getElementById('cook-overlay').classList.contains('open')) {
-    closeCookMode(); return;
+  if (_wakeLock || _noSleepVid) {
+    _releaseCookMode(); return;
   }
-  if (!_drawerData) return;
-  const full = _drawerData.full;
-  _cookSteps = (full.recipeInstructions || [])
-    .map(s => typeof s === 'string' ? s : (s.text || '')).filter(Boolean);
-  if (!_cookSteps.length) { toast('No instructions found', 'err'); return; }
-  _cookStep = 0;
-  _cookIngOpen = false;
-  const ings = full.recipeIngredient || [];
-  document.getElementById('cook-ing-panel').innerHTML =
-    `<div class="cook-ing-label">Ingredients</div>` +
-    ings.map(i => `<div class="cook-ing-item">${i}</div>`).join('');
-  document.getElementById('cook-ing-panel').style.display = 'none';
-  document.getElementById('cook-ing-toggle').classList.remove('active');
-  _renderCookStep();
-  document.getElementById('cook-overlay').classList.add('open');
   _setCookModeUI(true);
   await _acquireWakeLock();
 }
@@ -2811,63 +2783,6 @@ async function _acquireWakeLock() {
   }
 }
 
-function closeCookMode() {
-  document.getElementById('cook-overlay').classList.remove('open');
-  _releaseCookMode();
-}
-
-function _renderCookStep() {
-  const total = _cookSteps.length;
-  document.getElementById('cook-counter').textContent = `STEP ${_cookStep + 1} OF ${total}`;
-  document.getElementById('cook-step-text').textContent = _cookSteps[_cookStep];
-  document.getElementById('cook-hint').textContent = _cookStep === total - 1 ? 'Tap to finish' : 'Tap to continue';
-  document.getElementById('cook-prev').disabled = _cookStep === 0;
-  document.getElementById('cook-next').disabled = _cookStep === total - 1;
-  const show = Math.min(total, 12);
-  const off  = total <= 12 ? 0 : Math.max(0, Math.min(_cookStep - 5, total - 12));
-  document.getElementById('cook-progress').innerHTML =
-    Array.from({length: show}, (_, i) => {
-      const idx = off + i;
-      const cls = idx === _cookStep ? 'active' : idx < _cookStep ? 'done' : '';
-      return `<div class="cook-dot ${cls}"></div>`;
-    }).join('');
-}
-
-function nextCookStep() {
-  if (_cookStep < _cookSteps.length - 1) { _cookStep++; _renderCookStep(); }
-  else { closeCookMode(); toast('Enjoy your meal!', 'ok'); }
-}
-
-function prevCookStep() {
-  if (_cookStep > 0) { _cookStep--; _renderCookStep(); }
-}
-
-function cookBodyTap() {
-  if (!_cookSwiped) nextCookStep();
-  _cookSwiped = false;
-}
-
-function _cookSwipeStart(e) {
-  _cookSwipeX = e.touches[0].clientX;
-  _cookSwiped = false;
-}
-
-function _cookSwipeEnd(e) {
-  if (_cookSwipeX === null) return;
-  const dx = e.changedTouches[0].clientX - _cookSwipeX;
-  _cookSwipeX = null;
-  if (Math.abs(dx) > 50) {
-    _cookSwiped = true;
-    e.preventDefault();
-    if (dx < 0) nextCookStep(); else prevCookStep();
-  }
-}
-
-function toggleCookIngredients() {
-  _cookIngOpen = !_cookIngOpen;
-  document.getElementById('cook-ing-panel').style.display = _cookIngOpen ? 'block' : 'none';
-  document.getElementById('cook-ing-toggle').classList.toggle('active', _cookIngOpen);
-}
 
 function _releaseCookMode() {
   if (_wakeLock) { _wakeLock.release(); _wakeLock = null; }
@@ -2884,7 +2799,7 @@ function _setCookModeUI(active) {
   const btn = document.getElementById('cook-mode-btn');
   if (!btn) return;
   btn.classList.toggle('active', active);
-  btn.title = active ? 'Cook Mode on — tap to exit' : 'Step-by-step cook mode';
+  btn.title = active ? 'Screen is kept on — click to turn off' : 'Keep screen on while cooking';
 }
 
 // Re-acquire wake lock when tab comes back to foreground (native API only)
@@ -4755,7 +4670,7 @@ function renderTrashed() {
     <div class="recipe-card" id="tr-${r.slug}" style="opacity:.72">
       <div class="card-img-wrap">
         <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}" alt="${r.name}" onerror="this.remove()">` : ''}
+          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
           ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
         </div>
         ${srcBadge(r.source_type)}
@@ -5436,33 +5351,6 @@ async function bulkPublishNostr() {
   </div>
 </div>
 
-<!-- COOK MODE OVERLAY -->
-<div class="cook-overlay" id="cook-overlay">
-  <div class="cook-head">
-    <button class="cook-exit" onclick="closeCookMode()">
-      <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
-    </button>
-    <span class="cook-counter" id="cook-counter">STEP 1 OF 1</span>
-    <button class="cook-ing-toggle" id="cook-ing-toggle" onclick="toggleCookIngredients()">Ingredients</button>
-  </div>
-  <div class="cook-body" id="cook-body"
-    onclick="cookBodyTap()"
-    ontouchstart="_cookSwipeStart(event)"
-    ontouchend="_cookSwipeEnd(event)">
-    <div class="cook-step-text" id="cook-step-text"></div>
-    <div class="cook-hint" id="cook-hint">Tap to continue</div>
-  </div>
-  <div class="cook-ing-panel" id="cook-ing-panel" style="display:none"></div>
-  <div class="cook-foot">
-    <button class="cook-nav-btn" id="cook-prev" onclick="prevCookStep()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <div class="cook-progress" id="cook-progress"></div>
-    <button class="cook-nav-btn" id="cook-next" onclick="nextCookStep()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-  </div>
-</div>
 
 </body>
 </html>

@@ -11,6 +11,20 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.5.1] — 2026-04-25
+
+### Changed
+- Cook Mode simplified to a wake lock toggle on the normal recipe drawer — keeps screen on while cooking without opening a fullscreen step-by-step overlay
+- README: removed model recommendations table; PPQ model availability changes too frequently to maintain
+
+### Fixed
+- Image regeneration: actual API error messages now surfaced instead of generic "AI generation failed"
+- Image regeneration: handle both `b64_json` and URL responses from different PPQ models
+- Image regeneration: 60s timeout prevents indefinite hang on unresponsive model endpoints
+- Image regeneration: non-DALL-E models now receive `size=1:1`; gpt-image-* family receives `quality=low`
+- Image regeneration: recipe card and edit preview now update immediately in place after regen
+- Image regeneration: saving after a regen no longer shows the old cached image; local images are cache-busted by `updated_at`
+
 ## [v1.5.0] — 2026-04-21
 
 ### Added
@@ -135,7 +149,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.5.1...HEAD
+[v1.5.1]: https://github.com/sette7blo/feedme/compare/v1.5.0...v1.5.1
 [v1.5.0]: https://github.com/sette7blo/feedme/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/sette7blo/feedme/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/sette7blo/feedme/compare/v1.2.0...v1.3.0

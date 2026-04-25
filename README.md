@@ -46,7 +46,7 @@ services:
 PPQ_API_KEY=your-key-here
 PPQ_BASE_URL=https://api.ppq.ai/v1
 PPQ_MODEL=claude-haiku-4-5
-PPQ_IMAGE_MODEL=gpt-image-1
+PPQ_IMAGE_MODEL=gpt-image-2
 PPQ_VISION_MODEL=claude-haiku-4-5
 
 FLASK_SECRET=change-me-to-something-random
@@ -78,17 +78,7 @@ docker compose pull && docker compose up -d
 
 Feedme uses any OpenAI-compatible endpoint. The recommended provider is [PPQ.ai](https://ppq.ai), which gives access to Claude and OpenAI models via a single API key and endpoint.
 
-**Recommended models:**
-
-| Purpose | Model |
-|---|---|
-| Recipe generation & text extraction | `claude-haiku-4-5` |
-| Vision / image-to-recipe | `claude-haiku-4-5` |
-| Image generation | `gpt-image-1` |
-
-> Note: DALL-E 3 is not available on PPQ.ai. Use `gpt-image-1` for image generation.
-
-You can configure the key and models directly in the Settings tab after first launch.
+You can configure the key and models directly in the Settings tab after first launch. PPQ.ai offers a wide range of text, vision, and image generation models — pick what suits your budget and quality preferences.
 
 ---
 

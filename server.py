@@ -49,7 +49,11 @@ def compress_and_cache(response):
     # Cache headers for static assets
     path = request.path
     if path.startswith('/images/'):
-        response.headers['Cache-Control'] = 'public, max-age=86400'
+        # No cache when a ?t= buster is present (e.g. after regeneration)
+        if request.query_string:
+            response.headers['Cache-Control'] = 'no-cache'
+        else:
+            response.headers['Cache-Control'] = 'public, max-age=86400'
     elif path in ('/favicon.svg', '/apple-touch-icon.png'):
         response.headers['Cache-Control'] = 'public, max-age=604800'
     elif path == '/':
@@ -322,9 +326,10 @@ def recipe_regenerate_image(slug):
         except Exception:
             pass
     full.setdefault("name", recipe.get("name", slug))
-    image_path = ai_chef._generate_image(full, slug, api_key, base_url, image_model)
-    if not image_path:
-        return jsonify({"error": "Image generation failed"}), 500
+    try:
+        image_path = ai_chef._generate_image(full, slug, api_key, base_url, image_model)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     # Update JSON and DB with new image path
     rel = f"images/{image_path.name}"
     importer.update_recipe(slug, {"image": rel})
