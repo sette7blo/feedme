@@ -1547,6 +1547,13 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   <!-- SOURCE PICKER (default view) -->
   <div id="add-modal-picker" class="modal-body">
     <div class="add-source-grid">
+      <button class="add-source-btn" onclick="closeAddModal();switchTab('generate')" style="grid-column:1/-1">
+        <div class="add-source-icon" style="background:rgba(70,100,200,.08);color:rgba(70,100,200,.9)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        </div>
+        <div><div class="add-source-label">Generate with AI</div><div class="add-source-desc">Describe a recipe and let AI create it</div></div>
+      </button>
+      <div class="add-source-divider"></div>
       <button class="add-source-btn" onclick="_addSource('url')">
         <div class="add-source-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
