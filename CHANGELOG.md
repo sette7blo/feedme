@@ -11,6 +11,20 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.6.0] — 2026-04-27
+
+### Added
+- Meal planner: multiple recipes per meal slot — add more than one dish to breakfast, lunch, or dinner
+- Sidebar nav: section labels (Library, Planning) matching workstr-style UX
+
+### Changed
+- Add Recipe modal: Generate with AI, import methods, and manual entry unified into a single picker (removed from sidebar nav)
+- Connections tab merged into Settings — RSS feeds and Nostr config now live under Settings
+- Add Recipe modal: symmetrical 2-column layout for import and manual options
+
+### Removed
+- Mealie integration removed entirely — backend modules, API routes, settings, and all frontend UI
+
 ## [v1.5.1] — 2026-04-25
 
 ### Changed
@@ -149,7 +163,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/sette7blo/feedme/compare/v1.6.0...HEAD
+[v1.6.0]: https://github.com/sette7blo/feedme/compare/v1.5.1...v1.6.0
 [v1.5.1]: https://github.com/sette7blo/feedme/compare/v1.5.0...v1.5.1
 [v1.5.0]: https://github.com/sette7blo/feedme/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/sette7blo/feedme/compare/v1.3.0...v1.4.0

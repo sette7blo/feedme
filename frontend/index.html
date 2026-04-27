@@ -220,8 +220,8 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 }
 .nav::-webkit-scrollbar { display: none; }
 
-.nav-sec { height: 1px; background: var(--border-soft); margin: 6px 10px; }
-.nav-divider { height: 1px; background: var(--border-soft); margin: 6px 10px; }
+.nav-section-label { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); text-align: center; padding: 8px 4px 2px; flex-shrink: 0; }
+.nav-divider { height: 1px; background: var(--border-soft); margin: 4px 12px; flex-shrink: 0; }
 
 .nav-item {
   display: flex;
@@ -514,8 +514,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .add-source-btn:hover .add-source-icon { background: var(--amber-soft); color: var(--amber-mid); }
 .add-source-label { font-size: 13px; font-weight: 500; color: var(--brown-dark); line-height: 1.2; }
 .add-source-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.add-source-divider { grid-column: 1/-1; height: 1px; background: var(--border-soft); margin: 4px 12px; }
-.add-source-section { grid-column: 1/-1; font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); text-align: center; padding: 8px 4px 2px; }
 
 
 /* Nostr browser rows */
@@ -870,7 +868,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   <aside class="sidebar" id="sidebar">
     <nav class="nav">
 
-      <div class="nav-sec"></div>
+      <div class="nav-section-label">Library</div>
 
       <div class="nav-item active" data-tab="recipes">
         <div class="nav-icon-wrap">
@@ -906,11 +904,8 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
         <span class="nav-badge" id="stage-badge" style="display:none"></span>
       </div>
 
-      <div class="nav-sec"></div>
-
-
-
-      <div class="nav-sec"></div>
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Planning</div>
 
       <div class="nav-item" data-tab="planner">
         <div class="nav-icon-wrap">
@@ -1538,8 +1533,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
         </div>
         <div><div class="add-source-label">Generate with AI</div><div class="add-source-desc">Describe a recipe and let AI create it</div></div>
       </button>
-      <div class="add-source-divider"></div>
-      <div class="add-source-section">Import</div>
       <button class="add-source-btn" onclick="_addSource('url')">
         <div class="add-source-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
@@ -1552,18 +1545,17 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
         </div>
         <div><div class="add-source-label">From Image</div><div class="add-source-desc">Photo or scan</div></div>
       </button>
+      <button class="add-source-btn" onclick="_addSource('manual')">
+        <div class="add-source-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div><div class="add-source-label">Write Manually</div><div class="add-source-desc">From scratch</div></div>
+      </button>
       <button class="add-source-btn" onclick="_addSource('text')">
         <div class="add-source-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
         </div>
         <div><div class="add-source-label">Paste Text</div><div class="add-source-desc">Extract from raw text</div></div>
-      </button>
-      <div class="add-source-section">Manual</div>
-      <button class="add-source-btn" onclick="_addSource('manual')" style="grid-column:1/-1">
-        <div class="add-source-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </div>
-        <div><div class="add-source-label">Write Manually</div><div class="add-source-desc">From scratch</div></div>
       </button>
     </div>
   </div>
