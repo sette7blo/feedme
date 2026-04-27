@@ -484,6 +484,10 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .slot-lbl { font-size: 8px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
 .slot-name { font-family: 'Cormorant Garamond', serif; font-size: 12px; color: var(--brown-dark); margin-top: 2px; line-height: 1.3; }
 .slot-add { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.slot-item { padding: 4px 0; border-bottom: 1px solid var(--border-soft); cursor: pointer; }
+.slot-item:last-of-type { border-bottom: none; }
+.slot-add-more { font-size: 10px; color: var(--amber); margin-top: 5px; cursor: pointer; text-align: center; padding: 2px 0; }
+.slot-add-more:hover { text-decoration: underline; }
 
 /* ═══════════════════════════════════════
    CONNECTION CARDS
@@ -3759,7 +3763,8 @@ async function loadPlanner() {
     planData = {};
     for (const e of entries) {
       if (!planData[e.date]) planData[e.date] = {};
-      planData[e.date][e.meal_type] = e;
+      if (!planData[e.date][e.meal_type]) planData[e.date][e.meal_type] = [];
+      planData[e.date][e.meal_type].push(e);
     }
   } catch(e) { planData = {}; }
   renderPlanner(base);
@@ -3782,18 +3787,23 @@ function renderPlanner(base) {
           ? `<div class="day-today">${date.getDate()}</div>`
           : `<span class="day-num">${date.getDate()}</span>`}
       </div>
-      ${MEALS.map(m => day[m]
-        ? `<div class="meal-slot filled" data-date="${dateStr}" data-meal="${m}" data-slug="${day[m].recipe_slug}" onclick="openDrawer('${day[m].recipe_slug}')" style="cursor:pointer">
-             <div class="slot-lbl">${m}<span class="slot-remove" onclick="event.stopPropagation();removeMealSlot(${day[m].id},'${dateStr}','${m}')" title="Remove">&#x2715;</span></div>
-             <div class="slot-name">${day[m].recipe_name||day[m].recipe_slug}</div>
-             <div class="slot-servings">
-               <button onclick="event.stopPropagation();updateMealServings(${day[m].id},${(day[m].servings||1)-1})">-</button>
-               <span>${day[m].servings||1} srv</span>
-               <button onclick="event.stopPropagation();updateMealServings(${day[m].id},${(day[m].servings||1)+1})">+</button>
-             </div>
-           </div>`
-        : `<div class="meal-slot" onclick="openPicker('${dateStr}','${m}')"><div class="slot-lbl">${m}</div><div class="slot-add">+ Add</div></div>`
-      ).join('')}
+      ${MEALS.map(m => {
+        const entries = day[m] || [];
+        if (!entries.length) return `<div class="meal-slot" onclick="openPicker('${dateStr}','${m}')"><div class="slot-lbl">${m}</div><div class="slot-add">+ Add</div></div>`;
+        return `<div class="meal-slot filled">
+          <div class="slot-lbl">${m}</div>
+          ${entries.map(e => `<div class="slot-item" onclick="openDrawer('${e.recipe_slug}')">
+            <div class="slot-name">${e.recipe_name||e.recipe_slug}</div>
+            <div class="slot-servings">
+              <button onclick="event.stopPropagation();updateMealServings(${e.id},${(e.servings||1)-1})">-</button>
+              <span>${e.servings||1} srv</span>
+              <button onclick="event.stopPropagation();updateMealServings(${e.id},${(e.servings||1)+1})">+</button>
+              <span class="slot-remove" onclick="event.stopPropagation();removeMealSlot(${e.id},'${dateStr}','${m}')" title="Remove">&#x2715;</span>
+            </div>
+          </div>`).join('')}
+          <div class="slot-add-more" onclick="openPicker('${dateStr}','${m}')">+ Add</div>
+        </div>`;
+      }).join('')}
     </div>`;
   }).join('');
 }
@@ -4442,15 +4452,15 @@ async function acceptWeekPlan() {
 async function saveWeekTemplate() {
   const name = prompt('Template name:');
   if (!name || !name.trim()) return;
-  // Collect current week slots from the planner data
+  // Collect current week slots from planData
   const slots = [];
-  document.querySelectorAll('.meal-slot.filled').forEach(slot => {
-    const date = slot.dataset.date;
-    const meal = slot.dataset.meal;
-    const slug = slot.dataset.slug;
-    const recipeName = slot.querySelector('.slot-name')?.textContent || '';
-    if (date && meal && slug) slots.push({ date_offset: _dateOffset(date), meal_type: meal, recipe_slug: slug, recipe_name: recipeName });
-  });
+  for (const [dateStr, dayData] of Object.entries(planData)) {
+    for (const [meal, entries] of Object.entries(dayData)) {
+      for (const e of entries) {
+        slots.push({ date_offset: _dateOffset(dateStr), meal_type: meal, recipe_slug: e.recipe_slug, recipe_name: e.recipe_name || e.recipe_slug });
+      }
+    }
+  }
   if (!slots.length) { toast('No recipes in this week to save', 'err'); return; }
   try {
     await apiPost('/api/mealplan/templates', { name: name.trim(), slots });
