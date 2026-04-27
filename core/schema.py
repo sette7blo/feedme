@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS recipes (
     source_type TEXT DEFAULT 'manual',
     status      TEXT DEFAULT 'active',
     favorited   INTEGER DEFAULT 0,
-    mealie_id   TEXT,
     nostr_event_id TEXT,
     created_at  TEXT DEFAULT (datetime('now')),
     updated_at  TEXT DEFAULT (datetime('now'))

@@ -15,7 +15,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
 from core.schema import init_db
-from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, mealie_importer, mealie_exporter, nostr_importer, nostr_publisher, cook_log, meal_plan_ai
+from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, nostr_importer, nostr_publisher, cook_log, meal_plan_ai
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -435,95 +435,6 @@ def import_camera():
         return jsonify({"error": f"Vision extraction failed: {exc}"}), 500
 
 
-# ── Mealie Import ─────────────────────────────────────────────────────────────
-
-@app.route("/api/import/mealie/image/<recipe_id>")
-def mealie_image_proxy(recipe_id):
-    """Proxy a Mealie recipe image — adds auth header the browser can't send."""
-    import urllib.request, urllib.error
-    base_url = config.get("MEALIE_URL", "").strip()
-    token    = config.get("MEALIE_TOKEN", "").strip()
-    if not base_url or not token:
-        return "", 404
-    url = f"{base_url.rstrip('/')}/api/media/recipes/{recipe_id}/images/original.webp"
-    try:
-        req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            data = resp.read()
-            ct   = resp.headers.get("Content-Type", "image/webp")
-        return app.response_class(data, mimetype=ct)
-    except Exception:
-        return "", 404
-
-
-@app.route("/api/import/mealie/browse")
-def browse_mealie():
-    base_url = config.get("MEALIE_URL", "").strip()
-    token    = config.get("MEALIE_TOKEN", "").strip()
-    if not base_url or not token:
-        return jsonify({"error": "Mealie URL and token are required. Configure them in Settings."}), 400
-    page = int(request.args.get("page", 1))
-    try:
-        return jsonify(mealie_importer.browse(base_url, token, page))
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
-    except Exception as exc:
-        return jsonify({"error": f"Mealie error: {exc}"}), 500
-
-
-@app.route("/api/import/mealie", methods=["POST"])
-def import_from_mealie():
-    base_url = config.get("MEALIE_URL", "").strip()
-    token    = config.get("MEALIE_TOKEN", "").strip()
-    if not base_url or not token:
-        return jsonify({"error": "Mealie URL and token are required. Configure them in Settings."}), 400
-    data = request.get_json()
-    slugs = data.get("slugs", [])
-    if not slugs:
-        return jsonify({"error": "No recipes selected"}), 400
-    try:
-        result = mealie_importer.import_recipes(base_url, token, slugs)
-        return jsonify(result)
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
-    except Exception as exc:
-        return jsonify({"error": f"Import failed: {exc}"}), 500
-
-
-@app.route("/api/export/mealie/stats")
-def mealie_export_stats():
-    from core.db import db
-    with db() as conn:
-        total = conn.execute("SELECT COUNT(*) FROM recipes WHERE status='active'").fetchone()[0]
-        exported = conn.execute("SELECT COUNT(*) FROM recipes WHERE status='active' AND mealie_id IS NOT NULL").fetchone()[0]
-    return jsonify({"total": total, "exported": exported})
-
-
-@app.route("/api/export/mealie/browse")
-def browse_mealie_export():
-    page = int(request.args.get("page", 1))
-    return jsonify(mealie_exporter.browse_for_export(page))
-
-
-@app.route("/api/export/mealie", methods=["POST"])
-def export_to_mealie():
-    base_url = config.get("MEALIE_URL", "").strip()
-    token    = config.get("MEALIE_TOKEN", "").strip()
-    if not base_url or not token:
-        return jsonify({"error": "Mealie URL and token are required. Configure them in Settings."}), 400
-    data = request.get_json()
-    slugs = data.get("slugs", [])
-    if not slugs:
-        return jsonify({"error": "No recipes selected"}), 400
-    try:
-        result = mealie_exporter.export_recipes(base_url, token, slugs)
-        return jsonify(result)
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
-    except Exception as exc:
-        return jsonify({"error": f"Export failed: {exc}"}), 500
-
-
 @app.route("/api/import/nostr", methods=["POST"])
 def import_from_nostr():
     data = request.get_json()
@@ -823,8 +734,6 @@ def get_settings():
         "ppq_model":        config.get("PPQ_MODEL", "gpt-4o-mini"),
         "ppq_image_model":  config.get("PPQ_IMAGE_MODEL", "dall-e-3"),
         "ppq_vision_model": config.get("PPQ_VISION_MODEL", "gpt-4o"),
-        "mealie_url":       config.get("MEALIE_URL", ""),
-        "mealie_token":     config.get("MEALIE_TOKEN", ""),
         "nostr_relay":      config.get("NOSTR_RELAY", ""),
         "nostr_nsec":       config.get("NOSTR_NSEC", ""),
         "rss_feeds":           config.get("RSS_FEEDS", ""),
@@ -845,8 +754,6 @@ def save_settings():
         "ppq_model":        "PPQ_MODEL",
         "ppq_image_model":  "PPQ_IMAGE_MODEL",
         "ppq_vision_model": "PPQ_VISION_MODEL",
-        "mealie_url":       "MEALIE_URL",
-        "mealie_token":     "MEALIE_TOKEN",
         "nostr_relay":      "NOSTR_RELAY",
         "nostr_nsec":       "NOSTR_NSEC",
         "rss_feeds":              "RSS_FEEDS",

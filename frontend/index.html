@@ -342,10 +342,14 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .filter-chip:hover { border-color: var(--amber); color: var(--amber); }
 .filter-chip.active { background: var(--amber); border-color: var(--amber); color: #fff; }
 .filter-chip.active:hover { background: var(--amber-mid); border-color: var(--amber-mid); color: #fff; }
-.filter-sep { width: 1px; height: 20px; background: var(--border-soft); flex-shrink: 0; margin: 0 2px; }
 .cook-tonight-chip { color: var(--sage) !important; border-color: var(--sage) !important; }
 .cook-tonight-chip:hover { background: rgba(122,144,104,.08) !important; }
 .cook-tonight-chip.active { background: var(--sage) !important; border-color: var(--sage) !important; color: #fff !important; }
+.filter-dropdown { flex-shrink: 0; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border-soft); font-size: 12px; font-family: 'Jost', sans-serif; font-weight: 500; color: var(--text-mid); background: var(--white); cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a4a28' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 26px; transition: all .15s; }
+.filter-dropdown:hover { border-color: var(--amber); color: var(--amber); }
+.filter-dropdown.active { border-color: var(--amber); color: var(--amber); }
+.filter-clear-btn { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border-soft); font-size: 12px; font-family: 'Jost', sans-serif; font-weight: 500; color: var(--text-mid); background: var(--white); cursor: pointer; transition: all .15s; white-space: nowrap; line-height: 1.4; }
+.filter-clear-btn:hover { border-color: var(--amber); color: var(--amber); }
 .sort-select { flex-shrink: 0; margin-left: auto; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border-soft); font-size: 12px; font-family: 'Jost', sans-serif; font-weight: 500; color: var(--text-mid); background: var(--white); cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a4a28' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 26px; }
 .sort-select:hover { border-color: var(--amber); color: var(--amber); }
 .coverage-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 10px; background: rgba(122,144,104,.12); color: var(--sage); font-size: 10px; font-weight: 600; border: 1px solid rgba(122,144,104,.25); white-space: nowrap; }
@@ -367,7 +371,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .badge-url    { background: rgba(40,130,80,.85);   color: #e0ffe8; }
 .badge-manual  { background: rgba(160,100,20,.85);  color: #fff4e0; }
 .badge-camera  { background: rgba(20,130,150,.85);  color: #e0f7fa; }
-.badge-mealie  { background: rgba(210,85,15,.85);   color: #fff0e0; }
 .badge-nostr   { background: rgba(100,60,180,.85);  color: #ede0ff; }
 
 .card-body { padding: 11px 13px 13px; }
@@ -509,38 +512,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .add-source-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 .add-source-divider { grid-column: 1/-1; height: 1px; background: var(--border-soft); margin: 4px 0; }
 
-/* ═══════════════════════════════════════
-   MEALIE BROWSER MODAL
-═══════════════════════════════════════ */
-.mealie-modal-wrap { position: fixed; inset: 0; z-index: 300; display: flex; align-items: stretch; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-.mealie-modal-wrap.open { opacity: 1; pointer-events: all; }
-.mealie-modal-bg { position: absolute; inset: 0; background: rgba(44,26,6,.35); backdrop-filter: blur(2px); }
-.mealie-modal { position: relative; background: var(--white); width: 680px; max-width: 95vw; margin: auto; border-radius: var(--radius); display: flex; flex-direction: column; max-height: 88vh; box-shadow: var(--shadow-md); }
-.mealie-modal-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.mealie-modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--brown-dark); flex: 1; }
-.mealie-modal-close { width: 28px; height: 28px; border-radius: 50%; background: var(--cream); border: 1px solid var(--border-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-mid); transition: all var(--tr); flex-shrink: 0; }
-.mealie-modal-close:hover { background: var(--border-soft); color: var(--brown-dark); }
-.mealie-modal-toolbar { padding: 10px 22px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.mealie-modal-body { flex: 1; overflow-y: auto; padding: 0; }
-.mealie-modal-foot { padding: 12px 22px; border-top: 1px solid var(--border-soft); display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: var(--cream); }
-.mealie-row { display: flex; align-items: center; gap: 13px; padding: 10px 22px; border-bottom: 1px solid var(--border-soft); cursor: pointer; transition: background .12s; user-select: none; }
-.mealie-row:last-child { border-bottom: none; }
-.mealie-row:hover { background: var(--cream); }
-.mealie-row.already { opacity: .45; cursor: default; }
-.mealie-row.already:hover { background: transparent; }
-.mealie-row-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .12s; }
-.mealie-row.checked .mealie-row-check { background: var(--amber); border-color: var(--amber); }
-.mealie-row-thumb { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--cream-deep); object-fit: cover; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.mealie-row-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); }
-.mealie-row-info { flex: 1; min-width: 0; }
-.mealie-row-name { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 600; color: var(--brown-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mealie-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.mealie-already-tag { font-size: 10px; font-weight: 600; letter-spacing: .5px; color: var(--sage); background: rgba(122,144,104,.12); border-radius: 10px; padding: 2px 8px; flex-shrink: 0; }
-.mealie-pagination { display: flex; align-items: center; gap: 8px; padding: 12px 22px; border-top: 1px solid var(--border-soft); justify-content: center; flex-shrink: 0; }
-.mealie-pg-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border-soft); background: var(--white); font-size: 12px; color: var(--text-mid); cursor: pointer; transition: all .12s; }
-.mealie-pg-btn:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); }
-.mealie-pg-btn:disabled { opacity: .4; cursor: default; }
-.mealie-pg-info { font-size: 12px; color: var(--text-muted); }
 
 /* Nostr browser rows */
 .nostr-row { display: flex; align-items: center; gap: 13px; padding: 10px 14px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); cursor: pointer; transition: background .12s; user-select: none; }
@@ -758,8 +729,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 [data-theme="dark"] .gen-card { background: #231e18; }
 [data-theme="dark"] .adv-inner { background: #231e18; }
 [data-theme="dark"] .recipe-card { background: #231e18; border-color: #3a3028; }
-[data-theme="dark"] .mealie-modal { background: #231e18; }
-[data-theme="dark"] .mealie-modal-foot { background: #1e1812; }
 
 /* ═══════════════════════════════════════
    PRINT — prints the open drawer as-is
@@ -767,7 +736,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 @media print {
   body, html { height: auto !important; overflow: visible !important; }
   .topbar, .sidebar, .overlay, .toasts, .bulk-bar,
-  .mealie-modal-wrap, #scan-overlay, #scan-modal,
+  #scan-overlay, #scan-modal,
   #modal-overlay, #add-modal, #picker-overlay, #picker-modal,
   #nostr-overlay, #nostr-modal, .main { display: none !important; }
   .drawer {
@@ -951,16 +920,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
         <span class="nav-label">Generate</span>
       </div>
 
-      <div class="nav-item" data-tab="connections">
-        <div class="nav-icon-wrap">
-          <!-- Connections / plug icon -->
-          <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
-            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
-          </svg>
-        </div>
-        <span class="nav-label">Connections</span>
-      </div>
 
       <div class="nav-sec"></div>
 
@@ -1225,90 +1184,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
       </div>
 
       <!-- IMPORT -->
-      <div class="tab-panel" id="tab-connections">
-        <div class="page-header">
-          <div class="page-title">Connections</div>
-        </div>
-        <div style="max-width:640px;display:flex;flex-direction:column;gap:16px">
-
-          <!-- RSS card -->
-          <div class="conn-card">
-            <div class="conn-card-head">
-              <div class="conn-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>
-              </div>
-              <div class="conn-card-info">
-                <div class="conn-card-title">RSS Feeds</div>
-                <div class="conn-card-sub">Subscribe to recipe blogs and sites — new recipes land in Staging automatically.</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" id="fetch-all-btn" onclick="fetchAllFeeds()" style="display:none">Fetch All</button>
-            </div>
-            <div class="conn-card-body">
-              <div style="display:flex;gap:10px;margin-bottom:12px">
-                <input type="url" id="rss-url-input" class="form-input" placeholder="https://seriouseats.com/rss" style="flex:1">
-                <button class="btn btn-primary btn-sm" onclick="addFeed()">+ Add Feed</button>
-              </div>
-              <div id="feed-list" style="display:flex;flex-direction:column;gap:7px"></div>
-              <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
-                <span style="font-size:12px;color:var(--text-muted)">Auto-fetch:</span>
-                <select class="form-input" id="rss-auto-fetch" style="width:130px;font-size:12px" onchange="saveRssAutoFetch(this.value)">
-                  <option value="0">Off</option>
-                  <option value="6">Every 6 hours</option>
-                  <option value="12">Every 12 hours</option>
-                  <option value="24">Daily</option>
-                  <option value="168">Weekly</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mealie card -->
-          <div class="conn-card">
-            <div class="conn-card-head">
-              <div class="conn-card-icon" style="background:rgba(210,85,15,.1);color:rgba(210,85,15,.9)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6h3.5a1.5 1.5 0 010 3H16v4"/></svg>
-              </div>
-              <div class="conn-card-info">
-                <div class="conn-card-title">Mealie</div>
-                <div class="conn-card-sub" id="mealie-import-status">Configure your Mealie URL and token in Settings to connect.</div>
-              </div>
-              <div id="mealie-conn-status" class="conn-status conn-status--off">Not connected</div>
-            </div>
-            <div class="conn-card-actions" id="mealie-conn-actions" style="display:none">
-              <button class="btn btn-ghost btn-sm" id="mealie-browse-btn" onclick="openMealieBrowser()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Import from Mealie
-              </button>
-              <button class="btn btn-ghost btn-sm" onclick="openMealieExport()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Export to Mealie
-              </button>
-            </div>
-          </div>
-
-          <!-- Nostr card -->
-          <div class="conn-card">
-            <div class="conn-card-head">
-              <div class="conn-card-icon" style="background:rgba(100,60,180,.1);color:rgba(100,60,180,.9)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </div>
-              <div class="conn-card-info">
-                <div class="conn-card-title">Nostr</div>
-                <div class="conn-card-sub" id="nostr-conn-sub">Configure a relay URL in Settings to connect.</div>
-              </div>
-              <div id="nostr-conn-status" class="conn-status conn-status--off">Not connected</div>
-            </div>
-            <div class="conn-card-body" id="nostr-conn-body" style="display:none">
-              <div style="display:flex;gap:8px;align-items:center">
-                <input class="form-input" id="nostr-pubkey-input" placeholder="npub… or hex public key (optional)" style="flex:1;font-size:12px">
-                <button class="btn btn-ghost btn-sm" onclick="openNostrBrowser()">Browse Recipes</button>
-              </div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Leave blank to browse all Feedme recipes on the relay, or enter a public key to filter by author.</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
 
       <!-- PLANNER -->
       <div class="tab-panel" id="tab-planner">
@@ -1404,16 +1279,25 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
             </div>
           </div>
           <div class="settings-card">
-            <div class="settings-card-title">Mealie Integration <span style="opacity:.5;font-weight:300">(optional)</span></div>
-            <div class="form-group"><label class="form-label">Mealie URL</label><input id="s-mealie-url" class="form-input" placeholder="http://your-mealie-instance"></div>
-            <div class="form-group">
-              <label class="form-label">API Token</label>
-              <div class="secret-wrap">
-                <input type="password" id="s-mealie-token" class="form-input" placeholder="Token">
-                <button type="button" class="secret-eye" onclick="toggleSecret('s-mealie-token',this)" tabindex="-1">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-              </div>
+            <div class="settings-card-title" style="display:flex;align-items:center;justify-content:space-between">
+              RSS Feeds
+              <button class="btn btn-ghost btn-sm" id="fetch-all-btn" onclick="fetchAllFeeds()" style="display:none">Fetch All</button>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Subscribe to recipe blogs and sites — new recipes land in Staging automatically.</div>
+            <div style="display:flex;gap:10px;margin-bottom:12px">
+              <input type="url" id="rss-url-input" class="form-input" placeholder="https://seriouseats.com/rss" style="flex:1">
+              <button class="btn btn-primary btn-sm" onclick="addFeed()">+ Add Feed</button>
+            </div>
+            <div id="feed-list" style="display:flex;flex-direction:column;gap:7px"></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+              <span style="font-size:12px;color:var(--text-muted)">Auto-fetch:</span>
+              <select class="form-input" id="rss-auto-fetch" style="width:130px;font-size:12px" onchange="saveRssAutoFetch(this.value)">
+                <option value="0">Off</option>
+                <option value="6">Every 6 hours</option>
+                <option value="12">Every 12 hours</option>
+                <option value="24">Daily</option>
+                <option value="168">Weekly</option>
+              </select>
             </div>
           </div>
           <div class="settings-card">
@@ -1435,6 +1319,13 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
             <div id="nostr-npub-row" style="display:none;background:var(--cream);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;color:var(--text-mid)">
               <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:3px">Your public key (npub)</span>
               <span id="nostr-npub-val" style="font-family:monospace;word-break:break-all"></span>
+            </div>
+            <div id="nostr-browse-section" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft)">
+              <div style="display:flex;gap:8px;align-items:center">
+                <input class="form-input" id="nostr-pubkey-input" placeholder="npub… or hex public key (optional)" style="flex:1;font-size:12px">
+                <button class="btn btn-ghost btn-sm" onclick="openNostrBrowser()">Browse Recipes</button>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Leave blank to browse all Feedme recipes on the relay, or enter a public key to filter by author.</div>
             </div>
           </div>
           <div class="settings-card">
@@ -1501,75 +1392,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   </main>
 </div>
 
-<!-- MEALIE BROWSER MODAL -->
-<div class="mealie-modal-wrap" id="mealie-modal-wrap">
-  <div class="mealie-modal-bg" onclick="closeMealieBrowser()"></div>
-  <div class="mealie-modal">
-    <div class="mealie-modal-head">
-      <div class="mealie-modal-title">Mealie Library</div>
-      <div id="mealie-select-count" style="font-size:12px;color:var(--text-muted)"></div>
-      <button class="mealie-modal-close" onclick="closeMealieBrowser()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="mealie-modal-toolbar">
-      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-mid);cursor:pointer;user-select:none">
-        <input type="checkbox" id="mealie-select-all" onchange="mealieToggleAll(this.checked)" style="accent-color:var(--amber)">
-        Select all on this page
-      </label>
-      <span style="flex:1"></span>
-      <span id="mealie-page-label" style="font-size:12px;color:var(--text-muted)"></span>
-    </div>
-    <div class="mealie-modal-body" id="mealie-modal-body">
-      <div style="padding:40px;text-align:center;color:var(--text-muted);font-style:italic">Loading…</div>
-    </div>
-    <div class="mealie-pagination" id="mealie-pagination" style="display:none">
-      <button class="mealie-pg-btn" id="mealie-prev-btn" onclick="loadMealiePage(_mealiePage-1)" disabled>← Prev</button>
-      <span class="mealie-pg-info" id="mealie-pg-info"></span>
-      <button class="mealie-pg-btn" id="mealie-next-btn" onclick="loadMealiePage(_mealiePage+1)">Next →</button>
-    </div>
-    <div class="mealie-modal-foot">
-      <span id="mealie-foot-count" style="font-size:13px;color:var(--text-muted);flex:1">No recipes selected</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeMealieBrowser()">Cancel</button>
-      <button class="btn btn-primary btn-sm" id="mealie-import-btn" onclick="importFromMealie()" disabled>Import to Staging</button>
-    </div>
-  </div>
-</div>
-
-<!-- Mealie Export Modal -->
-<div class="mealie-modal-wrap" id="mealie-export-wrap">
-  <div class="mealie-modal-bg" onclick="closeMealieExport()"></div>
-  <div class="mealie-modal">
-    <div class="mealie-modal-head">
-      <div class="mealie-modal-title">Export to Mealie</div>
-      <div id="mex-select-count" style="font-size:12px;color:var(--text-muted)"></div>
-      <button class="mealie-modal-close" onclick="closeMealieExport()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="mealie-modal-toolbar">
-      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-mid);cursor:pointer;user-select:none">
-        <input type="checkbox" id="mex-select-all" onchange="mexToggleAll(this.checked)" style="accent-color:var(--amber)">
-        Select all on this page
-      </label>
-      <span style="flex:1"></span>
-      <span id="mex-page-label" style="font-size:12px;color:var(--text-muted)"></span>
-    </div>
-    <div class="mealie-modal-body" id="mex-body">
-      <div style="padding:40px;text-align:center;color:var(--text-muted);font-style:italic">Loading...</div>
-    </div>
-    <div class="mealie-pagination" id="mex-pagination" style="display:none">
-      <button class="mealie-pg-btn" id="mex-prev-btn" onclick="loadMexPage(_mexPage-1)" disabled>Prev</button>
-      <span class="mealie-pg-info" id="mex-pg-info"></span>
-      <button class="mealie-pg-btn" id="mex-next-btn" onclick="loadMexPage(_mexPage+1)">Next</button>
-    </div>
-    <div class="mealie-modal-foot">
-      <span id="mex-foot-count" style="font-size:13px;color:var(--text-muted);flex:1">No recipes selected</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeMealieExport()">Cancel</button>
-      <button class="btn btn-primary btn-sm" id="mex-export-btn" onclick="exportToMealie()" disabled>Export to Mealie</button>
-    </div>
-  </div>
-</div>
 
 <!-- DRAWER -->
 <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
@@ -1859,7 +1681,6 @@ const FOOD_SVG = {
   rss:    `<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#c0a880" stroke-width="1.2" stroke-linecap="round"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1.5" fill="#c0a880" stroke="none"/></svg>`,
   url:    `<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#c0a880" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>`,
   camera: `<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#c0a880" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
-  mealie: `<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#c0a880" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6h3.5a1.5 1.5 0 010 3H16v4"/></svg>`,
 };
 
 /* ── Image helpers ── */
@@ -1873,8 +1694,8 @@ function _extract_ld_image(img) {
 
 /* ── Source badge ── */
 function srcBadge(src) {
-  const l = { ai:'AI', rss:'RSS', url:'URL', manual:'Manual', camera:'Camera', mealie:'Mealie', nostr:'Nostr' };
-  const c = { ai:'badge-ai', rss:'badge-rss', url:'badge-url', manual:'badge-manual', camera:'badge-camera', mealie:'badge-mealie', nostr:'badge-nostr' };
+  const l = { ai:'AI', rss:'RSS', url:'URL', manual:'Manual', camera:'Camera', nostr:'Nostr' };
+  const c = { ai:'badge-ai', rss:'badge-rss', url:'badge-url', manual:'badge-manual', camera:'badge-camera', nostr:'badge-nostr' };
   return `<span class="src-badge ${c[src]||'badge-manual'}">${l[src]||src||'Manual'}</span>`;
 }
 
@@ -1916,7 +1737,6 @@ function switchTab(tab) {
   if (tab === 'favorites')   loadFavorites();
   if (tab === 'staging')     loadStaged();
   if (tab === 'settings')    loadSettings();
-  if (tab === 'connections') loadConnections();
   if (tab === 'planner')     { loadPlanner(); loadTemplates(); }
   if (tab === 'pantry')      loadPantry();
   if (tab === 'grocery')     loadGrocery();
@@ -2000,26 +1820,32 @@ function _recipeProtein(r) {
 function buildFilterChips() {
   const bar = document.getElementById('filter-bar');
   if (!bar) return;
-  const allClear = !_filters.max_time && !_filters.servings && !_filters.protein;
-  const chip = (label, key, value, active) =>
-    `<button class="filter-chip${active ? ' active' : ''}" onclick="setFilter('${key}','${value}')">${label}</button>`;
+  const anyActive = _filters.max_time || _filters.servings || _filters.protein;
+  const dd = (key) => `filter-dropdown${_filters[key] ? ' active' : ''}`;
 
   let html = `<button class="filter-chip cook-tonight-chip${_cookTonight ? ' active' : ''}" onclick="toggleCookTonight()">Cook tonight</button>`;
 
-  html += `<div class="filter-sep"></div>`;
-  html += `<button class="filter-chip${allClear ? ' active' : ''}" onclick="clearFilters()">All</button>`;
+  html += `<select class="${dd('max_time')}" onchange="setFilter('max_time',this.value)">
+    <option value="">Time</option>
+    <option value="30"${_filters.max_time===30?' selected':''}>≤ 30 min</option>
+    <option value="60"${_filters.max_time===60?' selected':''}>≤ 1 hour</option>
+  </select>`;
 
-  html += `<div class="filter-sep"></div>`;
-  html += chip('≤ 30 min', 'max_time', 30, _filters.max_time === 30);
-  html += chip('≤ 1 hour', 'max_time', 60, _filters.max_time === 60);
+  html += `<select class="${dd('servings')}" onchange="setFilter('servings',this.value)">
+    <option value="">Servings</option>
+    <option value="1-2"${_filters.servings==='1-2'?' selected':''}>1–2</option>
+    <option value="3-4"${_filters.servings==='3-4'?' selected':''}>3–4</option>
+    <option value="5+"${_filters.servings==='5+'?' selected':''}>5+</option>
+  </select>`;
 
-  html += `<div class="filter-sep"></div>`;
-  html += chip('1–2 servings', 'servings', '1-2', _filters.servings === '1-2');
-  html += chip('3–4 servings', 'servings', '3-4', _filters.servings === '3-4');
-  html += chip('5+ servings',  'servings', '5+',  _filters.servings === '5+');
+  html += `<select class="${dd('protein')}" onchange="setFilter('protein',this.value)">
+    <option value="">Protein</option>
+    ${_PROTEINS.map(p => `<option value="${p}"${_filters.protein===p?' selected':''}>${p}</option>`).join('')}
+  </select>`;
 
-  html += `<div class="filter-sep"></div>`;
-  html += _PROTEINS.map(p => chip(p, 'protein', p, _filters.protein === p)).join('');
+  if (anyActive) {
+    html += `<button class="filter-clear-btn" onclick="clearFilters()">Clear</button>`;
+  }
 
   html += `<select class="sort-select" onchange="_sort=this.value;renderRecipes()">
     <option value="newest"${_sort==='newest'?' selected':''}>Newest</option>
@@ -2031,8 +1857,11 @@ function buildFilterChips() {
 }
 
 function setFilter(key, value) {
-  const parsed = key === 'max_time' ? parseInt(value) : value;
-  _filters[key] = _filters[key] === parsed ? null : parsed;
+  if (!value) {
+    _filters[key] = null;
+  } else {
+    _filters[key] = key === 'max_time' ? parseInt(value) : value;
+  }
   buildFilterChips();
   renderRecipes();
 }
@@ -2435,9 +2264,8 @@ async function openDrawer(slug) {
       ${steps.length ? `<div class="d-sec">Method</div><ol class="step-list">${steps.map(s=>`<li>${typeof s==='string'?s:s.text}</li>`).join('')}</ol>` : ''}
       ${nutHtml}
       <div class="cook-log-section" id="d-cook-log"><div style="font-size:12px;color:var(--text-muted)">Loading cook history…</div></div>
-      ${(full.source_url || r.mealie_id) ? `<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:7px">
+      ${(full.source_url || r.nostr_event_id) ? `<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:7px">
         ${full.source_url ? `<a href="${full.source_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Original source</a>` : ''}
-        ${r.mealie_id ? `<span style="font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Mealie ID: <code style="font-size:10px;background:var(--cream);padding:1px 4px;border-radius:3px;color:var(--text-mid)">${r.mealie_id}</code></span>` : ''}
         ${r.nostr_event_id ? `<span style="font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Nostr event: <code style="font-size:10px;background:var(--cream);padding:1px 4px;border-radius:3px;color:var(--text-mid)">${r.nostr_event_id.slice(0,16)}…</code></span>` : ''}
       </div>` : ''}`;
     // Load cook history async
@@ -3264,42 +3092,8 @@ async function loadConnections() {
     }
     const autoFetchSel = document.getElementById('rss-auto-fetch');
     if (autoFetchSel && s.rss_auto_fetch_hours != null) autoFetchSel.value = String(s.rss_auto_fetch_hours);
-    // Mealie
-    const mealieActions = document.getElementById('mealie-conn-actions');
-    const mealieStatus  = document.getElementById('mealie-conn-status');
-    const mealieSubtitle = document.getElementById('mealie-import-status');
-    const mealieBrowse  = document.getElementById('mealie-browse-btn');
-    if (s.mealie_url && s.mealie_token) {
-      mealieStatus.textContent = 'Connected';
-      mealieStatus.className = 'conn-status conn-status--on';
-      mealieSubtitle.textContent = s.mealie_url;
-      mealieActions.style.display = 'flex';
-      if (mealieBrowse) mealieBrowse.disabled = false;
-      apiGet('/api/export/mealie/stats').then(st => {
-        if (st.exported > 0) mealieSubtitle.textContent = `${s.mealie_url} — ${st.exported} of ${st.total} recipes exported`;
-      }).catch(() => {});
-    } else {
-      mealieStatus.textContent = 'Not connected';
-      mealieStatus.className = 'conn-status conn-status--off';
-      mealieSubtitle.innerHTML = `Configure your Mealie URL and token in <span style="cursor:pointer;text-decoration:underline;color:var(--amber)" onclick="switchTab('settings')">Settings →</span>`;
-      mealieActions.style.display = 'none';
-    }
-    // Nostr
-    const nostrStatus = document.getElementById('nostr-conn-status');
-    const nostrSub    = document.getElementById('nostr-conn-sub');
-    const nostrBody   = document.getElementById('nostr-conn-body');
+    // Nostr relay URL — used by browse modal
     _nostrRelayUrl = s.nostr_relay || '';
-    if (_nostrRelayUrl) {
-      nostrStatus.textContent = 'Connected';
-      nostrStatus.className = 'conn-status conn-status--on';
-      nostrSub.textContent = _nostrRelayUrl;
-      nostrBody.style.display = '';
-    } else {
-      nostrStatus.textContent = 'Not connected';
-      nostrStatus.className = 'conn-status conn-status--off';
-      nostrSub.innerHTML = `Configure a relay URL in <span style="cursor:pointer;text-decoration:underline;color:var(--amber)" onclick="switchTab('settings')">Settings →</span>`;
-      nostrBody.style.display = 'none';
-    }
   } catch(e) {}
 }
 
@@ -3416,274 +3210,6 @@ function toggleSecret(fieldId, btn) {
     : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
 }
 
-/* ── Mealie Browser ── */
-let _mealieItems   = [];   // current page items
-let _mealieSelected = new Set();  // selected mealie slugs (not feedme slugs)
-let _mealiePage    = 1;
-let _mealiePages   = 1;
-let _mealieTotal   = 0;
-
-async function openMealieBrowser() {
-  _mealieSelected.clear();
-  _mealiePage = 1;
-  document.getElementById('mealie-modal-wrap').classList.add('open');
-  await loadMealiePage(1);
-}
-
-function closeMealieBrowser() {
-  document.getElementById('mealie-modal-wrap').classList.remove('open');
-}
-
-async function loadMealiePage(page) {
-  _mealiePage = page;
-  const body = document.getElementById('mealie-modal-body');
-  body.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);font-style:italic">Loading…</div>`;
-  try {
-    const data = await apiGet(`/api/import/mealie/browse?page=${page}`);
-    _mealieItems = data.items || [];
-    _mealieTotal = data.total || 0;
-    _mealiePages = data.pages || 1;
-    _renderMealieList();
-    _updateMealieFooter();
-    // Pagination controls
-    const pg = document.getElementById('mealie-pagination');
-    const pgInfo = document.getElementById('mealie-pg-info');
-    const prevBtn = document.getElementById('mealie-prev-btn');
-    const nextBtn = document.getElementById('mealie-next-btn');
-    pg.style.display = _mealiePages > 1 ? 'flex' : 'none';
-    pgInfo.textContent = `Page ${_mealiePage} of ${_mealiePages}`;
-    prevBtn.disabled = _mealiePage <= 1;
-    nextBtn.disabled = _mealiePage >= _mealiePages;
-    document.getElementById('mealie-page-label').textContent =
-      `${_mealieTotal} recipe${_mealieTotal !== 1 ? 's' : ''} in Mealie`;
-    // Reset select-all checkbox
-    document.getElementById('mealie-select-all').checked = false;
-  } catch(e) {
-    body.innerHTML = `<div style="padding:32px 22px;color:#c05040;font-size:13px">${e.message}</div>`;
-    document.getElementById('mealie-pagination').style.display = 'none';
-  }
-}
-
-function _renderMealieList() {
-  const body = document.getElementById('mealie-modal-body');
-  if (!_mealieItems.length) {
-    body.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);font-style:italic">No recipes found in Mealie.</div>`;
-    return;
-  }
-  body.innerHTML = _mealieItems.map(r => {
-    const already  = r.already_imported;
-    const checked  = _mealieSelected.has(r.slug);
-    const checkSvg = checked
-      ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
-      : '';
-    const meta = [r.recipe_category, r.total_time].filter(Boolean).join(' · ');
-    return `
-    <div class="mealie-row${already ? ' already' : ''}${checked ? ' checked' : ''}"
-         onclick="${already ? '' : `mealieToggleRow('${r.slug}')`}"
-         data-slug="${r.slug}">
-      <div class="mealie-row-check">${checkSvg}</div>
-      <div class="mealie-row-thumb">
-        <img src="${r.image}" alt="${r.name}" onerror="this.style.display='none'">
-      </div>
-      <div class="mealie-row-info">
-        <div class="mealie-row-name">${r.name}</div>
-        ${meta ? `<div class="mealie-row-meta">${meta}</div>` : ''}
-      </div>
-      ${already ? `<div class="mealie-already-tag">Already imported</div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function mealieToggleRow(slug) {
-  if (_mealieSelected.has(slug)) _mealieSelected.delete(slug);
-  else _mealieSelected.add(slug);
-  // Update just this row without full re-render
-  const row = document.querySelector(`.mealie-row[data-slug="${slug}"]`);
-  if (row) {
-    const checked = _mealieSelected.has(slug);
-    row.classList.toggle('checked', checked);
-    row.querySelector('.mealie-row-check').innerHTML = checked
-      ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
-      : '';
-  }
-  _updateMealieFooter();
-}
-
-function mealieToggleAll(checked) {
-  _mealieItems.filter(r => !r.already_imported).forEach(r => {
-    if (checked) _mealieSelected.add(r.slug);
-    else _mealieSelected.delete(r.slug);
-  });
-  _renderMealieList();
-  _updateMealieFooter();
-}
-
-function _updateMealieFooter() {
-  const n = _mealieSelected.size;
-  const foot = document.getElementById('mealie-foot-count');
-  const btn  = document.getElementById('mealie-import-btn');
-  const head = document.getElementById('mealie-select-count');
-  foot.textContent = n === 0
-    ? 'No recipes selected'
-    : `${n} recipe${n !== 1 ? 's' : ''} selected`;
-  head.textContent = n > 0 ? `${n} selected` : '';
-  btn.disabled = n === 0;
-}
-
-async function importFromMealie() {
-  const slugs = [..._mealieSelected];
-  if (!slugs.length) return;
-  const btn = document.getElementById('mealie-import-btn');
-  btn.disabled = true;
-  btn.textContent = 'Importing…';
-  try {
-    const result = await apiPost('/api/import/mealie', { slugs });
-    const n = result.imported?.length || 0;
-    const skipped = result.skipped?.length || 0;
-    const errors  = result.errors?.length || 0;
-    closeMealieBrowser();
-    let msg = `${n} recipe${n !== 1 ? 's' : ''} imported to Staging`;
-    if (skipped) msg += ` · ${skipped} already existed`;
-    if (errors)  msg += ` · ${errors} failed`;
-    toast(msg, n > 0 ? 'ok' : 'err');
-    if (n > 0) {
-      loadStaged();
-      document.getElementById('mealie-import-status').textContent =
-        `Last import: ${n} recipe${n !== 1 ? 's' : ''} added to Staging.`;
-    }
-  } catch(e) {
-    toast(e.message, 'err');
-    btn.disabled = false;
-    btn.textContent = 'Import to Staging';
-  }
-}
-
-/* ── Mealie Export ── */
-let _mexSelected = new Set();
-let _mexItems = [];
-let _mexPage = 1;
-let _mexPages = 1;
-let _mexTotal = 0;
-
-async function openMealieExport() {
-  _mexSelected.clear();
-  _mexPage = 1;
-  document.getElementById('mealie-export-wrap').classList.add('open');
-  await loadMexPage(1);
-}
-
-function closeMealieExport() {
-  document.getElementById('mealie-export-wrap').classList.remove('open');
-}
-
-async function loadMexPage(page) {
-  _mexPage = page;
-  const body = document.getElementById('mex-body');
-  body.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);font-style:italic">Loading...</div>';
-  try {
-    const data = await apiGet(`/api/export/mealie/browse?page=${page}`);
-    _mexItems = data.items || [];
-    _mexTotal = data.total || 0;
-    _mexPages = data.pages || 1;
-    _renderMexList();
-    _updateMexFooter();
-    const pg = document.getElementById('mex-pagination');
-    pg.style.display = _mexPages > 1 ? 'flex' : 'none';
-    document.getElementById('mex-pg-info').textContent = `Page ${_mexPage} of ${_mexPages}`;
-    document.getElementById('mex-prev-btn').disabled = _mexPage <= 1;
-    document.getElementById('mex-next-btn').disabled = _mexPage >= _mexPages;
-    document.getElementById('mex-page-label').textContent =
-      `${_mexTotal} recipe${_mexTotal !== 1 ? 's' : ''} in Feedme`;
-    document.getElementById('mex-select-all').checked = false;
-  } catch(e) {
-    body.innerHTML = `<div style="padding:32px 22px;color:#c05040;font-size:13px">${e.message}</div>`;
-    document.getElementById('mex-pagination').style.display = 'none';
-  }
-}
-
-function _renderMexList() {
-  const body = document.getElementById('mex-body');
-  if (!_mexItems.length) {
-    body.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);font-style:italic">No active recipes.</div>';
-    return;
-  }
-  body.innerHTML = _mexItems.map(r => {
-    const already = r.already_exported;
-    const checked = _mexSelected.has(r.slug);
-    const checkSvg = checked
-      ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-      : '';
-    const meta = [r.category, r.cook_time].filter(Boolean).join(' \u00b7 ');
-    const imgSrc = r.image ? `/${r.image}` : '';
-    return `
-    <div class="mealie-row${already ? ' already' : ''}${checked ? ' checked' : ''}"
-         onclick="${already ? '' : `mexToggleRow('${r.slug}')`}"
-         data-slug="${r.slug}">
-      <div class="mealie-row-check">${checkSvg}</div>
-      <div class="mealie-row-thumb">
-        ${imgSrc ? `<img src="${imgSrc}" alt="${r.name}" onerror="this.style.display='none'">` : ''}
-      </div>
-      <div class="mealie-row-info">
-        <div class="mealie-row-name">${r.name}</div>
-        ${meta ? `<div class="mealie-row-meta">${meta}</div>` : ''}
-      </div>
-      ${already ? '<div class="mealie-already-tag">In Mealie</div>' : ''}
-    </div>`;
-  }).join('');
-}
-
-function mexToggleRow(slug) {
-  if (_mexSelected.has(slug)) _mexSelected.delete(slug);
-  else _mexSelected.add(slug);
-  const row = document.querySelector(`#mealie-export-wrap .mealie-row[data-slug="${slug}"]`);
-  if (row) {
-    const checked = _mexSelected.has(slug);
-    row.classList.toggle('checked', checked);
-    row.querySelector('.mealie-row-check').innerHTML = checked
-      ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-      : '';
-  }
-  _updateMexFooter();
-}
-
-function mexToggleAll(checked) {
-  _mexItems.filter(r => !r.already_exported).forEach(r => {
-    if (checked) _mexSelected.add(r.slug);
-    else _mexSelected.delete(r.slug);
-  });
-  _renderMexList();
-  _updateMexFooter();
-}
-
-function _updateMexFooter() {
-  const n = _mexSelected.size;
-  document.getElementById('mex-foot-count').textContent = n === 0
-    ? 'No recipes selected'
-    : `${n} recipe${n !== 1 ? 's' : ''} selected`;
-  document.getElementById('mex-select-count').textContent = n > 0 ? `${n} selected` : '';
-  document.getElementById('mex-export-btn').disabled = n === 0;
-}
-
-async function exportToMealie() {
-  const slugs = [..._mexSelected];
-  if (!slugs.length) return;
-  const btn = document.getElementById('mex-export-btn');
-  btn.disabled = true;
-  btn.textContent = 'Exporting...';
-  try {
-    const result = await apiPost('/api/export/mealie', { slugs });
-    const n = result.exported?.length || 0;
-    const errors = result.errors?.length || 0;
-    closeMealieExport();
-    let msg = `${n} recipe${n !== 1 ? 's' : ''} exported to Mealie`;
-    if (errors) msg += ` \u00b7 ${errors} failed`;
-    toast(msg, n > 0 ? 'ok' : 'err');
-  } catch(e) {
-    toast(e.message, 'err');
-  }
-  btn.disabled = false;
-  btn.textContent = 'Export to Mealie';
-}
 
 /* ── Nostr Browser ── */
 let _nostrEvents = {};   // id → event
@@ -3951,8 +3477,6 @@ async function loadSettings() {
     document.getElementById('s-ppq-model').value          = s.ppq_model        || '';
     document.getElementById('s-ppq-image-model').value    = s.ppq_image_model  || '';
     document.getElementById('s-ppq-vision-model').value   = s.ppq_vision_model || '';
-    document.getElementById('s-mealie-url').value          = s.mealie_url       || '';
-    document.getElementById('s-mealie-token').value       = s.mealie_token     || '';
     document.getElementById('s-nostr-relay').value        = s.nostr_relay      || '';
     document.getElementById('s-nostr-nsec').value         = s.nostr_nsec       || '';
     if (s.nostr_nsec) _loadNostrNpub();
@@ -3969,6 +3493,7 @@ async function loadSettings() {
     const prefUnits = document.getElementById('s-preferred-units');
     if (prefUnits) prefUnits.value = s.preferred_units || '';
   } catch(e) { toast('Could not load settings', 'err'); }
+  loadConnections();
 }
 
 function _setAiStatusBadge(state, model) {
@@ -4195,8 +3720,6 @@ async function saveSettings() {
     ppq_model:        document.getElementById('s-ppq-model').value,
     ppq_image_model:  document.getElementById('s-ppq-image-model').value,
     ppq_vision_model: document.getElementById('s-ppq-vision-model').value,
-    mealie_url:       document.getElementById('s-mealie-url').value,
-    mealie_token:     document.getElementById('s-mealie-token').value,
     nostr_relay:      document.getElementById('s-nostr-relay').value,
     nostr_nsec:       document.getElementById('s-nostr-nsec').value,
     rss_feeds:        existing.rss_feeds || '',
