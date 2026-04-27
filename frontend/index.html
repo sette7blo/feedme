@@ -514,8 +514,8 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .add-source-btn:hover .add-source-icon { background: var(--amber-soft); color: var(--amber-mid); }
 .add-source-label { font-size: 13px; font-weight: 500; color: var(--brown-dark); line-height: 1.2; }
 .add-source-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.add-source-divider { grid-column: 1/-1; height: 1px; background: var(--border-soft); margin: 4px 0; }
-.add-source-section { grid-column: 1/-1; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); padding: 6px 0 2px; }
+.add-source-divider { grid-column: 1/-1; height: 1px; background: var(--border-soft); margin: 4px 12px; }
+.add-source-section { grid-column: 1/-1; font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); text-align: center; padding: 8px 4px 2px; }
 
 
 /* Nostr browser rows */
@@ -1532,13 +1532,13 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   <!-- SOURCE PICKER (default view) -->
   <div id="add-modal-picker" class="modal-body">
     <div class="add-source-grid">
-      <div class="add-source-section">Generate</div>
       <button class="add-source-btn" onclick="closeAddModal();switchTab('generate')" style="grid-column:1/-1">
         <div class="add-source-icon" style="background:rgba(70,100,200,.08);color:rgba(70,100,200,.9)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="5"/><circle cx="12" cy="2.5" r="1" fill="currentColor" stroke="none"/><rect x="5" y="5" width="14" height="10" rx="3"/><circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none"/><path d="M9 13.5 Q12 15.5 15 13.5"/><rect x="9" y="15" width="6" height="3" rx="1"/><path d="M5 18 H3 M19 18 H21"/></svg>
         </div>
         <div><div class="add-source-label">Generate with AI</div><div class="add-source-desc">Describe a recipe and let AI create it</div></div>
       </button>
+      <div class="add-source-divider"></div>
       <div class="add-source-section">Import</div>
       <button class="add-source-btn" onclick="_addSource('url')">
         <div class="add-source-icon">
