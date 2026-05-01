@@ -11,6 +11,21 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.7.0] — 2026-05-01
+
+### Added
+- Subtab navigation: Recipes tab now has Library, Favorites, Staging, Trash subtabs
+- Subtab navigation: Planner tab now has Plan and Grocery subtabs
+- Mobile bottom navigation bar for iOS and small screens
+- Collapsible settings sections with icons (AI, RSS, Equipment, Units, Appearance)
+
+### Changed
+- Sidebar condensed from 8 tabs to 4 (Recipes, Planner, Pantry, Settings)
+- Settings pinned to bottom of sidebar
+
+### Removed
+- Nostr integration removed entirely — backend modules, API routes, settings, frontend UI, and pynostr dependency
+
 ## [v1.6.0] — 2026-04-27
 
 ### Added

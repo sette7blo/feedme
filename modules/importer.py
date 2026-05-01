@@ -81,7 +81,6 @@ def parse_recipe_json(path: Path) -> dict | None:
         "source_url": data.get("source_url") or data.get("url", ""),
         "source_type": data.get("source_type", "manual"),
         "status": data.get("status", "active"),
-        "nostr_event_id": data.get("nostr_event_id"),
     }
 
 
@@ -104,12 +103,12 @@ def sync_all() -> dict:
                         (slug, name, description, json_path, image_url,
                          prep_time, cook_time, total_time, servings,
                          category, cuisine, tags, ingredients,
-                         source_url, source_type, status, nostr_event_id)
+                         source_url, source_type, status)
                     VALUES
                         (:slug, :name, :description, :json_path, :image_url,
                          :prep_time, :cook_time, :total_time, :servings,
                          :category, :cuisine, :tags, :ingredients,
-                         :source_url, :source_type, :status, :nostr_event_id)
+                         :source_url, :source_type, :status)
                     ON CONFLICT(slug) DO UPDATE SET
                         name=excluded.name,
                         description=excluded.description,
@@ -125,7 +124,6 @@ def sync_all() -> dict:
                         source_url=excluded.source_url,
                         source_type=excluded.source_type,
                         status=excluded.status,
-                        nostr_event_id=COALESCE(excluded.nostr_event_id, recipes.nostr_event_id),
                         updated_at=datetime('now')
                 """, recipe)
                 synced += 1
@@ -168,12 +166,12 @@ def save_recipe_json(recipe_data: dict, status: str = "staged") -> Path | None:
                     (slug, name, description, json_path, image_url,
                      prep_time, cook_time, total_time, servings,
                      category, cuisine, tags, ingredients,
-                     source_url, source_type, status, nostr_event_id)
+                     source_url, source_type, status)
                 VALUES
                     (:slug, :name, :description, :json_path, :image_url,
                      :prep_time, :cook_time, :total_time, :servings,
                      :category, :cuisine, :tags, :ingredients,
-                     :source_url, :source_type, :status, :nostr_event_id)
+                     :source_url, :source_type, :status)
                 ON CONFLICT(slug) DO UPDATE SET
                     name=excluded.name,
                     prep_time=excluded.prep_time,
@@ -183,7 +181,6 @@ def save_recipe_json(recipe_data: dict, status: str = "staged") -> Path | None:
                     category=excluded.category,
                     cuisine=excluded.cuisine,
                     status=excluded.status,
-                    nostr_event_id=COALESCE(excluded.nostr_event_id, recipes.nostr_event_id),
                     updated_at=datetime('now')
             """, parsed)
     return path

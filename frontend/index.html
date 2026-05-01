@@ -48,23 +48,20 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .topbar {
   background: var(--white);
   border-bottom: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: 230px 1fr;
-  grid-template-rows: auto auto;
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
   z-index: 100;
   box-shadow: 0 1px 0 var(--border-soft);
+  padding: 8px 16px 6px;
+  gap: 0;
 }
 
-/* Logo zone — fixed width, spans both topbar rows */
+/* Logo zone — inline in row 1 */
 .topbar-logo {
-  width: 230px;
-  grid-row: 1 / 3;
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  border-right: 1px solid var(--border-soft);
-  padding: 0 16px 0 18px;
 }
 
 /* Bowl SVG mark */
@@ -121,15 +118,16 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .topbar-row1 {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 10px 20px 6px 20px;
+  gap: 10px;
+  height: 38px;
+  flex-shrink: 0;
 }
 
 .topbar-row2 {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 20px 10px 20px;
+  flex: 1;
 }
 
 .search-wrap {
@@ -315,6 +313,15 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .tab-panel.active { display: block; animation: fu .2s ease; }
 @keyframes fu { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+/* Sub-tabs */
+.sub-tabs { display: flex; gap: 0; margin-bottom: 18px; border-bottom: 1.5px solid var(--border-soft); overflow-x: auto; }
+.sub-tab { padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; white-space: nowrap; transition: color .15s; }
+.sub-tab:hover { color: var(--brown-dark); }
+.sub-tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+.sub-tab .sub-tab-badge { display: inline-block; background: var(--amber); color: #fff; font-size: 9px; font-weight: 700; border-radius: 8px; padding: 1px 5px; margin-left: 5px; vertical-align: middle; }
+.sub-panel { display: none; }
+.sub-panel.active { display: block; }
+
 .sec-top {
   font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
   color: var(--text-muted); margin-bottom: 14px;
@@ -365,13 +372,11 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .food-svg { width: 56px; height: 56px; opacity: .55; }
 
 .src-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; line-height: 1.4; }
-.nostr-dot { position: absolute; bottom: 7px; right: 7px; width: 22px; height: 22px; border-radius: 50%; background: rgba(100,60,180,.9); display: flex; align-items: center; justify-content: center; }
 .badge-ai     { background: rgba(70,100,200,.85); color: #e0ecff; }
 .badge-rss    { background: rgba(130,60,170,.85);  color: #f0e4ff; }
 .badge-url    { background: rgba(40,130,80,.85);   color: #e0ffe8; }
 .badge-manual  { background: rgba(160,100,20,.85);  color: #fff4e0; }
 .badge-camera  { background: rgba(20,130,150,.85);  color: #e0f7fa; }
-.badge-nostr   { background: rgba(100,60,180,.85);  color: #ede0ff; }
 
 .card-body { padding: 11px 13px 13px; }
 .card-cat { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--amber); margin-bottom: 3px; }
@@ -516,18 +521,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .add-source-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 
 
-/* Nostr browser rows */
-.nostr-row { display: flex; align-items: center; gap: 13px; padding: 10px 14px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); cursor: pointer; transition: background .12s; user-select: none; }
-.nostr-row:hover { background: var(--cream); }
-.nostr-row.checked { border-color: var(--amber); background: var(--amber-pale); }
-.nostr-row.already { opacity: .45; cursor: default; }
-.nostr-row.already:hover { background: transparent; }
-.nostr-row-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .12s; }
-.nostr-row.checked .nostr-row-check { background: var(--amber); border-color: var(--amber); }
-.nostr-row-info { flex: 1; min-width: 0; }
-.nostr-row-name { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 600; color: var(--brown-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nostr-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.nostr-already-tag { font-size: 10px; font-weight: 600; letter-spacing: .5px; color: var(--sage); background: rgba(122,144,104,.12); border-radius: 10px; padding: 2px 8px; flex-shrink: 0; }
 
 /* ═══════════════════════════════════════
    PANTRY & GROCERY
@@ -653,8 +646,16 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .img-thumb-item .img-thumb-remove { position:absolute; top:2px; right:2px; width:16px; height:16px; border-radius:50%; background:rgba(0,0,0,.55); color:white; border:none; cursor:pointer; font-size:10px; display:flex; align-items:center; justify-content:center; line-height:1; }
 .img-add-more { width:72px; height:72px; border-radius:6px; border:1.5px dashed var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted); font-size:22px; transition:all var(--tr); flex-shrink:0; background:none; }
 .img-add-more:hover { border-color:var(--amber); color:var(--amber); }
-.settings-card { background: var(--white); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 19px 21px; margin-bottom: 13px; box-shadow: var(--shadow-sm); }
-.settings-card-title { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amber); margin-bottom: 13px; padding-bottom: 10px; border-bottom: 1px solid var(--border-soft); }
+.settings-section { max-width: 520px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-soft); }
+.settings-section:last-of-type { border-bottom: none; margin-bottom: 0; }
+.settings-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; cursor: pointer; }
+.settings-section-header:hover .settings-section-title { color: var(--amber); }
+.settings-section-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--cream-deep); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-mid); }
+.settings-section-title { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 18px; color: var(--brown-dark); }
+.settings-section-chevron { width: 16px; height: 16px; color: var(--text-dim); margin-left: auto; transition: transform .2s; }
+.settings-section.collapsed .settings-section-chevron { transform: rotate(-90deg); }
+.settings-section.collapsed .settings-section-body { display: none; }
+.settings-section-body { padding-left: 42px; }
 .secret-wrap { position: relative; display: flex; align-items: center; }
 .secret-wrap .form-input { flex: 1; padding-right: 36px; }
 .secret-eye { position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 0; display: flex; align-items: center; transition: color var(--tr); }
@@ -727,7 +728,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   background: #2a2218 !important; color: #f0e8d8 !important; border-color: #3a3028 !important;
 }
 [data-theme="dark"] .search-wrap { background: #2a2218; border-color: #3a3028; }
-[data-theme="dark"] .settings-card { background: #231e18; }
 [data-theme="dark"] .conn-card { background: #231e18; }
 [data-theme="dark"] .gen-card { background: #231e18; }
 [data-theme="dark"] .adv-inner { background: #231e18; }
@@ -741,7 +741,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   .topbar, .sidebar, .overlay, .toasts, .bulk-bar,
   #scan-overlay, #scan-modal,
   #modal-overlay, #add-modal, #picker-overlay, #picker-modal,
-  #nostr-overlay, #nostr-modal, .main { display: none !important; }
+  .main { display: none !important; }
   .drawer {
     position: static !important;
     width: 100% !important;
@@ -810,6 +810,53 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .template-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-soft); }
 .template-name { flex: 1; font-size: 14px; color: var(--text-mid); }
 .template-meta { font-size: 11px; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   MOBILE — bottom tab bar
+═══════════════════════════════════════ */
+/* Mobile bottom nav — hidden on desktop */
+.mobile-nav{display:none}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .mobile-nav{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    height:calc(56px + env(safe-area-inset-bottom,0px));
+    background:var(--white);
+    border-top:1px solid var(--border);
+    z-index:200;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    box-shadow:0 -2px 12px rgba(44,26,6,.08);
+  }
+  .mobile-nav-item{
+    flex:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;padding:6px 0 2px;
+    color:var(--text-dim);cursor:pointer;
+    position:relative;
+    transition:color .15s;
+  }
+  .mobile-nav-item:hover{color:var(--brown-dark)}
+  .mobile-nav-item.active{color:var(--amber)}
+  .mobile-nav-item.active::after{
+    content:'';position:absolute;top:0;left:8px;right:8px;
+    height:2.5px;background:var(--amber);border-radius:0 0 3px 3px;
+  }
+  .mobile-nav-item span{font-size:9px;font-weight:600;letter-spacing:.3px}
+  .mobile-nav-badge{
+    position:absolute;top:2px;right:calc(50% - 18px);
+    min-width:16px;height:16px;border-radius:8px;
+    background:var(--amber);color:#fff;font-size:9px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;padding:0 3px;
+  }
+  .content{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
+  .bulk-bar{bottom:calc(56px + env(safe-area-inset-bottom,0px));visibility:hidden}
+  .bulk-bar.open{visibility:visible}
+  .toasts{bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+}
+[data-theme="dark"] .mobile-nav{background:#1e1812;border-color:#3a3028}
 </style>
 </head>
 <body>
@@ -819,28 +866,27 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 ═══════════════════════════════════════ -->
 <header class="topbar" id="topbar">
 
-  <!-- Logo — always fully visible, refined -->
-  <div class="topbar-logo" id="topbar-logo">
-    <a class="brand-mark" href="#">
-      <!-- Bowl SVG mark -->
-      <svg class="brand-bowl" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 16 Q3 28 16 28 Q29 28 29 16 Z" fill="#E8820C"/>
-        <ellipse cx="16" cy="16" rx="13" ry="3.8" fill="#f5c070"/>
-        <ellipse cx="12" cy="15" rx="5" ry="1.8" fill="#fad898" opacity=".5"/>
-        <ellipse cx="16" cy="16" rx="13" ry="3.8" fill="none" stroke="#f0a040" stroke-width="1.3"/>
-        <path d="M10.5 10.5 C9.5 8,11 6,10.5 3.5" stroke="#E8820C" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>
-        <path d="M16 9 C15 6.5,16.5 4.5,16 2" stroke="#E8820C" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>
-        <path d="M21.5 10.5 C20.5 8,22 6,21.5 3.5" stroke="#E8820C" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>
-      </svg>
-      <div class="brand-text">
-        <div class="brand-name">Feed<em>me</em></div>
-        <span class="brand-tagline">Recipe Intelligence</span>
-        <span class="brand-divider"></span>
-      </div>
-    </a>
-  </div>
-
   <div class="topbar-row1">
+    <!-- Logo -->
+    <div class="topbar-logo" id="topbar-logo">
+      <a class="brand-mark" href="#">
+        <svg class="brand-bowl" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 16 Q3 28 16 28 Q29 28 29 16 Z" fill="#E8820C"/>
+          <ellipse cx="16" cy="16" rx="13" ry="3.8" fill="#f5c070"/>
+          <ellipse cx="12" cy="15" rx="5" ry="1.8" fill="#fad898" opacity=".5"/>
+          <ellipse cx="16" cy="16" rx="13" ry="3.8" fill="none" stroke="#f0a040" stroke-width="1.3"/>
+          <path d="M10.5 10.5 C9.5 8,11 6,10.5 3.5" stroke="#E8820C" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>
+          <path d="M16 9 C15 6.5,16.5 4.5,16 2" stroke="#E8820C" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>
+          <path d="M21.5 10.5 C20.5 8,22 6,21.5 3.5" stroke="#E8820C" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>
+        </svg>
+        <div class="brand-text">
+          <div class="brand-name">Feed<em>me</em></div>
+          <span class="brand-tagline">Recipe Intelligence</span>
+          <span class="brand-divider"></span>
+        </div>
+      </a>
+    </div>
+    <div style="flex:1"></div>
     <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Recipe</button>
   </div>
 
@@ -864,15 +910,12 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 ═══════════════════════════════════════ -->
 <div class="layout">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
     <nav class="nav">
-
-      <div class="nav-section-label">Library</div>
 
       <div class="nav-item active" data-tab="recipes">
         <div class="nav-icon-wrap">
-          <!-- Cookbook / recipes icon -->
           <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
             <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
@@ -880,36 +923,11 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
           </svg>
         </div>
         <span class="nav-label">Recipes</span>
-      </div>
-
-      <div class="nav-item" data-tab="favorites">
-        <div class="nav-icon-wrap">
-          <!-- Heart / favorites icon -->
-          <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </div>
-        <span class="nav-label">Favorites</span>
-      </div>
-
-      <div class="nav-item" data-tab="staging">
-        <div class="nav-icon-wrap">
-          <!-- Staging / inbox tray icon -->
-          <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
-            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
-            <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
-          </svg>
-        </div>
-        <span class="nav-label">Staging</span>
         <span class="nav-badge" id="stage-badge" style="display:none"></span>
       </div>
 
-      <div class="nav-divider"></div>
-      <div class="nav-section-label">Planning</div>
-
       <div class="nav-item" data-tab="planner">
         <div class="nav-icon-wrap">
-          <!-- Calendar icon -->
           <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2"/>
             <path d="M16 2v4M8 2v4M3 10h18"/>
@@ -921,7 +939,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 
       <div class="nav-item" data-tab="pantry">
         <div class="nav-icon-wrap">
-          <!-- Jar / pantry icon -->
           <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
             <path d="M8 3h8l1 4H7L8 3z"/>
             <path d="M7 7v11a2 2 0 002 2h6a2 2 0 002-2V7"/>
@@ -931,86 +948,64 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
         <span class="nav-label">Pantry</span>
       </div>
 
-      <div class="nav-item" data-tab="grocery">
-        <div class="nav-icon-wrap">
-          <!-- Shopping basket icon -->
-          <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <path d="M3 6h18"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
-          </svg>
-        </div>
-        <span class="nav-label">Grocery</span>
-      </div>
-
-      <div class="nav-divider"></div>
-
-      <div class="nav-item" data-tab="trash">
-        <div class="nav-icon-wrap">
-          <!-- Trash icon -->
-          <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-            <path d="M10 11v6M14 11v6"/>
-            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-          </svg>
-        </div>
-        <span class="nav-label">Trash</span>
-      </div>
-
-      <div class="nav-item" data-tab="settings">
-        <div class="nav-icon-wrap">
-          <!-- Settings / gear icon -->
-          <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-          </svg>
-        </div>
-        <span class="nav-label">Settings</span>
-      </div>
 
     </nav>
 
-    <div class="sidebar-foot">
-      Schema.org/Recipe
-      <div class="sidebar-foot-version">
-        <span class="version-badge" id="sidebar-version">v1.0.0</span>
+    <div class="nav-item" data-tab="settings" style="flex-shrink:0">
+      <div class="nav-icon-wrap">
+        <svg class="nav-svg" width="20" height="20" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
       </div>
+      <span class="nav-label">Settings</span>
     </div>
-  </aside>
+
+</aside>
 
   <!-- MAIN -->
   <main class="main">
     <div class="content">
 
-      <!-- RECIPES -->
+      <!-- RECIPES (with sub-tabs: Library, Favorites, Staging, Trash) -->
       <div class="tab-panel active" id="tab-recipes">
         <div class="page-header">
           <div class="page-title">Recipes</div>
         </div>
-        <div class="filter-bar" id="filter-bar"></div>
-        <div id="recipe-count" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;display:none"></div>
-        <div class="recipe-grid" id="recipe-grid"></div>
-      </div>
-
-      <!-- FAVORITES -->
-      <div class="tab-panel" id="tab-favorites">
-        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
-          <div class="page-title">Favorites</div>
-          <button class="btn btn-ghost btn-sm" onclick="surpriseMe()" id="surprise-btn" style="display:none">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.6-8.6c.8-1.1 2-1.7 3.3-1.7H22"/><path d="M18 2l4 4-4 4"/><path d="M2 6h1.4c1.3 0 2.5.6 3.3 1.7l6.6 8.6c.8 1.1 2 1.7 3.3 1.7H22"/><path d="M18 14l4 4-4 4"/></svg>
-            Surprise me
-          </button>
+        <div class="sub-tabs" id="recipes-sub-tabs">
+          <div class="sub-tab active" data-subtab="library" onclick="switchSubTab('recipes','library')">Library</div>
+          <div class="sub-tab" data-subtab="favorites" onclick="switchSubTab('recipes','favorites')">Favorites</div>
+          <div class="sub-tab" data-subtab="staging" onclick="switchSubTab('recipes','staging')">Staging<span class="sub-tab-badge" id="staging-tab-badge" style="display:none"></span></div>
+          <div class="sub-tab" data-subtab="trash" onclick="switchSubTab('recipes','trash')">Trash</div>
         </div>
-        <div class="recipe-grid" id="favorites-grid"></div>
-      </div>
 
-      <!-- STAGING -->
-      <div class="tab-panel" id="tab-staging">
-        <div class="page-header">
-          <div class="page-title">Staging</div>
+        <div class="sub-panel active" id="sub-recipes-library">
+          <div class="filter-bar" id="filter-bar"></div>
+          <div id="recipe-count" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;display:none"></div>
+          <div class="recipe-grid" id="recipe-grid"></div>
         </div>
-        <div class="recipe-grid" id="staging-grid"></div>
+
+        <div class="sub-panel" id="sub-recipes-favorites">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <button class="btn btn-ghost btn-sm" onclick="surpriseMe()" id="surprise-btn" style="display:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.6-8.6c.8-1.1 2-1.7 3.3-1.7H22"/><path d="M18 2l4 4-4 4"/><path d="M2 6h1.4c1.3 0 2.5.6 3.3 1.7l6.6 8.6c.8 1.1 2 1.7 3.3 1.7H22"/><path d="M18 14l4 4-4 4"/></svg>
+              Surprise me
+            </button>
+          </div>
+          <div class="recipe-grid" id="favorites-grid"></div>
+        </div>
+
+        <div class="sub-panel" id="sub-recipes-staging">
+          <div class="recipe-grid" id="staging-grid"></div>
+        </div>
+
+        <div class="sub-panel" id="sub-recipes-trash">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="sec-top" id="trash-sec-label" style="margin-bottom:0;flex:1">Deleted recipes</div>
+            <button class="btn btn-ghost btn-sm" id="empty-trash-btn" onclick="emptyTrash()" style="color:#c05040">Empty Trash</button>
+          </div>
+          <div class="recipe-grid" id="trash-grid"></div>
+        </div>
       </div>
 
       <!-- GENERATE -->
@@ -1169,29 +1164,51 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 
       <!-- IMPORT -->
 
-      <!-- PLANNER -->
+      <!-- PLANNER (with sub-tabs: Plan, Grocery) -->
       <div class="tab-panel" id="tab-planner">
-        <div class="week-nav">
-          <button class="btn btn-ghost btn-sm" onclick="shiftWk(-1)">← Prev</button>
-          <div class="week-label" id="week-label"></div>
-          <button class="btn btn-ghost btn-sm" onclick="shiftWk(1)">Next →</button>
-          <button class="btn btn-ghost btn-sm" onclick="openWeekPlanModal()" title="AI week plan">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-            AI Plan
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="saveWeekTemplate()" title="Save this week as template">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Save Template
-          </button>
-          <button class="btn btn-primary btn-sm" onclick="generateGroceryList()" style="margin-left:auto">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-            Grocery List
-          </button>
+        <div class="page-header">
+          <div class="page-title">Planner</div>
         </div>
-        <div class="week-grid" id="week-grid"></div>
-        <div class="templates-panel" id="templates-panel" style="display:none">
-          <div class="sec-top" style="cursor:pointer" onclick="toggleTemplatesPanel()">Saved Templates</div>
-          <div id="templates-list"></div>
+        <div class="sub-tabs" id="planner-sub-tabs">
+          <div class="sub-tab active" data-subtab="plan" onclick="switchSubTab('planner','plan')">Plan</div>
+          <div class="sub-tab" data-subtab="grocery" onclick="switchSubTab('planner','grocery')">Grocery</div>
+        </div>
+
+        <div class="sub-panel active" id="sub-planner-plan">
+          <div class="week-nav">
+            <button class="btn btn-ghost btn-sm" onclick="shiftWk(-1)">← Prev</button>
+            <div class="week-label" id="week-label"></div>
+            <button class="btn btn-ghost btn-sm" onclick="shiftWk(1)">Next →</button>
+            <button class="btn btn-ghost btn-sm" onclick="openWeekPlanModal()" title="AI week plan">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+              AI Plan
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="saveWeekTemplate()" title="Save this week as template">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save Template
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="generateGroceryList()" style="margin-left:auto">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              Grocery List
+            </button>
+          </div>
+          <div class="week-grid" id="week-grid"></div>
+          <div class="templates-panel" id="templates-panel" style="display:none">
+            <div class="sec-top" style="cursor:pointer" onclick="toggleTemplatesPanel()">Saved Templates</div>
+            <div id="templates-list"></div>
+          </div>
+        </div>
+
+        <div class="sub-panel" id="sub-planner-grocery">
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+            <input class="form-input" id="gr-input" placeholder="Add item manually…" style="flex:1">
+            <button class="btn btn-ghost btn-sm" onclick="addGrocery()">+ Add</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+            <button class="btn btn-ghost btn-sm" onclick="clearChecked()">Clear Checked</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearList()" style="color:#c05040">Clear List</button>
+          </div>
+          <div style="max-width:490px" id="grocery-list"></div>
         </div>
       </div>
 
@@ -1210,167 +1227,165 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
         <table class="pantry-table"><thead><tr><th>Food</th><th>Qty</th><th>Unit</th><th></th></tr></thead><tbody id="pantry-tbody"></tbody></table>
       </div>
 
-      <!-- GROCERY -->
-      <div class="tab-panel" id="tab-grocery">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:25px;font-style:italic;color:var(--brown-dark);margin-bottom:14px">Grocery List</div>
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
-          <input class="form-input" id="gr-input" placeholder="Add item manually…" style="max-width:220px">
-          <button class="btn btn-ghost btn-sm" onclick="addGrocery()">+ Add</button>
-          <button class="btn btn-ghost btn-sm" onclick="clearChecked()" style="margin-left:auto">Clear Checked</button>
-          <button class="btn btn-ghost btn-sm" onclick="clearList()" style="color:#c05040">Clear List</button>
-        </div>
-        <div style="max-width:490px" id="grocery-list"></div>
-      </div>
-
       <!-- SETTINGS -->
       <div class="tab-panel" id="tab-settings">
         <div style="max-width:520px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:25px;font-style:italic;color:var(--brown-dark);margin-bottom:16px">Settings</div>
-          <div class="settings-card">
-            <div class="settings-card-title" style="display:flex;align-items:center;justify-content:space-between">
-              AI Configuration
+          <div class="page-header"><div class="page-title">Settings</div></div>
+
+          <!-- AI Configuration -->
+          <div class="settings-section" id="settings-ai">
+            <div class="settings-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+              <div class="settings-section-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2a4 4 0 014 4v1h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2V6a4 4 0 014-4z"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
+              </div>
+              <div class="settings-section-title">AI Configuration</div>
               <span id="ai-status-badge" style="font-size:10px;font-weight:600;letter-spacing:.5px;padding:3px 9px;border-radius:20px;display:none"></span>
+              <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div class="form-group">
-              <label class="form-label">PPQ.ai API Key</label>
-              <div class="secret-wrap">
-                <input type="password" id="s-ppq-key" class="form-input" placeholder="Enter your key…">
-                <button type="button" class="secret-eye" onclick="toggleSecret('s-ppq-key',this)" tabindex="-1">
-                  <svg id="s-ppq-key-eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+            <div class="settings-section-body">
+              <div class="form-group">
+                <label class="form-label">PPQ.ai API Key</label>
+                <div class="secret-wrap">
+                  <input type="password" id="s-ppq-key" class="form-input" placeholder="Enter your key…">
+                  <button type="button" class="secret-eye" onclick="toggleSecret('s-ppq-key',this)" tabindex="-1">
+                    <svg id="s-ppq-key-eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Credit ID <span style="opacity:.5;font-weight:300">(for balance check)</span></label>
-              <div class="secret-wrap">
-                <input type="password" id="s-ppq-credit-id" class="form-input" placeholder="Enter your credit ID…">
-                <button type="button" class="secret-eye" onclick="toggleSecret('s-ppq-credit-id',this)" tabindex="-1">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+              <div class="form-group">
+                <label class="form-label">Credit ID <span style="opacity:.5;font-weight:300">(for balance check)</span></label>
+                <div class="secret-wrap">
+                  <input type="password" id="s-ppq-credit-id" class="form-input" placeholder="Enter your credit ID…">
+                  <button type="button" class="secret-eye" onclick="toggleSecret('s-ppq-credit-id',this)" tabindex="-1">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="form-group"><label class="form-label">Base URL</label><input id="s-ppq-url" class="form-input" value="https://api.ppq.ai/v1"></div>
-            <div class="form-row">
-              <div class="form-group"><label class="form-label">Recipe Model</label><input id="s-ppq-model" class="form-input" placeholder="gpt-4o-mini"></div>
-              <div class="form-group"><label class="form-label">Image Model</label><input id="s-ppq-image-model" class="form-input" placeholder="dall-e-3"></div>
-              <div class="form-group"><label class="form-label">Vision Model</label><input id="s-ppq-vision-model" class="form-input" placeholder="gpt-4o"></div>
-            </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Vision model is used for Import from Image. Must support image inputs (e.g. gpt-4o).</div>
-            <div style="display:flex;align-items:center;gap:12px;margin-top:0">
-              <button class="btn btn-ghost btn-sm" id="ai-test-btn" onclick="testAiConnection()">Test Connection</button>
-              <span id="ai-balance" style="font-size:12px;font-weight:600;color:var(--text-mid);display:none"></span>
-              <button class="btn btn-ghost btn-xs" id="topup-btn" onclick="openTopup()" style="display:none">Top Up</button>
+              <div class="form-group"><label class="form-label">Base URL</label><input id="s-ppq-url" class="form-input" value="https://api.ppq.ai/v1"></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Recipe Model</label><input id="s-ppq-model" class="form-input" placeholder="gpt-4o-mini"></div>
+                <div class="form-group"><label class="form-label">Image Model</label><input id="s-ppq-image-model" class="form-input" placeholder="dall-e-3"></div>
+                <div class="form-group"><label class="form-label">Vision Model</label><input id="s-ppq-vision-model" class="form-input" placeholder="gpt-4o"></div>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Vision model is used for Import from Image. Must support image inputs (e.g. gpt-4o).</div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <button class="btn btn-ghost btn-sm" id="ai-test-btn" onclick="testAiConnection()">Test Connection</button>
+                <span id="ai-balance" style="font-size:12px;font-weight:600;color:var(--text-mid);display:none"></span>
+                <button class="btn btn-ghost btn-xs" id="topup-btn" onclick="openTopup()" style="display:none">Top Up</button>
+              </div>
             </div>
           </div>
-          <div class="settings-card">
-            <div class="settings-card-title" style="display:flex;align-items:center;justify-content:space-between">
-              RSS Feeds
-              <button class="btn btn-ghost btn-sm" id="fetch-all-btn" onclick="fetchAllFeeds()" style="display:none">Fetch All</button>
+
+          <!-- RSS Feeds -->
+          <div class="settings-section collapsed" id="settings-rss">
+            <div class="settings-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+              <div class="settings-section-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1"/></svg>
+              </div>
+              <div class="settings-section-title">RSS Feeds</div>
+              <button class="btn btn-ghost btn-xs" id="fetch-all-btn" onclick="event.stopPropagation();fetchAllFeeds()" style="display:none">Fetch All</button>
+              <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Subscribe to recipe blogs and sites — new recipes land in Staging automatically.</div>
-            <div style="display:flex;gap:10px;margin-bottom:12px">
-              <input type="url" id="rss-url-input" class="form-input" placeholder="https://seriouseats.com/rss" style="flex:1">
-              <button class="btn btn-primary btn-sm" onclick="addFeed()">+ Add Feed</button>
+            <div class="settings-section-body">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Subscribe to recipe blogs and sites — new recipes land in Staging automatically.</div>
+              <div style="display:flex;gap:10px;margin-bottom:12px">
+                <input type="url" id="rss-url-input" class="form-input" placeholder="https://seriouseats.com/rss" style="flex:1">
+                <button class="btn btn-primary btn-sm" onclick="addFeed()">+ Add Feed</button>
+              </div>
+              <div id="feed-list" style="display:flex;flex-direction:column;gap:7px"></div>
+              <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+                <span style="font-size:12px;color:var(--text-muted)">Auto-fetch:</span>
+                <select class="form-input" id="rss-auto-fetch" style="width:130px;font-size:12px" onchange="saveRssAutoFetch(this.value)">
+                  <option value="0">Off</option>
+                  <option value="6">Every 6 hours</option>
+                  <option value="12">Every 12 hours</option>
+                  <option value="24">Daily</option>
+                  <option value="168">Weekly</option>
+                </select>
+              </div>
             </div>
-            <div id="feed-list" style="display:flex;flex-direction:column;gap:7px"></div>
-            <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
-              <span style="font-size:12px;color:var(--text-muted)">Auto-fetch:</span>
-              <select class="form-input" id="rss-auto-fetch" style="width:130px;font-size:12px" onchange="saveRssAutoFetch(this.value)">
-                <option value="0">Off</option>
-                <option value="6">Every 6 hours</option>
-                <option value="12">Every 12 hours</option>
-                <option value="24">Daily</option>
-                <option value="168">Weekly</option>
+          </div>
+
+          <!-- Kitchen Equipment -->
+          <div class="settings-section collapsed" id="settings-equipment">
+            <div class="settings-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+              <div class="settings-section-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M15 3v6a3 3 0 003 3h0a3 3 0 003-3V5"/><path d="M18 3v3"/><path d="M3 3v10a4 4 0 004 4h0"/><path d="M3 8h4"/><path d="M7 17v4M15 17v4"/></svg>
+              </div>
+              <div class="settings-section-title">Kitchen Equipment</div>
+              <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="settings-section-body">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Select what you own — the AI will only suggest recipes and techniques that work with your equipment.</div>
+              <div class="chips" id="equip-chips" style="margin-bottom:12px">
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Dutch oven</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Cast iron skillet</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Pressure cooker</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Slow cooker</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Instant Pot</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Air fryer</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Wok</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Stand mixer</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Food processor</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Blender</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Sous vide</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Steamer</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Grill</div>
+                <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Mandoline</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input class="form-input" id="equip-custom-input" placeholder="Add custom equipment…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomEquipment()}">
+                <button class="btn btn-ghost btn-sm" onclick="addCustomEquipment()">+ Add</button>
+              </div>
+              <div id="equip-custom-chips" class="chips" style="margin-top:8px;min-height:0"></div>
+            </div>
+          </div>
+
+          <!-- Preferred Units -->
+          <div class="settings-section collapsed" id="settings-units">
+            <div class="settings-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+              <div class="settings-section-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 2v20"/><path d="M6 6h5"/><path d="M6 10h3"/><path d="M6 14h5"/><path d="M6 18h3"/><path d="M18 22V2l-4 4"/></svg>
+              </div>
+              <div class="settings-section-title">Preferred Units</div>
+              <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="settings-section-body">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+                Choose your preferred measurement system for the grocery list. Leave on "No preference" to keep original recipe units.
+              </div>
+              <select class="form-input" id="s-preferred-units" style="width:200px">
+                <option value="">No preference</option>
+                <option value="metric">Metric (g, kg, ml, L)</option>
+                <option value="imperial">Imperial (oz, lb, cups, tsp)</option>
               </select>
             </div>
           </div>
-          <div class="settings-card">
-            <div class="settings-card-title">Nostr Integration <span style="opacity:.5;font-weight:300">(optional)</span></div>
-            <div class="form-group"><label class="form-label">Relay URL</label><input id="s-nostr-relay" class="form-input" placeholder="wss://relay.damus.io"></div>
-            <div class="form-group">
-              <label class="form-label">Private Key (nsec)</label>
-              <div class="secret-wrap">
-                <input type="password" id="s-nostr-nsec" class="form-input" placeholder="nsec1… or paste hex key">
-                <button type="button" class="secret-eye" onclick="toggleSecret('s-nostr-nsec',this)" tabindex="-1">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+
+          <!-- Appearance -->
+          <div class="settings-section collapsed" id="settings-appearance">
+            <div class="settings-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+              <div class="settings-section-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              </div>
+              <div class="settings-section-title">Appearance</div>
+              <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="settings-section-body">
+              <div class="adv-sw-row">
+                <label class="adv-sw"><input type="checkbox" id="s-dark-mode" onchange="applyDarkMode(this.checked)"><span class="adv-sw-track"></span></label>
+                <span style="font-size:13px;color:var(--text-mid)">Dark mode</span>
               </div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-              <button class="btn btn-ghost btn-sm" onclick="nostrGenerateKey()">Generate New Key</button>
-              <span style="font-size:12px;color:var(--text-muted)">or paste your own nsec above</span>
-            </div>
-            <div id="nostr-npub-row" style="display:none;background:var(--cream);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;color:var(--text-mid)">
-              <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:3px">Your public key (npub)</span>
-              <span id="nostr-npub-val" style="font-family:monospace;word-break:break-all"></span>
-            </div>
-            <div id="nostr-browse-section" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft)">
-              <div style="display:flex;gap:8px;align-items:center">
-                <input class="form-input" id="nostr-pubkey-input" placeholder="npub… or hex public key (optional)" style="flex:1;font-size:12px">
-                <button class="btn btn-ghost btn-sm" onclick="openNostrBrowser()">Browse Recipes</button>
-              </div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Leave blank to browse all Feedme recipes on the relay, or enter a public key to filter by author.</div>
-            </div>
           </div>
-          <div class="settings-card">
-            <div class="settings-card-title">Kitchen Equipment</div>
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Select what you own — the AI will only suggest recipes and techniques that work with your equipment.</div>
-            <div class="chips" id="equip-chips" style="margin-bottom:12px">
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Dutch oven</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Cast iron skillet</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Pressure cooker</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Slow cooker</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Instant Pot</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Air fryer</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Wok</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Stand mixer</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Food processor</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Blender</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Sous vide</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Steamer</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Grill</div>
-              <div class="opt-chip multi" onclick="this.classList.toggle('selected')">Mandoline</div>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <input class="form-input" id="equip-custom-input" placeholder="Add custom equipment…" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomEquipment()}">
-              <button class="btn btn-ghost btn-sm" onclick="addCustomEquipment()">+ Add</button>
-            </div>
-            <div id="equip-custom-chips" class="chips" style="margin-top:8px;min-height:0"></div>
-          </div>
-          <div class="settings-card">
-            <div class="settings-card-title">Preferred Units</div>
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
-              Choose your preferred measurement system for the grocery list. Leave on "No preference" to keep original recipe units.
-            </div>
-            <select class="form-input" id="s-preferred-units" style="width:200px">
-              <option value="">No preference</option>
-              <option value="metric">Metric (g, kg, ml, L)</option>
-              <option value="imperial">Imperial (oz, lb, cups, tsp)</option>
-            </select>
-          </div>
-          <div class="settings-card">
-            <div class="settings-card-title">Appearance</div>
-            <div class="adv-sw-row">
-              <label class="adv-sw"><input type="checkbox" id="s-dark-mode" onchange="applyDarkMode(this.checked)"><span class="adv-sw-track"></span></label>
-              <span style="font-size:13px;color:var(--text-mid)">Dark mode</span>
-            </div>
-          </div>
-          <div style="display:flex;gap:10px">
+
+          <div style="display:flex;gap:10px;margin-top:8px">
             <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-            <button class="btn btn-ghost btn-sm" onclick="syncRecipes()">⟳ Sync JSON → DB</button>
+            <button class="btn btn-ghost btn-sm" onclick="syncRecipes()">Sync JSON → DB</button>
           </div>
         </div>
       </div>
 
-      <!-- TRASH -->
-      <div class="tab-panel" id="tab-trash">
-        <div class="page-header">
-          <div class="page-title">Trash</div>
-          <button class="btn btn-ghost btn-sm" id="empty-trash-btn" onclick="emptyTrash()" style="color:#c05040">Empty Trash</button>
-        </div>
-        <div class="sec-top" id="trash-sec-label">Deleted recipes</div>
-        <div class="recipe-grid" id="trash-grid"></div>
-      </div>
 
     </div>
   </main>
@@ -1397,6 +1412,35 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 </div>
 <div class="toasts" id="toasts"></div>
 
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobile-nav">
+  <div class="mobile-nav-item active" data-tab="recipes" onclick="switchTab('recipes')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M9 7h6M9 11h4"/>
+    </svg>
+    <span>Recipes</span>
+    <div class="mobile-nav-badge" id="mobile-stage-badge" style="display:none"></div>
+  </div>
+  <div class="mobile-nav-item" data-tab="planner" onclick="switchTab('planner')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+    </svg>
+    <span>Planner</span>
+  </div>
+  <div class="mobile-nav-item" data-tab="pantry" onclick="switchTab('pantry')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3h8l1 4H7L8 3z"/><path d="M7 7v11a2 2 0 002 2h6a2 2 0 002-2V7"/><path d="M10 12c0-1 .9-2 2-2s2 1 2 2-.9 2-2 2-2-1-2-2z"/>
+    </svg>
+    <span>Pantry</span>
+  </div>
+  <div class="mobile-nav-item" data-tab="settings" onclick="switchTab('settings')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+    </svg>
+    <span>Settings</span>
+  </div>
+</nav>
+
 <!-- RECIPE PICKER MODAL -->
 <div class="modal-overlay" id="picker-overlay" onclick="closePicker()"></div>
 <div class="modal" id="picker-modal" style="width:640px">
@@ -1414,27 +1458,6 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
   </div>
 </div>
 
-<!-- NOSTR BROWSER MODAL -->
-<div class="modal-overlay" id="nostr-overlay" onclick="closeNostrBrowser()"></div>
-<div class="modal" id="nostr-modal" style="max-width:680px">
-  <div class="modal-head">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--brown-dark)">Browse Nostr Recipes</div>
-    <button class="modal-close" onclick="closeNostrBrowser()">
-      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
-    </button>
-  </div>
-  <div class="modal-body" style="padding-bottom:0">
-    <div id="nostr-browser-status" style="font-size:13px;color:var(--text-muted);padding:6px 0 12px">Connecting to relay…</div>
-    <div id="nostr-browser-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto"></div>
-  </div>
-  <div class="modal-foot" style="justify-content:space-between">
-    <span id="nostr-sel-count" style="font-size:13px;color:var(--text-muted)">0 selected</span>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost btn-sm" onclick="closeNostrBrowser()">Cancel</button>
-      <button class="btn btn-primary btn-sm" id="nostr-import-btn" onclick="importFromNostr()" disabled>Import Selected</button>
-    </div>
-  </div>
-</div>
 
 <!-- BARCODE SCANNER MODAL -->
 <div class="modal-overlay" id="scan-overlay" onclick="closeScannerModal()"></div>
@@ -1684,17 +1707,11 @@ function _extract_ld_image(img) {
 
 /* ── Source badge ── */
 function srcBadge(src) {
-  const l = { ai:'AI', rss:'RSS', url:'URL', manual:'Manual', camera:'Camera', nostr:'Nostr' };
-  const c = { ai:'badge-ai', rss:'badge-rss', url:'badge-url', manual:'badge-manual', camera:'badge-camera', nostr:'badge-nostr' };
+  const l = { ai:'AI', rss:'RSS', url:'URL', manual:'Manual', camera:'Camera' };
+  const c = { ai:'badge-ai', rss:'badge-rss', url:'badge-url', manual:'badge-manual', camera:'badge-camera' };
   return `<span class="src-badge ${c[src]||'badge-manual'}">${l[src]||src||'Manual'}</span>`;
 }
 
-function nostrDot(nostr_event_id) {
-  if (!nostr_event_id) return '';
-  return `<div class="nostr-dot" title="Published on Nostr">
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="white" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-  </div>`;
-}
 
 function heartBtn(slug, favorited) {
   const filled = favorited ? `fill="var(--amber)" stroke="var(--amber)"` : `fill="none" stroke="white"`;
@@ -1709,34 +1726,68 @@ function heartBtn(slug, favorited) {
 
 /* ── Tabs ── */
 let currentTab = 'recipes';
+let _currentSubTabs = {};
 document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchTab(el.dataset.tab)));
-
-const _SEL_TABS = ['recipes', 'favorites', 'staging'];
 
 function switchTab(tab) {
   if (_selMode) exitSelectMode();
   currentTab = tab;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
+  document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${tab}`));
-  const selectable = _SEL_TABS.includes(tab);
-  const searchable = ['recipes', 'staging', 'favorites'].includes(tab);
+
+  const activeSubTab = _currentSubTabs[tab];
+  _updateSearchAndSelect(tab, activeSubTab);
+
+  if (tab === 'recipes')     _loadSubContent('recipes', activeSubTab || 'library');
+  else if (tab === 'planner')     _loadSubContent('planner', activeSubTab || 'plan');
+  else if (tab === 'settings')    loadSettings();
+  else if (tab === 'pantry')      loadPantry();
+  else if (tab === 'generate')    checkAiKey();
+}
+
+function switchSubTab(parentTab, subTab) {
+  _currentSubTabs[parentTab] = subTab;
+  const container = document.getElementById(parentTab + '-sub-tabs');
+  if (container) {
+    container.querySelectorAll('.sub-tab').forEach(t => t.classList.toggle('active', t.dataset.subtab === subTab));
+  }
+  const page = document.getElementById('tab-' + parentTab);
+  if (page) {
+    page.querySelectorAll('.sub-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'sub-' + parentTab + '-' + subTab);
+    });
+  }
+  _updateSearchAndSelect(parentTab, subTab);
+  _loadSubContent(parentTab, subTab);
+}
+
+function _updateSearchAndSelect(tab, subTab) {
+  const searchable = tab === 'recipes' && ['library', 'favorites', 'staging', 'trash'].includes(subTab || 'library');
   document.getElementById('search-wrap').style.display = searchable ? 'flex' : 'none';
+  const selectable = tab === 'recipes' && ['library', 'favorites', 'staging'].includes(subTab || 'library');
   const selBtn = document.getElementById('topbar-select-btn');
   if (selBtn) selBtn.style.display = selectable ? '' : 'none';
-  if (tab === 'recipes')     loadRecipes();
-  if (tab === 'favorites')   loadFavorites();
-  if (tab === 'staging')     loadStaged();
-  if (tab === 'settings')    loadSettings();
-  if (tab === 'planner')     { loadPlanner(); loadTemplates(); }
-  if (tab === 'pantry')      loadPantry();
-  if (tab === 'grocery')     loadGrocery();
-  if (tab === 'trash')       loadTrashed();
-  if (tab === 'generate')    checkAiKey();
+}
+
+function _activeSubTab(tab) { return _currentSubTabs[tab] || (tab === 'recipes' ? 'library' : 'plan'); }
+
+function _loadSubContent(parentTab, subTab) {
+  if (parentTab === 'recipes') {
+    if (subTab === 'library') loadRecipes();
+    else if (subTab === 'favorites') loadFavorites();
+    else if (subTab === 'staging') loadStaged();
+    else if (subTab === 'trash') loadTrashed();
+  } else if (parentTab === 'planner') {
+    if (subTab === 'plan') { loadPlanner(); loadTemplates(); }
+    else if (subTab === 'grocery') loadGrocery();
+  }
 }
 
 document.getElementById('search-input').addEventListener('input', () => {
-  if (currentTab === 'recipes') renderRecipes();
-  if (currentTab === 'favorites') renderFavorites();
+  const sub = _currentSubTabs['recipes'] || 'library';
+  if (currentTab === 'recipes' && sub === 'library') renderRecipes();
+  if (currentTab === 'recipes' && sub === 'favorites') renderFavorites();
 });
 
 /* ── Version ── */
@@ -1939,7 +1990,7 @@ function renderRecipes() {
         </div>
         ${_selMode ? selCheck : srcBadge(r.source_type)}
         ${_selMode ? '' : heartBtn(r.slug, r.favorited)}
-        ${nostrDot(r.nostr_event_id)}
+
       </div>
       <div class="card-body">
         <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
@@ -2008,7 +2059,7 @@ function renderFavorites() {
         ${_selMode ? selCheck : srcBadge(r.source_type)}
         ${_selMode ? '' : heartBtn(r.slug, true)}
         ${_selMode ? '' : `<button class="quick-plan-btn" onclick="event.stopPropagation();toggleQuickPlan(this,'${r.slug}')" title="Add to meal plan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-mid)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg></button>`}
-        ${nostrDot(r.nostr_event_id)}
+
       </div>
       <div class="card-body">
         <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
@@ -2084,9 +2135,9 @@ async function toggleFavorite(slug) {
     const r = recipesData.find(r => r.slug === targetSlug);
     if (r) r.favorited = isFav ? 1 : 0;
     // Refresh favorites list if open
-    if (currentTab === 'favorites') loadFavorites();
+    if (currentTab === 'recipes' && _activeSubTab('recipes') === 'favorites') loadFavorites();
     // Re-render recipes grid to update heart state
-    if (currentTab === 'recipes') renderRecipes();
+    if (currentTab === 'recipes' && _activeSubTab('recipes') === 'library') renderRecipes();
     // Update drawer heart if open for this recipe
     const dfav = document.getElementById('d-fav-btn');
     if (dfav && _drawerData?.slug === targetSlug) {
@@ -2113,6 +2164,10 @@ function updateStageBadge(n) {
   const el = document.getElementById('stage-badge');
   el.textContent = n;
   el.style.display = n > 0 ? 'flex' : 'none';
+  const stb = document.getElementById('staging-tab-badge');
+  if (stb) { stb.textContent = n; stb.style.display = n > 0 ? '' : 'none'; }
+  const mb = document.getElementById('mobile-stage-badge');
+  if (mb) { mb.textContent = n; mb.style.display = n > 0 ? 'flex' : 'none'; }
 }
 
 function renderStaged() {
@@ -2136,7 +2191,7 @@ function renderStaged() {
           ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
         </div>
         ${_selMode ? selCheck : srcBadge(r.source_type)}
-        ${nostrDot(r.nostr_event_id)}
+
       </div>
       <div class="card-body">
         <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
@@ -2254,9 +2309,8 @@ async function openDrawer(slug) {
       ${steps.length ? `<div class="d-sec">Method</div><ol class="step-list">${steps.map(s=>`<li>${typeof s==='string'?s:s.text}</li>`).join('')}</ol>` : ''}
       ${nutHtml}
       <div class="cook-log-section" id="d-cook-log"><div style="font-size:12px;color:var(--text-muted)">Loading cook history…</div></div>
-      ${(full.source_url || r.nostr_event_id) ? `<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:7px">
-        ${full.source_url ? `<a href="${full.source_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Original source</a>` : ''}
-        ${r.nostr_event_id ? `<span style="font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Nostr event: <code style="font-size:10px;background:var(--cream);padding:1px 4px;border-radius:3px;color:var(--text-mid)">${r.nostr_event_id.slice(0,16)}…</code></span>` : ''}
+      ${full.source_url ? `<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:7px">
+        <a href="${full.source_url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Original source</a>
       </div>` : ''}`;
     // Load cook history async
     if (r.status === 'active') loadCookHistory(slug);
@@ -2274,7 +2328,6 @@ async function openDrawer(slug) {
         ${editBtn}
         ${trashBtn}`;
     } else {
-      const nostrLabel = r.nostr_event_id ? 'Re-publish to Nostr' : 'Publish to Nostr';
       document.getElementById('d-foot').innerHTML = `
         <button class="btn btn-primary btn-sm" onclick="switchTab('planner');closeDrawer()">+ Add to Plan</button>
         ${editBtn}
@@ -2289,10 +2342,6 @@ async function openDrawer(slug) {
         <button class="btn btn-ghost btn-sm" onclick="printRecipe()" title="Print recipe">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           Print
-        </button>
-        <button class="btn btn-ghost btn-sm" id="nostr-pub-btn" onclick="publishToNostr('${slug}')" title="${nostrLabel}">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          ${nostrLabel}
         </button>
         ${trashBtn}`;
     }
@@ -2363,8 +2412,12 @@ async function trashFromDrawer(slug) {
     await apiDel(`/api/recipes/${slug}`);
     toast('Moved to trash', 'ok');
     closeDrawer();
-    if (currentTab === 'recipes') loadRecipes();
-    else if (currentTab === 'staging') loadStaged();
+    if (currentTab === 'recipes') {
+      const sub = _activeSubTab('recipes');
+      if (sub === 'library') loadRecipes();
+      else if (sub === 'staging') loadStaged();
+      else if (sub === 'favorites') loadFavorites();
+    }
   } catch(e) { toast(e.message, 'err'); }
 }
 
@@ -2513,8 +2566,7 @@ async function saveDrawer() {
     await apiPut(`/api/recipes/${slug}`, data);
     toast('Saved', 'ok');
     openDrawer(slug);
-    if (currentTab === 'recipes') loadRecipes();
-    else if (currentTab === 'staging') loadStaged();
+    if (currentTab === 'recipes') _loadSubContent('recipes', _activeSubTab('recipes'));
   } catch(e) { toast(e.message || 'Save failed', 'err'); }
 }
 
@@ -2920,7 +2972,7 @@ async function generateRecipe() {
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--brown-dark);margin-bottom:4px">${recipe.name}</div>
       <div style="font-size:12px;color:var(--text-muted);font-style:italic;margin-bottom:11px">${recipe.description||'Saved to Staging for review.'}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-xs" onclick="switchTab('staging')">View in Staging →</button>
+        <button class="btn btn-ghost btn-xs" onclick="switchTab('recipes');switchSubTab('recipes','staging')">View in Staging →</button>
         <button class="regen-btn" onclick="generateRecipe()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg>
           Regenerate
@@ -3017,7 +3069,7 @@ async function importFromImage() {
     const recipe = await resp.json();
     result.innerHTML = `<div style="background:var(--amber-pale);border:1px solid var(--amber-soft);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text-mid)">
       <strong style="color:var(--brown-dark);display:block;margin-bottom:2px">${recipe.name}</strong>
-      ${n > 1 ? `Extracted from ${n} images. ` : ''}Saved to Staging for review. <span style="cursor:pointer;color:var(--amber);text-decoration:underline" onclick="switchTab('staging');closeAddModal()">View in Staging →</span>
+      ${n > 1 ? `Extracted from ${n} images. ` : ''}Saved to Staging for review. <span style="cursor:pointer;color:var(--amber);text-decoration:underline" onclick="switchTab('recipes');switchSubTab('recipes','staging');closeAddModal()">View in Staging →</span>
     </div>`;
     const stageData = await apiGet('/api/recipes?status=staged&per_page=1');
     updateStageBadge(stageData.total || 0);
@@ -3082,8 +3134,6 @@ async function loadConnections() {
     }
     const autoFetchSel = document.getElementById('rss-auto-fetch');
     if (autoFetchSel && s.rss_auto_fetch_hours != null) autoFetchSel.value = String(s.rss_auto_fetch_hours);
-    // Nostr relay URL — used by browse modal
-    _nostrRelayUrl = s.nostr_relay || '';
   } catch(e) {}
 }
 
@@ -3201,262 +3251,6 @@ function toggleSecret(fieldId, btn) {
 }
 
 
-/* ── Nostr Browser ── */
-let _nostrEvents = {};   // id → event
-let _nostrSelected = new Set();
-let _nostrWs = null;
-let _nostrRelayUrl = '';       // set by loadConnections, used by browse modal
-let _nostrKnownIds = new Set(); // event IDs already in Feedme DB
-
-async function openNostrBrowser() {
-  document.getElementById('nostr-overlay').classList.add('open');
-  document.getElementById('nostr-modal').classList.add('open');
-  _nostrEvents = {};
-  _nostrSelected = new Set();
-  try {
-    const [settingsRes, knownRes] = await Promise.all([
-      apiGet('/api/settings'),
-      apiGet('/api/nostr/known-events').catch(() => ({ ids: [] }))
-    ]);
-    _nostrRelayUrl = (settingsRes.nostr_relay || '').trim();
-    _nostrKnownIds = new Set(knownRes.ids || []);
-  } catch(e) { _nostrKnownIds = new Set(); }
-  _connectNostrRelay();
-}
-
-function _closeNostrWs() {
-  if (_nostrWs) {
-    const old = _nostrWs;
-    _nostrWs = null;
-    old.onopen = old.onmessage = old.onerror = old.onclose = null;
-    try { old.close(); } catch(e) {}
-  }
-}
-
-function closeNostrBrowser() {
-  document.getElementById('nostr-overlay').classList.remove('open');
-  document.getElementById('nostr-modal').classList.remove('open');
-  _closeNostrWs();
-}
-
-async function _connectNostrRelay() {
-  // Tear down any existing socket — clear handlers first so stale callbacks
-  // don't fire on the status element after we've already started a new connection.
-  _closeNostrWs();
-
-  const relay = _nostrRelayUrl.trim();
-  const statusEl = document.getElementById('nostr-browser-status');
-  const listEl   = document.getElementById('nostr-browser-list');
-
-  if (!relay) {
-    statusEl.textContent = 'No relay configured. Add a relay URL in Settings.';
-    return;
-  }
-
-  const pubkeyRaw = (document.getElementById('nostr-pubkey-input')?.value || '').trim();
-  const pubkey = pubkeyRaw ? _nostrPubkeyToHex(pubkeyRaw) : null;
-
-  statusEl.textContent = `Connecting to ${relay}…`;
-  listEl.innerHTML = '';
-
-  let ws;
-  try {
-    ws = new WebSocket(relay);
-  } catch(e) {
-    statusEl.innerHTML = `Could not connect: ${e.message} <button onclick="_connectNostrRelay()" style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid currentColor;background:none;cursor:pointer">Retry</button>`;
-    return;
-  }
-  _nostrWs = ws;
-
-  const subId = 'feedme-browse-' + Date.now();
-  const filter = { kinds: [30078], '#t': ['feedme', 'recipe'], limit: 100 };
-  if (pubkey) filter.authors = [pubkey];
-
-  ws.onopen = () => {
-    if (_nostrWs !== ws) return;
-    statusEl.textContent = 'Connected — fetching recipes…';
-    ws.send(JSON.stringify(['REQ', subId, filter]));
-  };
-
-  ws.onmessage = (msg) => {
-    if (_nostrWs !== ws) return;
-    let data;
-    try { data = JSON.parse(msg.data); } catch { return; }
-    const [type, , payload] = data;
-    if (type === 'EVENT' && payload?.kind === 30078) {
-      _nostrEvents[payload.id] = payload;
-      _renderNostrList();
-    } else if (type === 'EOSE') {
-      const count = Object.keys(_nostrEvents).length;
-      statusEl.textContent = count
-        ? `Found ${count} recipe${count !== 1 ? 's' : ''}`
-        : 'No Feedme recipes found on this relay' + (pubkey ? ' for this public key.' : '.');
-    }
-  };
-
-  ws.onerror = () => {
-    if (_nostrWs !== ws) return;
-    statusEl.innerHTML = `Connection error — relay unreachable. <button onclick="_connectNostrRelay()" style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid currentColor;background:none;cursor:pointer">Retry</button>`;
-  };
-
-  ws.onclose = () => {};
-}
-
-function _nostrPubkeyToHex(raw) {
-  // If already hex (64 chars), return as-is
-  if (/^[0-9a-f]{64}$/i.test(raw)) return raw.toLowerCase();
-  // npub bech32 — we can't decode without a lib, send as-is and let the relay handle it
-  // For simplicity, return null (skip author filter) if it's npub format
-  return null;
-}
-
-function _renderNostrList() {
-  const listEl = document.getElementById('nostr-browser-list');
-  const events = Object.values(_nostrEvents);
-  if (!events.length) { listEl.innerHTML = ''; return; }
-
-  const checkSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-
-  listEl.innerHTML = events.map(ev => {
-    let recipe;
-    try { recipe = JSON.parse(ev.content); } catch { return ''; }
-    if (!recipe?.name) return '';
-
-    const isChecked = _nostrSelected.has(ev.id);
-    const isAlready = _nostrKnownIds.has(ev.id);
-    const meta = [
-      recipe.recipeCategory,
-      recipe.totalTime || recipe.cookTime,
-      recipe.recipeYield,
-    ].filter(Boolean).join(' · ');
-
-    const thumb = recipe.image
-      ? `<img src="${recipe.image}" style="width:44px;height:44px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0" onerror="this.style.display='none'">`
-      : `<div style="width:44px;height:44px;border-radius:var(--radius-sm);background:var(--cream-deep);flex-shrink:0"></div>`;
-    return `<div class="nostr-row${isChecked ? ' checked' : ''}${isAlready ? ' already' : ''}"
-              onclick="_nostrToggleRow('${ev.id}', ${isAlready})">
-      <div class="nostr-row-check">${isChecked ? checkSvg : ''}</div>
-      ${thumb}
-      <div class="nostr-row-info">
-        <div class="nostr-row-name">${recipe.name}</div>
-        ${meta ? `<div class="nostr-row-meta">${meta}</div>` : ''}
-      </div>
-      ${isAlready ? '<span class="nostr-already-tag">Already imported</span>' : ''}
-    </div>`;
-  }).join('');
-}
-
-function _nostrToggleRow(id, isAlready) {
-  if (isAlready) return;
-  if (_nostrSelected.has(id)) _nostrSelected.delete(id);
-  else _nostrSelected.add(id);
-  _updateNostrFooter();
-  _renderNostrList();
-}
-
-function _updateNostrFooter() {
-  const n = _nostrSelected.size;
-  document.getElementById('nostr-sel-count').textContent = n === 0 ? '0 selected' : `${n} selected`;
-  document.getElementById('nostr-import-btn').disabled = n === 0;
-}
-
-async function importFromNostr() {
-  const btn = document.getElementById('nostr-import-btn');
-  const selectedEvents = [..._nostrSelected].map(id => _nostrEvents[id]).filter(Boolean);
-  if (!selectedEvents.length) return;
-
-  btn.disabled = true;
-  btn.textContent = 'Importing…';
-  try {
-    const result = await apiPost('/api/import/nostr', { events: selectedEvents });
-    const n = result.imported?.length || 0;
-    const skipped = result.skipped?.length || 0;
-    const errors = result.errors?.length || 0;
-    closeNostrBrowser();
-    let msg = `${n} recipe${n !== 1 ? 's' : ''} imported to Staging`;
-    if (skipped) msg += ` · ${skipped} already existed`;
-    if (errors)  msg += ` · ${errors} failed`;
-    toast(msg, n > 0 ? 'ok' : 'err');
-    if (n > 0) loadStaged();
-  } catch(e) {
-    toast(e.message, 'err');
-    btn.disabled = false;
-    btn.textContent = 'Import Selected';
-  }
-}
-
-/* ── Nostr publish ── */
-async function _loadNostrNpub() {
-  try {
-    const r = await apiGet('/api/nostr/pubkey');
-    if (r.npub) {
-      document.getElementById('nostr-npub-row').style.display = '';
-      document.getElementById('nostr-npub-val').textContent = r.npub;
-    }
-  } catch(e) {}
-}
-
-async function nostrGenerateKey() {
-  try {
-    const r = await apiPost('/api/nostr/generate-key', {});
-    document.getElementById('s-nostr-nsec').value = r.nsec;
-    document.getElementById('nostr-npub-row').style.display = '';
-    document.getElementById('nostr-npub-val').textContent = r.npub;
-    toast('New keypair generated and saved', 'ok');
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-async function publishToNostr(slug) {
-  const btn = document.getElementById('nostr-pub-btn');
-  const s = await apiGet('/api/settings').catch(() => ({}));
-  const relay = (s.nostr_relay || '').trim();
-  if (!relay) { toast('Configure a Nostr relay URL in Settings first', 'err'); return; }
-
-  if (btn) { btn.disabled = true; btn.innerHTML = btn.innerHTML.replace(/Publish.*|Re-publish.*/, 'Publishing…'); }
-
-  try {
-    const r = await apiPost(`/api/export/nostr/${slug}`, {});
-    if (r.error) throw new Error(r.error);
-
-    const event = r.event;
-    if (r.image_warning) toast(`Image upload failed: ${r.image_warning}`, 'err');
-
-    await _nostrPublishEvent(relay, event);
-
-    // Save event ID back to server
-    await apiPost(`/api/export/nostr/${slug}/save-event-id`, { event_id: event.id });
-
-    toast(r.image_uploaded ? 'Published to Nostr with image' : 'Published to Nostr (no image)', 'ok');
-    // Refresh drawer to update button label
-    openDrawer(slug);
-  } catch(e) {
-    toast(e.message, 'err');
-    if (btn) { btn.disabled = false; }
-  }
-}
-
-function _nostrPublishEvent(relay, event) {
-  return new Promise((resolve, reject) => {
-    let ws;
-    let settled = false;
-    const done = (fn) => { if (!settled) { settled = true; clearTimeout(timeout); try { ws.close(); } catch(e) {} fn(); } };
-    try { ws = new WebSocket(relay); } catch(e) { reject(new Error(`Invalid relay URL: ${e.message}`)); return; }
-    const timeout = setTimeout(() => done(() => reject(new Error(`Relay timed out after 15s — is ${relay} reachable?`))), 15000);
-    ws.onopen = () => ws.send(JSON.stringify(['EVENT', event]));
-    ws.onmessage = (msg) => {
-      try {
-        const data = JSON.parse(msg.data);
-        if (data[0] === 'OK') {
-          if (data[2] === true || data[2] === false) done(resolve);
-          else done(() => reject(new Error(data[3] || 'Relay rejected the event')));
-        }
-      } catch(e) {}
-    };
-    ws.onerror = (e) => done(() => reject(new Error(`Could not connect to relay ${relay} — check the URL in Settings`)));
-    ws.onclose = (e) => { if (!settled && e.code !== 1000) done(() => reject(new Error(`Relay closed connection (code ${e.code}) — ${e.reason || 'no reason given'}`))); };
-  });
-}
-
 /* ── Settings ── */
 async function loadSettings() {
   try {
@@ -3467,9 +3261,6 @@ async function loadSettings() {
     document.getElementById('s-ppq-model').value          = s.ppq_model        || '';
     document.getElementById('s-ppq-image-model').value    = s.ppq_image_model  || '';
     document.getElementById('s-ppq-vision-model').value   = s.ppq_vision_model || '';
-    document.getElementById('s-nostr-relay').value        = s.nostr_relay      || '';
-    document.getElementById('s-nostr-nsec').value         = s.nostr_nsec       || '';
-    if (s.nostr_nsec) _loadNostrNpub();
     _setAiStatusBadge(s.ppq_api_key ? 'unchecked' : 'none');
     if (s.ppq_credit_id) _fetchBalance();
     _loadEquipmentChips(s.equipment || '');
@@ -3710,8 +3501,6 @@ async function saveSettings() {
     ppq_model:        document.getElementById('s-ppq-model').value,
     ppq_image_model:  document.getElementById('s-ppq-image-model').value,
     ppq_vision_model: document.getElementById('s-ppq-vision-model').value,
-    nostr_relay:      document.getElementById('s-nostr-relay').value,
-    nostr_nsec:       document.getElementById('s-nostr-nsec').value,
     rss_feeds:        existing.rss_feeds || '',
     equipment:        _readEquipmentChips(),
     preferred_units:  document.getElementById('s-preferred-units').value,
@@ -3726,8 +3515,7 @@ async function syncRecipes() {
   try {
     const r = await apiPost('/api/recipes/sync');
     toast(`Synced ${r.synced} recipe${r.synced===1?'':'s'}`, 'ok');
-    if (currentTab === 'recipes') loadRecipes();
-    else if (currentTab === 'staging') loadStaged();
+    if (currentTab === 'recipes') _loadSubContent('recipes', _activeSubTab('recipes'));
   } catch(e) { toast(e.message, 'err'); }
 }
 
@@ -3806,7 +3594,7 @@ async function generateGroceryList() {
     let msg = `${added} item${added===1?'':'s'} to buy`;
     if (covered > 0) msg += ` · ${covered} already in pantry`;
     toast(msg, 'ok');
-    switchTab('grocery');
+    switchTab('planner');switchSubTab('planner','grocery');
     renderGrocery(result.items || [], result.pantry_items || []);
   } catch(e) { toast(e.message, 'err'); }
 }
@@ -4193,7 +3981,7 @@ function renderTrashed() {
           ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
         </div>
         ${srcBadge(r.source_type)}
-        ${nostrDot(r.nostr_event_id)}
+
       </div>
       <div class="card-body">
         <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
@@ -4538,9 +4326,10 @@ function _syncSelToggleBtns(active) {
 }
 
 function _renderCurrentGrid() {
-  if (currentTab === 'recipes') renderRecipes();
-  else if (currentTab === 'favorites') renderFavorites();
-  else if (currentTab === 'staging') renderStaged();
+  const sub = _activeSubTab('recipes');
+  if (currentTab === 'recipes' && sub === 'library') renderRecipes();
+  else if (currentTab === 'recipes' && sub === 'favorites') renderFavorites();
+  else if (currentTab === 'recipes' && sub === 'staging') renderStaged();
 }
 
 function toggleSelectMode() {
@@ -4578,10 +4367,9 @@ function _updateBulkBar() {
   const keepBtn   = document.getElementById('bulk-keep-btn');
   const trashBtn  = document.getElementById('bulk-trash-btn');
   const delBtn    = document.getElementById('bulk-del-btn');
-  const nostrBtn  = document.getElementById('bulk-nostr-btn');
   if (!bar) return;
   const n = _selected.size;
-  const searchable = ['recipes', 'staging', 'favorites'].includes(currentTab);
+  const searchable = currentTab === 'recipes';
 
   // Topbar: swap search ↔ count
   if (selInfo) selInfo.style.display = _selMode ? 'flex' : 'none';
@@ -4593,18 +4381,14 @@ function _updateBulkBar() {
   // Bulk bar slides up only when something is selected
   bar.classList.toggle('open', _selMode && n > 0);
 
-  const onFav   = currentTab === 'favorites';
-  const onStage = currentTab === 'staging';
+  const sub     = _activeSubTab('recipes');
+  const onFav   = currentTab === 'recipes' && sub === 'favorites';
+  const onStage = currentTab === 'recipes' && sub === 'staging';
   if (favBtn)   favBtn.style.display   = (!onFav && !onStage) ? '' : 'none';
   if (unfavBtn) unfavBtn.style.display = onFav   ? '' : 'none';
   if (keepBtn)  keepBtn.style.display  = onStage ? '' : 'none';
   if (trashBtn) trashBtn.style.display = onStage ? '' : 'none';
   if (delBtn)   delBtn.style.display   = !onStage ? '' : 'none';
-  if (nostrBtn) {
-    nostrBtn.style.display = !onStage ? '' : 'none';
-    nostrBtn.disabled = n === 0 || n > 20;
-    nostrBtn.title = n > 20 ? 'Select 20 or fewer recipes to publish' : '';
-  }
 }
 
 function deselectAll() {
@@ -4652,8 +4436,7 @@ async function bulkTrash() {
     favoritesData = favoritesData.filter(r => !slugs.includes(r.slug));
     toast(`${slugs.length} recipe${slugs.length!==1?'s':''} moved to trash`);
     exitSelectMode();
-    if (currentTab === 'recipes') loadRecipes();
-    else if (currentTab === 'favorites') loadFavorites();
+    if (currentTab === 'recipes') _loadSubContent('recipes', _activeSubTab('recipes'));
   } catch(e) { toast(e.message, 'err'); }
 }
 
@@ -4682,96 +4465,6 @@ async function bulkTrashStaged() {
   } catch(e) { toast(e.message, 'err'); }
 }
 
-async function bulkPublishNostr() {
-  const slugs = [..._selected];
-  if (!slugs.length || slugs.length > 20) return;
-
-  const btn = document.getElementById('bulk-nostr-btn');
-  const count = document.getElementById('topbar-sel-count');
-  btn.disabled = true;
-  if (count) count.textContent = 'Connecting…';
-
-  const s = await apiGet('/api/settings').catch(() => ({}));
-  const relay = (s.nostr_relay || '').trim();
-  if (!relay) {
-    toast('Configure a Nostr relay URL in Settings first', 'err');
-    btn.disabled = false;
-    if (count) count.textContent = `${slugs.length} recipe${slugs.length !== 1 ? 's' : ''} selected`;
-    return;
-  }
-
-  const n = slugs.length;
-  let published = 0, noImage = 0, failed = 0;
-
-  // Open a single WebSocket connection for the whole batch
-  let ws;
-  try {
-    ws = await new Promise((resolve, reject) => {
-      const sock = new WebSocket(relay);
-      const t = setTimeout(() => reject(new Error('Relay connection timed out')), 10000);
-      sock.onopen = () => { clearTimeout(t); resolve(sock); };
-      sock.onerror = () => { clearTimeout(t); reject(new Error(`Cannot connect to ${relay}`)); };
-    });
-  } catch(e) {
-    toast(e.message, 'err');
-    btn.disabled = false;
-    return;
-  }
-
-  const publishOne = (event) => new Promise((resolve, reject) => {
-    let settled = false;
-    const done = (fn) => { if (!settled) { settled = true; clearTimeout(timeout); fn(); } };
-    const timeout = setTimeout(() => done(() => reject(new Error('Relay timed out'))), 15000);
-    const handler = (msg) => {
-      try {
-        const data = JSON.parse(msg.data);
-        if (data[0] === 'OK' && data[1] === event.id) {
-          ws.removeEventListener('message', handler);
-          if (data[2] === true || data[2] === false) done(resolve);
-          else done(() => reject(new Error(data[3] || 'Relay rejected event')));
-        }
-      } catch(e) {}
-    };
-    ws.addEventListener('message', handler);
-    ws.send(JSON.stringify(['EVENT', event]));
-  });
-
-  for (let i = 0; i < n; i++) {
-    const slug = slugs[i];
-    if (count) count.innerHTML = `Signing and uploading ${i+1}/${n}…`;
-    try {
-      const r = await apiPost(`/api/export/nostr/${slug}`, {});
-      if (r.error) throw new Error(r.error);
-      if (r.image_warning) noImage++;
-
-      if (count) count.innerHTML = `Publishing to relay ${i+1}/${n}…`;
-      await publishOne(r.event);
-      await apiPost(`/api/export/nostr/${slug}/save-event-id`, { event_id: r.event.id });
-      published++;
-    } catch(e) {
-      failed++;
-    }
-    if (i < n - 1) await new Promise(res => setTimeout(res, 200));
-  }
-
-  try { ws.close(); } catch(e) {}
-
-  const parts = [`${published} published`];
-  if (noImage) parts.push(`${noImage} had no image`);
-  if (failed) parts.push(`${failed} failed`);
-  toast(parts.join(' · '), published > 0 ? 'ok' : 'err');
-
-  if (published > 0) {
-    exitSelectMode();
-    // Reload from server so Nostr dots appear on published cards
-    if (currentTab === 'recipes') await loadRecipes();
-    else if (currentTab === 'favorites') await loadFavorites();
-  } else {
-    // Nothing succeeded — re-enable button so user can retry without re-selecting
-    btn.disabled = false;
-    if (count) count.textContent = `${n} recipe${n !== 1 ? 's' : ''} selected`;
-  }
-}
 </script>
 
 <!-- Bulk action bar -->
@@ -4795,10 +4488,6 @@ async function bulkPublishNostr() {
   <button class="bulk-btn danger" id="bulk-del-btn" onclick="bulkTrash()">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
     Trash
-  </button>
-  <button class="bulk-btn" id="bulk-nostr-btn" onclick="bulkPublishNostr()" style="display:none;border-color:rgba(160,100,200,.5);color:#d4aaff">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-    Publish to Nostr
   </button>
 </div>
 

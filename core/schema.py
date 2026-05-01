@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS recipes (
     source_type TEXT DEFAULT 'manual',
     status      TEXT DEFAULT 'active',
     favorited   INTEGER DEFAULT 0,
-    nostr_event_id TEXT,
     created_at  TEXT DEFAULT (datetime('now')),
     updated_at  TEXT DEFAULT (datetime('now'))
 );
@@ -93,7 +92,6 @@ MIGRATIONS = [
     "ALTER TABLE recipes ADD COLUMN favorited INTEGER DEFAULT 0",
     # Track external platform IDs for sync/export
     "ALTER TABLE recipes ADD COLUMN mealie_id TEXT",
-    "ALTER TABLE recipes ADD COLUMN nostr_event_id TEXT",
     # Category grouping on shopping list
     "ALTER TABLE shopping_list ADD COLUMN category TEXT",
     # Track which recipes each grocery item comes from

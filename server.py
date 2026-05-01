@@ -15,7 +15,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
 from core.schema import init_db
-from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, nostr_importer, nostr_publisher, cook_log, meal_plan_ai
+from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, cook_log, meal_plan_ai
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -435,18 +435,6 @@ def import_camera():
         return jsonify({"error": f"Vision extraction failed: {exc}"}), 500
 
 
-@app.route("/api/import/nostr", methods=["POST"])
-def import_from_nostr():
-    data = request.get_json()
-    events = data.get("events", [])
-    if not events:
-        return jsonify({"error": "No events provided"}), 400
-    try:
-        result = nostr_importer.import_events(events)
-        return jsonify(result)
-    except Exception as exc:
-        return jsonify({"error": f"Import failed: {exc}"}), 500
-
 
 # ── Pantry ────────────────────────────────────────────────────────────────────
 
@@ -734,8 +722,6 @@ def get_settings():
         "ppq_model":        config.get("PPQ_MODEL", "gpt-4o-mini"),
         "ppq_image_model":  config.get("PPQ_IMAGE_MODEL", "dall-e-3"),
         "ppq_vision_model": config.get("PPQ_VISION_MODEL", "gpt-4o"),
-        "nostr_relay":      config.get("NOSTR_RELAY", ""),
-        "nostr_nsec":       config.get("NOSTR_NSEC", ""),
         "rss_feeds":           config.get("RSS_FEEDS", ""),
         "rss_auto_fetch_hours": config.get("RSS_AUTO_FETCH_HOURS", "0"),
         "equipment":           config.get("EQUIPMENT", ""),
@@ -754,8 +740,6 @@ def save_settings():
         "ppq_model":        "PPQ_MODEL",
         "ppq_image_model":  "PPQ_IMAGE_MODEL",
         "ppq_vision_model": "PPQ_VISION_MODEL",
-        "nostr_relay":      "NOSTR_RELAY",
-        "nostr_nsec":       "NOSTR_NSEC",
         "rss_feeds":              "RSS_FEEDS",
         "rss_auto_fetch_hours":   "RSS_AUTO_FETCH_HOURS",
         "equipment":              "EQUIPMENT",
@@ -768,96 +752,6 @@ def save_settings():
     config.save_env(updates)
     return jsonify({"ok": True})
 
-
-# ── Nostr ────────────────────────────────────────────────────────────────────
-
-@app.route("/api/nostr/known-events")
-def nostr_known_events():
-    """Return set of nostr_event_ids already in the DB (non-trashed)."""
-    from core.db import db
-    with db() as conn:
-        rows = conn.execute(
-            "SELECT nostr_event_id FROM recipes WHERE nostr_event_id IS NOT NULL AND nostr_event_id != '' AND status != 'trashed'"
-        ).fetchall()
-    return jsonify({"ids": [r["nostr_event_id"] for r in rows]})
-
-
-@app.route("/api/nostr/generate-key", methods=["POST"])
-def nostr_generate_key():
-    try:
-        keypair = nostr_publisher.generate_keypair()
-        config.save_env({"NOSTR_NSEC": keypair["nsec"]})
-        return jsonify({"npub": keypair["npub"], "nsec": keypair["nsec"]})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
-
-
-@app.route("/api/nostr/pubkey")
-def nostr_pubkey():
-    nsec = config.get("NOSTR_NSEC", "").strip()
-    if not nsec:
-        return jsonify({"npub": None})
-    try:
-        return jsonify({"npub": nostr_publisher.get_pubkey(nsec)})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 400
-
-
-@app.route("/api/export/nostr/<slug>", methods=["POST"])
-def export_to_nostr(slug):
-    nsec = config.get("NOSTR_NSEC", "").strip()
-    if not nsec:
-        return jsonify({"error": "No Nostr private key configured. Set one in Settings."}), 400
-    recipe = importer.get_recipe(slug)
-    if not recipe:
-        return jsonify({"error": "Recipe not found"}), 404
-    try:
-        # Upload local image to nostr.build before signing
-        image_url = None
-        image_warning = None
-        local_img = recipe.get("image_url", "")
-        if local_img and not local_img.startswith("http"):
-            try:
-                image_url = nostr_publisher.upload_image(local_img, nsec)
-            except Exception as img_exc:
-                image_warning = str(img_exc)
-                print(f"nostr.build upload failed for {slug}: {img_exc}")
-        elif local_img.startswith("http"):
-            image_url = local_img
-
-        event = nostr_publisher.sign_recipe_event_full(
-            recipe, recipe.get("full", {}), nsec, image_url=image_url
-        )
-        return jsonify({"event": event, "image_uploaded": bool(image_url), "image_warning": image_warning})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
-
-
-@app.route("/api/export/nostr/<slug>/save-event-id", methods=["POST"])
-def nostr_save_event_id(slug):
-    """Called after client successfully publishes to relay."""
-    data = request.get_json()
-    event_id = data.get("event_id", "")
-    if not event_id:
-        return jsonify({"error": "event_id required"}), 400
-    with __import__("core.db", fromlist=["db"]).db() as conn:
-        conn.execute(
-            "UPDATE recipes SET nostr_event_id=?, updated_at=datetime('now') WHERE slug=?",
-            (event_id, slug)
-        )
-    # Also write to JSON file
-    recipe = importer.get_recipe(slug)
-    if recipe and recipe.get("json_path"):
-        from pathlib import Path
-        import json as _json
-        p = Path(recipe["json_path"])
-        if p.exists():
-            with open(p) as f:
-                data_json = _json.load(f)
-            data_json["nostr_event_id"] = event_id
-            with open(p, "w") as f:
-                _json.dump(data_json, f, indent=2, ensure_ascii=False)
-    return jsonify({"ok": True})
 
 
 # ── Version ───────────────────────────────────────────────────────────────────

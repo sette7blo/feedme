@@ -15,7 +15,6 @@ A self-hosted recipe management platform. Import recipes from AI generation, RSS
 - **Pantry tracking** — log what you have with quantities; scan barcodes to look up products instantly via Open Food Facts
 - **Cook tonight** — filter your recipe library by what you already have in the pantry, sorted by ingredient coverage
 - **Grocery list** — automatically calculates what to buy based on your meal plan and pantry
-- **Nostr backup** — optional decentralized backup of your recipe library
 - No account, no cloud, no tracking — your data stays on your server
 
 ---
@@ -79,14 +78,6 @@ docker compose pull && docker compose up -d
 Feedme uses any OpenAI-compatible endpoint. The recommended provider is [PPQ.ai](https://ppq.ai), which gives access to Claude and OpenAI models via a single API key and endpoint.
 
 You can configure the key and models directly in the Settings tab after first launch. PPQ.ai offers a wide range of text, vision, and image generation models — pick what suits your budget and quality preferences.
-
----
-
-## Nostr Backup (optional)
-
-Feedme supports optional decentralized backup of your recipe library via [Nostr](https://nostr.com). When configured, recipes are published as Nostr events — giving you a censorship-resistant, self-sovereign copy of your data that exists independently of your server.
-
-Configure your Nostr private key in the Settings tab to enable this feature.
 
 ---
 
