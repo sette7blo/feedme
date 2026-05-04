@@ -813,6 +813,87 @@ def get_version():
     })
 
 
+# ── Backup & Restore ─────────────────────────────────────────────────────────
+
+@app.route("/api/backup")
+def download_backup():
+    import zipfile
+    base = Path(__file__).parent
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for folder in ('recipes', 'images'):
+            folder_path = base / folder
+            if not folder_path.exists():
+                continue
+            for f in folder_path.iterdir():
+                if f.is_file():
+                    zf.write(f, f"{folder}/{f.name}")
+        # Include settings from .env (exclude secrets like FLASK_SECRET)
+        settings = {}
+        env_path = base / ".env"
+        if env_path.exists():
+            with open(env_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#") or "=" not in line:
+                        continue
+                    k, _, v = line.partition("=")
+                    k = k.strip()
+                    if k in ("FLASK_SECRET",):
+                        continue
+                    settings[k] = v.strip()
+        if settings:
+            zf.writestr("settings.json", json.dumps(settings, indent=2))
+    buf.seek(0)
+    from datetime import datetime
+    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return app.response_class(
+        buf.getvalue(),
+        mimetype="application/zip",
+        headers={"Content-Disposition": f"attachment; filename=feedme-backup-{ts}.zip"}
+    )
+
+
+@app.route("/api/backup/restore", methods=["POST"])
+def restore_backup():
+    import zipfile
+    f = request.files.get("backup")
+    if not f:
+        return jsonify({"error": "No file uploaded"}), 400
+    if not f.filename.endswith(".zip"):
+        return jsonify({"error": "File must be a .zip"}), 400
+    buf = io.BytesIO(f.read())
+    try:
+        zf = zipfile.ZipFile(buf, 'r')
+    except zipfile.BadZipFile:
+        return jsonify({"error": "Invalid zip file"}), 400
+    base = Path(__file__).parent
+    recipes_restored = 0
+    images_restored = 0
+    for name in zf.namelist():
+        if name.startswith("recipes/") and not name.endswith("/"):
+            target = base / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(zf.read(name))
+            recipes_restored += 1
+        elif name.startswith("images/") and not name.endswith("/"):
+            target = base / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(zf.read(name))
+            images_restored += 1
+        elif name == "settings.json":
+            restored_settings = json.loads(zf.read(name))
+            config.save_env(restored_settings)
+    zf.close()
+    # Re-sync DB from restored JSON files
+    importer.sync_all()
+    return jsonify({
+        "ok": True,
+        "recipes": recipes_restored,
+        "images": images_restored,
+    })
+
+
 # ── Export ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/export/json/<slug>")

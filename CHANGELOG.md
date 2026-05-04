@@ -11,6 +11,15 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.8.0] — 2026-05-04
+
+### Added
+- Backup & restore: export all recipes, images, and settings as a zip file from Settings
+- Restore backup: upload a previously exported zip to restore data on a new instance
+
+### Fixed
+- Drawer overlay now appears above mobile bottom navigation bar
+
 ## [v1.7.0] — 2026-05-01
 
 ### Added
