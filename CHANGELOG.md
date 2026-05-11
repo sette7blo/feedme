@@ -11,6 +11,15 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v1.8.1] — 2026-05-11
+
+### Fixed
+- Blank page on iOS caused by render-blocking Google Fonts CDN request — fonts now self-hosted (woff2)
+
+### Changed
+- Split monolithic frontend into modular JS files: core.js, recipes.js, generate.js, import.js, settings.js, planner.js, pantry.js
+- Extracted inline CSS into app.css
+
 ## [v1.8.0] — 2026-05-04
 
 ### Added
