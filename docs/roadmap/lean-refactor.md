@@ -26,7 +26,7 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 - Phase 1: Done — [#51](https://github.com/sette7blo/feedme/issues/51)
 - Phase 2: Done — [#52](https://github.com/sette7blo/feedme/issues/52)
 - Phase 3: Done — [#53](https://github.com/sette7blo/feedme/issues/53)
-- Phase 4: Planned — [#54](https://github.com/sette7blo/feedme/issues/54)
+- Phase 4: Done — [#54](https://github.com/sette7blo/feedme/issues/54)
 - Phase 5: Planned — [#55](https://github.com/sette7blo/feedme/issues/55)
 - Phase 6: Planned — [#56](https://github.com/sette7blo/feedme/issues/56)
 - Phase 7: Planned — [#57](https://github.com/sette7blo/feedme/issues/57)
@@ -68,15 +68,15 @@ Acceptance:
 - [x] Image generation can fail or be disabled without blocking recipe save.
 
 ### Phase 4 — Slim server route file with broad domain modules
-Status: Planned
+Status: Done
 GitHub issue: [#54](https://github.com/sette7blo/feedme/issues/54)
 
 Goal: Keep `server.py` mostly as route wiring while avoiding a pile of tiny backend files.
 
 Acceptance:
-- [ ] `server.py` is materially shorter and easier to scan.
-- [ ] Moved behavior remains covered by the same routes.
-- [ ] No micro-file fragmentation.
+- [x] `server.py` is materially shorter and easier to scan.
+- [x] Moved behavior remains covered by the same routes.
+- [x] No micro-file fragmentation.
 
 ### Phase 5 — Consolidate import and recipe normalization logic
 Status: Planned
