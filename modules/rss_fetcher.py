@@ -2,16 +2,12 @@
 modules/rss_fetcher.py — Fetch RSS feeds + scrape recipe pages for full JSON-LD data.
 Approach borrowed from mealie-scraper: RSS gives links, page scraping gives recipes.
 """
-import json
 import re
 import time
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import date
-from pathlib import Path
+from modules import imports
 from modules.importer import save_recipe_json, slugify
-
-IMAGES_DIR = Path(__file__).parent.parent / "images"
 
 RSS_NS = {
     'media':   'http://search.yahoo.com/mrss/',
@@ -150,26 +146,7 @@ def scrape_recipe_page(url: str) -> dict | None:
     except Exception:
         return None
 
-    pattern = r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>([\s\S]*?)</script>'
-    recipe = None
-    for raw in re.findall(pattern, html):
-        try:
-            data = json.loads(raw.strip())
-        except (json.JSONDecodeError, ValueError):
-            continue
-
-        # Unwrap list, @graph, or plain dict
-        if isinstance(data, list):
-            recipe = next((d for d in data if isinstance(d, dict) and d.get('@type') == 'Recipe'), None)
-        elif isinstance(data, dict):
-            if data.get('@type') == 'Recipe':
-                recipe = data
-            elif isinstance(data.get('@graph'), list):
-                recipe = next((d for d in data['@graph'] if isinstance(d, dict) and d.get('@type') == 'Recipe'), None)
-
-        if recipe:
-            break
-
+    recipe = imports.find_recipe_ld(html)
     if recipe is None:
         return None
 
@@ -289,97 +266,17 @@ def _html_fallback(html: str) -> dict:
 
 def _extract_image(ld_image):
     """Pull a URL string out of the various JSON-LD image formats."""
-    if not ld_image:
-        return None
-    if isinstance(ld_image, str):
-        return ld_image
-    if isinstance(ld_image, list) and ld_image:
-        first = ld_image[0]
-        return first.get('url') if isinstance(first, dict) else first
-    if isinstance(ld_image, dict):
-        return ld_image.get('url')
-    return None
+    return imports.extract_image_url(ld_image) or None
 
 
 def _str(val, sep=', ') -> str:
     """Safely coerce a value that might be a list or None to a string."""
-    if val is None:
-        return ''
-    if isinstance(val, list):
-        return sep.join(str(v) for v in val if v)
-    return str(val)
+    return imports.scalar(val, sep=sep)
 
 
 def normalize_recipe(ld: dict, rss_item: dict) -> dict:
     """Merge JSON-LD data with RSS fallbacks into Feedme's schema.org/Recipe format."""
-
-    # Ingredients
-    ingredients = ld.get('recipeIngredient') or []
-    if isinstance(ingredients, list):
-        ingredients = [i for i in ingredients if isinstance(i, str) and i.strip()]
-
-    # Instructions — handle HowToStep, HowToSection (nested), and plain strings
-    instructions = []
-
-    def _extract_steps(steps):
-        """Recursively extract HowToStep text from steps or HowToSection itemListElement."""
-        if not steps:
-            return
-        if isinstance(steps, str):
-            if steps.strip():
-                instructions.append({'@type': 'HowToStep', 'text': steps.strip()})
-            return
-        if isinstance(steps, dict):
-            steps = [steps]
-        for step in steps:
-            if isinstance(step, str):
-                if step.strip():
-                    instructions.append({'@type': 'HowToStep', 'text': step.strip()})
-            elif isinstance(step, dict):
-                step_type = step.get('@type', '')
-                if step_type == 'HowToSection' or 'itemListElement' in step:
-                    # Section: recurse into its nested steps
-                    _extract_steps(step.get('itemListElement', []))
-                else:
-                    # Regular HowToStep
-                    text = step.get('text') or ''
-                    if text.strip():
-                        instructions.append({'@type': 'HowToStep', 'text': text.strip(),
-                                             'name': step.get('name', '')})
-
-    _extract_steps(ld.get('recipeInstructions') or [])
-
-    # Image: prefer JSON-LD, fall back to RSS feed image
-    image_url = _extract_image(ld.get('image')) or rss_item.get('image')
-
-    # Author
-    author = ld.get('author', {})
-    author_name = author.get('name', '') if isinstance(author, dict) else str(author)
-
-    name = (_str(ld.get('name')) or rss_item['title']).strip()
-
-    return {
-        '@context':           'https://schema.org',
-        '@type':              'Recipe',
-        'name':               name,
-        'slug':               slugify(name),
-        'description':        _str(ld.get('description')) or rss_item.get('description', ''),
-        'image':              image_url,
-        'author':             {'@type': 'Person', 'name': author_name},
-        'datePublished':      _str(ld.get('datePublished')) or date.today().isoformat(),
-        'prepTime':           _str(ld.get('prepTime')),
-        'cookTime':           _str(ld.get('cookTime')),
-        'totalTime':          _str(ld.get('totalTime')),
-        'recipeYield':        _str(ld.get('recipeYield')),
-        'recipeCategory':     _str(ld.get('recipeCategory')),
-        'recipeCuisine':      _str(ld.get('recipeCuisine')),
-        'keywords':           _str(ld.get('keywords')),
-        'recipeIngredient':   ingredients,
-        'recipeInstructions': instructions,
-        'nutrition':          ld.get('nutrition') or {},
-        'source_url':         rss_item.get('link', '') or _str(ld.get('url')),
-        'source_type':        'rss',
-    }
+    return imports.normalize_schema_recipe(ld, rss_item=rss_item, source_type='rss')
 
 
 def _stub_recipe(rss_item: dict) -> dict:
@@ -407,26 +304,7 @@ def download_image(image_url: str, slug: str) -> str | None:
     Download image from URL, save to images/<slug>.<ext>.
     Returns local path string like 'images/slug.jpg', or None on failure.
     """
-    if not image_url or not image_url.startswith('http'):
-        return None
-    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
-
-    # Determine extension
-    ext = 'jpg'
-    url_path = image_url.split('?')[0].lower()
-    for candidate in ('webp', 'png', 'jpeg', 'jpg'):
-        if url_path.endswith(f'.{candidate}'):
-            ext = 'jpg' if candidate == 'jpeg' else candidate
-            break
-
-    local_path = IMAGES_DIR / f"{slug}.{ext}"
-    try:
-        req = urllib.request.Request(image_url, headers=HEADERS)
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            local_path.write_bytes(resp.read())
-        return f"images/{slug}.{ext}"
-    except Exception:
-        return None
+    return imports.local_image_ref(imports.download_image(image_url, slug))
 
 
 # ── Public API ────────────────────────────────────────────────────────────────

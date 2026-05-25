@@ -10,6 +10,7 @@ from pathlib import Path
 from core import config
 from core.ai import AIConfig, client as ai_client, require_api_key
 from core.db import db
+from modules import imports
 from modules.importer import save_recipe_json, slugify
 
 
@@ -63,11 +64,7 @@ def generate_recipe(prompt: str) -> dict:
         temperature=0.7,
         max_tokens=2000
     )
-    content = response.choices[0].message.content.strip()
-
-    # Strip markdown fences if present
-    content = re.sub(r"^```(?:json)?\s*", "", content)
-    content = re.sub(r"\s*```$", "", content)
+    content = imports.strip_json_fences(response.choices[0].message.content)
 
     recipe_data = json.loads(content)
     recipe_data["datePublished"] = date.today().isoformat()
@@ -153,10 +150,7 @@ def extract_recipe_from_text(text: str) -> dict:
         temperature=0.2,
         max_tokens=2000,
     )
-    content = response.choices[0].message.content.strip()
-
-    content = re.sub(r"^```(?:json)?\s*", "", content)
-    content = re.sub(r"\s*```$", "", content)
+    content = imports.strip_json_fences(response.choices[0].message.content)
 
     recipe_data = json.loads(content)
     recipe_data["datePublished"] = date.today().isoformat()
