@@ -395,7 +395,7 @@
             </div>
             <div class="settings-section-body">
               <div class="form-group">
-                <label class="form-label">PPQ.ai API Key</label>
+                <label class="form-label">OpenAI-compatible API Key</label>
                 <div class="secret-wrap">
                   <input type="password" id="s-ppq-key" class="form-input" placeholder="Enter your key…">
                   <button type="button" class="secret-eye" onclick="toggleSecret('s-ppq-key',this)" tabindex="-1">
@@ -414,11 +414,11 @@
               </div>
               <div class="form-group"><label class="form-label">Base URL</label><input id="s-ppq-url" class="form-input" value="https://api.ppq.ai/v1"></div>
               <div class="form-row">
-                <div class="form-group"><label class="form-label">Recipe Model</label><input id="s-ppq-model" class="form-input" placeholder="gpt-4o-mini"></div>
-                <div class="form-group"><label class="form-label">Image Model</label><input id="s-ppq-image-model" class="form-input" placeholder="dall-e-3"></div>
-                <div class="form-group"><label class="form-label">Vision Model</label><input id="s-ppq-vision-model" class="form-input" placeholder="gpt-4o"></div>
+                <div class="form-group"><label class="form-label">Recipe Model</label><input id="s-ppq-model" class="form-input" placeholder="text/chat model id"></div>
+                <div class="form-group"><label class="form-label">Image Model</label><input id="s-ppq-image-model" class="form-input" placeholder="image-generation model id"></div>
+                <div class="form-group"><label class="form-label">Vision Model</label><input id="s-ppq-vision-model" class="form-input" placeholder="vision-capable model id"></div>
               </div>
-              <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Vision model is used for Import from Image. Must support image inputs (e.g. gpt-4o).</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Vision model is used for Import from Image and must support image inputs. Check your provider's current model list before choosing model IDs.</div>
               <div style="display:flex;align-items:center;gap:12px">
                 <button class="btn btn-ghost btn-sm" id="ai-test-btn" onclick="testAiConnection()">Test Connection</button>
                 <span id="ai-balance" style="font-size:12px;font-weight:600;color:var(--text-mid);display:none"></span>

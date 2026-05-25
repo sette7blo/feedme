@@ -44,9 +44,9 @@ services:
 ```env
 PPQ_API_KEY=your-key-here
 PPQ_BASE_URL=https://api.ppq.ai/v1
-PPQ_MODEL=claude-haiku-4-5
-PPQ_IMAGE_MODEL=gpt-image-2
-PPQ_VISION_MODEL=claude-haiku-4-5
+PPQ_MODEL=your-text-model-id
+PPQ_IMAGE_MODEL=your-image-model-id
+PPQ_VISION_MODEL=your-vision-capable-model-id
 
 FLASK_SECRET=change-me-to-something-random
 ```
@@ -75,9 +75,15 @@ docker compose pull && docker compose up -d
 
 ## AI Provider
 
-Feedme uses any OpenAI-compatible endpoint. The recommended provider is [PPQ.ai](https://ppq.ai), which gives access to Claude and OpenAI models via a single API key and endpoint.
+Feedme uses OpenAI-compatible endpoints for recipe text, extraction, vision, and image generation. The default configuration names are still `PPQ_*` for compatibility with existing installs, and PPQ.ai is one supported provider.
 
-You can configure the key and models directly in the Settings tab after first launch. PPQ.ai offers a wide range of text, vision, and image generation models — pick what suits your budget and quality preferences.
+Configure the key, base URL, and model IDs in the Settings tab after first launch. Choose models by capability rather than by stale examples:
+
+- `PPQ_MODEL`: text/chat model for recipe generation and text extraction
+- `PPQ_IMAGE_MODEL`: image-generation model for food photos
+- `PPQ_VISION_MODEL`: vision-capable model for camera/image import
+
+Provider model IDs change often, so check your provider's current model list before filling these values.
 
 ---
 
