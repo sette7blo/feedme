@@ -257,6 +257,31 @@ def add_to_plan(date: str, meal_type: str, recipe_slug: str, servings: int = Non
     return row_to_dict(row)
 
 
+def add_slots_batch(slots: list[dict]) -> dict:
+    """Add many meal-plan slots, returning per-item success/failure details."""
+    results = []
+    for idx, slot in enumerate(slots or []):
+        try:
+            entry = add_to_plan(
+                date=slot["date"],
+                meal_type=slot["meal_type"],
+                recipe_slug=slot["recipe_slug"],
+                servings=slot.get("servings"),
+            )
+            results.append({"index": idx, "ok": True, "entry": entry})
+        except Exception as exc:
+            results.append({
+                "index": idx,
+                "ok": False,
+                "date": slot.get("date"),
+                "meal_type": slot.get("meal_type"),
+                "recipe_slug": slot.get("recipe_slug"),
+                "error": str(exc),
+            })
+    ok_count = sum(1 for r in results if r.get("ok"))
+    return {"ok": ok_count, "failed": len(results) - ok_count, "total": len(results), "results": results}
+
+
 def update_plan_servings(plan_id: int, servings: int) -> dict | None:
     with db() as conn:
         conn.execute("UPDATE meal_plan SET servings=? WHERE id=?", (servings, plan_id))

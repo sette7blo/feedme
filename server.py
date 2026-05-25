@@ -129,6 +129,21 @@ def list_recipes():
     return jsonify(importer.list_recipes(status=status, page=page, per_page=per_page))
 
 
+@app.route("/api/recipes/batch", methods=["POST"])
+def batch_recipes():
+    data = request.get_json() or {}
+    action = data.get("action", "")
+    slugs = data.get("slugs", [])
+    if not action:
+        return jsonify({"error": "action required"}), 400
+    if not isinstance(slugs, list) or not slugs:
+        return jsonify({"error": "slugs must be a non-empty list"}), 400
+    try:
+        return jsonify(importer.batch_recipe_action(action, slugs))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
 @app.route("/api/recipes/<slug>")
 def get_recipe(slug):
     recipe = importer.get_recipe(slug)
@@ -399,6 +414,17 @@ def add_meal_plan():
         servings=data.get("servings")
     )
     return jsonify(entry), 201
+
+
+@app.route("/api/mealplan/batch", methods=["POST"])
+def add_meal_plan_batch():
+    data = request.get_json() or {}
+    slots = data.get("slots", [])
+    if not isinstance(slots, list) or not slots:
+        return jsonify({"error": "slots must be a non-empty list"}), 400
+    result = meal_planner.add_slots_batch(slots)
+    status = 207 if result["failed"] else 201
+    return jsonify(result), status
 
 
 @app.route("/api/mealplan/<int:plan_id>", methods=["PUT"])

@@ -327,12 +327,12 @@ async function acceptWeekPlan() {
   const btn = document.getElementById('wplan-accept-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
-    await Promise.all(_wplanPlan.map(e => apiPost('/api/mealplan', {
+    const result = await apiPost('/api/mealplan/batch', { slots: _wplanPlan.map(e => ({
       date: e.date, meal_type: e.meal_type, recipe_slug: e.recipe_slug
-    })));
+    })) });
     closeWeekPlanModal();
     loadPlanner();
-    toast('Week plan added to planner', 'ok');
+    toast(result.failed ? `Week plan partly added · ${result.failed} failed` : 'Week plan added to planner', result.failed ? 'err' : 'ok');
   } catch(e) {
     toast(e.message || 'Could not save plan', 'err');
   } finally {
@@ -402,13 +402,14 @@ async function applyTemplate(id) {
     if (!tmpl) { toast('Template not found', 'err'); return; }
     const slots = typeof tmpl.slots === 'string' ? JSON.parse(tmpl.slots) : (tmpl.slots || []);
     const _wb = mondayOf(new Date()); _wb.setDate(_wb.getDate()+weekOffset*7); const start = new Date(isoDate(_wb) + 'T00:00:00');
-    await Promise.all(slots.map(s => {
+    const slotsToAdd = slots.map(s => {
       const d = new Date(start.getTime() + s.date_offset * 86400000);
       const dateStr = d.toISOString().slice(0,10);
-      return apiPost('/api/mealplan', { date: dateStr, meal_type: s.meal_type, recipe_slug: s.recipe_slug });
-    }));
+      return { date: dateStr, meal_type: s.meal_type, recipe_slug: s.recipe_slug };
+    });
+    const result = await apiPost('/api/mealplan/batch', { slots: slotsToAdd });
     loadPlanner();
-    toast('Template loaded', 'ok');
+    toast(result.failed ? `Template partly loaded · ${result.failed} failed` : 'Template loaded', result.failed ? 'err' : 'ok');
   } catch(e) { toast(e.message, 'err'); }
 }
 

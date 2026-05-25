@@ -10,6 +10,14 @@ from core.db import db, rows_to_list, row_to_dict
 RECIPES_DIR = Path(__file__).parent.parent / "recipes"
 
 
+def _base_dir() -> Path:
+    return RECIPES_DIR.parent
+
+
+def _stored_path(rel_path: str) -> Path:
+    return _base_dir() / rel_path
+
+
 def slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
@@ -195,6 +203,46 @@ def save_recipe_json(recipe_data: dict, status: str = "staged") -> Path | None:
     return path
 
 
+def _batch_summary(results: list[dict]) -> dict:
+    ok_count = sum(1 for r in results if r.get("ok"))
+    return {
+        "ok": ok_count,
+        "failed": len(results) - ok_count,
+        "total": len(results),
+        "results": results,
+    }
+
+
+def batch_recipe_action(action: str, slugs: list[str]) -> dict:
+    """Apply a supported recipe action to each slug and return per-item results."""
+    handlers = {
+        "favorite": lambda slug: set_favorite(slug, True),
+        "unfavorite": lambda slug: set_favorite(slug, False),
+        "trash": trash_recipe,
+        "discard": trash_recipe,
+        "approve": approve_recipe,
+        "restore": restore_recipe,
+        "permanent_delete": permanent_delete_recipe,
+    }
+    if action not in handlers:
+        raise ValueError(f"Unsupported batch action: {action}")
+
+    results = []
+    for slug in slugs or []:
+        try:
+            result = handlers[action](slug)
+            success = bool(result)
+            item = {"slug": slug, "ok": success}
+            if isinstance(result, dict):
+                item.update(result)
+            elif not success:
+                item["error"] = "not found or not valid for action"
+            results.append(item)
+        except Exception as exc:
+            results.append({"slug": slug, "ok": False, "error": str(exc)})
+    return _batch_summary(results)
+
+
 def restore_recipe(slug: str) -> bool:
     """Restore a trashed recipe back to active, rebuilding JSON from DB if missing."""
     with db() as conn:
@@ -203,7 +251,7 @@ def restore_recipe(slug: str) -> bool:
             return False
 
         r = dict(row)
-        json_path = Path(__file__).parent.parent / r["json_path"]
+        json_path = _stored_path(r["json_path"])
 
         if not json_path.exists():
             # Rebuild JSON from DB metadata (instructions will be empty)
@@ -249,7 +297,7 @@ def update_recipe(slug: str, data: dict) -> dict | None:
     if not row:
         return None
 
-    path = Path(__file__).parent.parent / row["json_path"]
+    path = _stored_path(row["json_path"])
     existing = {}
     if path.exists():
         with open(path) as f:
@@ -283,7 +331,7 @@ def get_recipe(slug: str) -> dict | None:
             return None
         r = row_to_dict(row)
         # Load full JSON from file for complete data
-        json_path = Path(__file__).parent.parent / r["json_path"]
+        json_path = _stored_path(r["json_path"])
         if json_path.exists():
             with open(json_path) as f:
                 full = json.load(f)
@@ -325,19 +373,30 @@ def list_recipes(status: str = "active", page: int = 1, per_page: int = 24) -> d
     }
 
 
+def set_favorite(slug: str, favorited: bool) -> dict | None:
+    """Set the favorited flag on an active recipe. Returns {favorited: bool}."""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT 1 FROM recipes WHERE slug=? AND status='active'", (slug,)
+        ).fetchone()
+        if not row:
+            return None
+        new_val = 1 if favorited else 0
+        conn.execute(
+            "UPDATE recipes SET favorited=?, updated_at=datetime('now') WHERE slug=?", (new_val, slug)
+        )
+    return {"favorited": bool(new_val)}
+
+
 def toggle_favorite(slug: str) -> dict:
     """Toggle the favorited flag on an active recipe. Returns {favorited: bool}."""
     with db() as conn:
         row = conn.execute(
             "SELECT favorited FROM recipes WHERE slug=? AND status='active'", (slug,)
         ).fetchone()
-        if not row:
-            return None
-        new_val = 0 if row["favorited"] else 1
-        conn.execute(
-            "UPDATE recipes SET favorited=? WHERE slug=?", (new_val, slug)
-        )
-    return {"favorited": bool(new_val)}
+    if not row:
+        return None
+    return set_favorite(slug, not bool(row["favorited"]))
 
 
 def approve_recipe(slug: str) -> bool:
@@ -350,7 +409,7 @@ def approve_recipe(slug: str) -> bool:
         # Also update JSON file
         row = conn.execute("SELECT json_path FROM recipes WHERE slug=?", (slug,)).fetchone()
         if row:
-            path = Path(__file__).parent.parent / row["json_path"]
+            path = _stored_path(row["json_path"])
             if path.exists():
                 with open(path) as f:
                     data = json.load(f)
@@ -369,7 +428,7 @@ def permanent_delete_recipe(slug: str) -> bool:
         if not row:
             return False
 
-        base = Path(__file__).parent.parent
+        base = _base_dir()
 
         # Delete JSON file
         json_path = base / row["json_path"]
@@ -401,11 +460,11 @@ def trash_recipe(slug: str) -> bool:
 
         if row["status"] == "staged":
             # Hard-delete staged recipes (never approved, safe to remove)
-            json_path = Path(__file__).parent.parent / row["json_path"]
+            json_path = _stored_path(row["json_path"])
             if json_path.exists():
                 json_path.unlink()
 
-            base = Path(__file__).parent.parent
+            base = _base_dir()
             for img_path in {
                 base / "images" / f"{slug}.jpg",
                 base / "images" / f"{slug}.png",
@@ -422,7 +481,7 @@ def trash_recipe(slug: str) -> bool:
                 "UPDATE recipes SET status='trashed', updated_at=datetime('now') WHERE slug=?",
                 (slug,)
             )
-            json_path = Path(__file__).parent.parent / row["json_path"]
+            json_path = _stored_path(row["json_path"])
             if json_path.exists():
                 with open(json_path) as f:
                     data = json.load(f)
