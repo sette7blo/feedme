@@ -85,6 +85,8 @@ Configure the key, base URL, and model IDs in the Settings tab after first launc
 
 Provider model IDs change often, so check your provider's current model list before filling these values.
 
+Cost controls in Settings let you use low-cost vision detail by default and disable automatic generated food photos when you only want the recipe text saved.
+
 ---
 
 ## Port

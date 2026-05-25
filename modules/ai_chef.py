@@ -76,12 +76,14 @@ def generate_recipe(prompt: str) -> dict:
     if "slug" not in recipe_data:
         recipe_data["slug"] = slugify(recipe_data.get("name", "recipe"))
 
-    # Generate image (best-effort — never blocks recipe save)
+    # Generate image only when enabled (best-effort — never blocks recipe save)
     slug = recipe_data["slug"]
-    try:
-        image_path = _generate_image(recipe_data, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
-    except Exception:
-        image_path = None
+    image_path = None
+    if ai_config.generate_images:
+        try:
+            image_path = _generate_image(recipe_data, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
+        except Exception:
+            image_path = None
     if image_path:
         recipe_data["image"] = f"images/{image_path.name}"
 
@@ -113,6 +115,27 @@ recipeInstructions must be an array of {"@type": "HowToStep", "text": "..."} obj
 """
 
 
+_BOILERPLATE_PATTERNS = [
+    r"(?im)^\s*(jump to recipe|print recipe|pin recipe|subscribe|newsletter|advertisement|comments?)\s*$",
+    r"(?im)^\s*(privacy policy|terms of use|all rights reserved|share this)\b.*$",
+]
+
+
+def _clean_recipe_text(text: str, limit: int = 8000) -> str:
+    text = re.sub(r"<[^>]+>", " ", text or "")
+    for pattern in _BOILERPLATE_PATTERNS:
+        text = re.sub(pattern, " ", text)
+    lines = []
+    seen = set()
+    for line in text.splitlines():
+        clean = re.sub(r"\s+", " ", line).strip()
+        if not clean or clean.lower() in seen:
+            continue
+        seen.add(clean.lower())
+        lines.append(clean)
+    return "\n".join(lines)[:limit]
+
+
 def extract_recipe_from_text(text: str) -> dict:
     """
     Use AI to extract a structured recipe from pasted raw text.
@@ -125,7 +148,7 @@ def extract_recipe_from_text(text: str) -> dict:
         model=ai_config.text_model,
         messages=[
             {"role": "system", "content": EXTRACT_PROMPT},
-            {"role": "user", "content": text[:12000]},  # cap to avoid token overflow
+            {"role": "user", "content": _clean_recipe_text(text)},
         ],
         temperature=0.2,
         max_tokens=2000,
@@ -165,7 +188,7 @@ def _generate_image(recipe_data: dict, slug: str, api_key: str, base_url: str, m
         + ". Overhead shot, natural light, styled on a wooden surface, high resolution."
     )
 
-    client = ai_client(AIConfig(api_key=api_key, base_url=base_url, text_model="", image_model=model, vision_model=""), timeout=60.0)
+    client = ai_client(AIConfig(api_key=api_key, base_url=base_url, text_model="", image_model=model, vision_model="", vision_detail="low", generate_images=True), timeout=60.0)
     gpt_image_models = {"gpt-image-1", "gpt-image-1.5", "gpt-image-2"}
     kwargs = dict(model=model, prompt=prompt, n=1)
     if model in gpt_image_models:

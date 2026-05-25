@@ -25,7 +25,7 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 
 - Phase 1: Done — [#51](https://github.com/sette7blo/feedme/issues/51)
 - Phase 2: Done — [#52](https://github.com/sette7blo/feedme/issues/52)
-- Phase 3: Planned — [#53](https://github.com/sette7blo/feedme/issues/53)
+- Phase 3: Done — [#53](https://github.com/sette7blo/feedme/issues/53)
 - Phase 4: Planned — [#54](https://github.com/sette7blo/feedme/issues/54)
 - Phase 5: Planned — [#55](https://github.com/sette7blo/feedme/issues/55)
 - Phase 6: Planned — [#56](https://github.com/sette7blo/feedme/issues/56)
@@ -57,15 +57,15 @@ Acceptance:
 - [x] Existing `.env` keys continue to work.
 
 ### Phase 3 — Reduce AI token and image-cost paths
-Status: Planned
+Status: Done
 GitHub issue: [#53](https://github.com/sette7blo/feedme/issues/53)
 
 Goal: Lower AI spend/latency in paths that scale with recipe count, pasted text size, or uploaded images.
 
 Acceptance:
-- [ ] Meal planning sends a bounded shortlist instead of the whole large library.
-- [ ] Camera import no longer always sends high-detail full-size images by default.
-- [ ] Image generation can fail or be disabled without blocking recipe save.
+- [x] Meal planning sends a bounded shortlist instead of the whole large library.
+- [x] Camera import no longer always sends high-detail full-size images by default.
+- [x] Image generation can fail or be disabled without blocking recipe save.
 
 ### Phase 4 — Slim server route file with broad domain modules
 Status: Planned
