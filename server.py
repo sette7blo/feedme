@@ -8,15 +8,13 @@ import json
 import os
 import threading
 import time
-import urllib.request
 from datetime import date, timedelta
-from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
-from core.ai import client as ai_client, get_ai_config
+from core.ai import get_ai_config
 from core.schema import init_db
-from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, cook_log, meal_plan_ai
+from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, cook_log, meal_plan_ai, maintenance, ai_features
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -190,104 +188,24 @@ def toggle_favorite(slug):
 
 @app.route("/api/ai/test", methods=["GET"])
 def ai_test():
-    """Quick connection test — sends a minimal request to the AI provider."""
-    ai_config = get_ai_config()
-    if not ai_config.api_key:
-        return jsonify({"ok": False, "error": "No API key configured"})
-    try:
-        client = ai_client(ai_config)
-        client.chat.completions.create(
-            model=ai_config.text_model,
-            messages=[{"role": "user", "content": "ping"}],
-            max_tokens=1,
-        )
-        return jsonify({
-            "ok": True,
-            "recipe_model": ai_config.text_model,
-            "image_model": ai_config.image_model,
-            "vision_model": ai_config.vision_model,
-        })
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)})
+    return jsonify(ai_features.test_connection())
 
 
 @app.route("/api/ai/balance", methods=["GET"])
 def ai_balance():
-    credit_id = config.get("PPQ_CREDIT_ID", "")
-    if not credit_id:
-        return jsonify({"ok": False, "error": "No credit ID configured"})
-    try:
-        import urllib.request, json as _json
-        body = _json.dumps({"credit_id": credit_id}).encode()
-        rq = urllib.request.Request("https://api.ppq.ai/credits/balance",
-                                    data=body,
-                                    headers={"Content-Type": "application/json"},
-                                    method="POST")
-        with urllib.request.urlopen(rq, timeout=10) as resp:
-            data = _json.loads(resp.read())
-        return jsonify({"ok": True, "balance": data.get("balance", 0)})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)})
+    return jsonify(ai_features.balance())
 
-
-TOPUP_METHODS = {
-    "xmr": {"min": 5, "max": 10000},
-}
 
 @app.route("/api/ai/topup", methods=["POST"])
 def ai_topup():
-    api_key = get_ai_config().api_key
-    if not api_key:
-        return jsonify({"ok": False, "error": "No API key configured"}), 400
-    data = request.get_json()
-    method = data.get("method", "")
-    amount = data.get("amount")
-    currency = data.get("currency", "USD")
-    if method not in TOPUP_METHODS:
-        return jsonify({"ok": False, "error": f"Unsupported method. Use: {', '.join(TOPUP_METHODS)}"}), 400
-    try:
-        amount = float(amount)
-    except (TypeError, ValueError):
-        return jsonify({"ok": False, "error": "Invalid amount"}), 400
-    limits = TOPUP_METHODS[method]
-    if currency == "USD" and (amount < limits["min"] or amount > limits["max"]):
-        return jsonify({"ok": False, "error": f"Amount must be ${limits['min']}-${limits['max']} for {method}"}), 400
-    try:
-        import urllib.request, json as _json
-        body = _json.dumps({"amount": amount, "currency": currency}).encode()
-        rq = urllib.request.Request(f"https://api.ppq.ai/topup/create/{method}",
-                                    data=body,
-                                    headers={"Content-Type": "application/json",
-                                             "Authorization": f"Bearer {api_key}"},
-                                    method="POST")
-        with urllib.request.urlopen(rq, timeout=15) as resp:
-            result = _json.loads(resp.read())
-        return jsonify({"ok": True, **result})
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode() if e.fp else str(e)
-        return jsonify({"ok": False, "error": err_body}), e.code
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+    payload, status = ai_features.create_topup(request.get_json())
+    return jsonify(payload), status
 
 
 @app.route("/api/ai/topup/status/<invoice_id>", methods=["GET"])
 def ai_topup_status(invoice_id):
-    api_key = get_ai_config().api_key
-    if not api_key:
-        return jsonify({"ok": False, "error": "No API key configured"}), 400
-    try:
-        import urllib.request, json as _json
-        rq = urllib.request.Request(f"https://api.ppq.ai/topup/status/{invoice_id}",
-                                    headers={"Authorization": f"Bearer {api_key}"},
-                                    method="GET")
-        with urllib.request.urlopen(rq, timeout=10) as resp:
-            result = _json.loads(resp.read())
-        return jsonify({"ok": True, **result})
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode() if e.fp else str(e)
-        return jsonify({"ok": False, "error": err_body}), e.code
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+    payload, status = ai_features.topup_status(invoice_id)
+    return jsonify(payload), status
 
 
 @app.route("/api/ai/generate", methods=["POST"])
@@ -307,53 +225,15 @@ def ai_generate():
 
 @app.route("/api/recipes/<slug>/regenerate-image", methods=["POST"])
 def recipe_regenerate_image(slug):
-    """Regenerate the AI food photo for an existing recipe."""
-    ai_config = get_ai_config()
-    if not ai_config.api_key:
-        return jsonify({"error": "No API key configured"}), 400
-    recipe = importer.get_recipe(slug)
-    if not recipe:
-        return jsonify({"error": "Recipe not found"}), 404
-    # Load full JSON for richer prompt context
-    json_path = recipe.get("json_path")
-    full = {}
-    if json_path:
-        import json as _json
-        try:
-            with open(json_path) as f:
-                full = _json.load(f)
-        except Exception:
-            pass
-    full.setdefault("name", recipe.get("name", slug))
-    try:
-        image_path = ai_chef._generate_image(full, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    # Update JSON and DB with new image path
-    rel = f"images/{image_path.name}"
-    importer.update_recipe(slug, {"image": rel})
-    return jsonify({"ok": True, "image": rel})
+    payload, status = ai_features.regenerate_recipe_image(slug)
+    return jsonify(payload), status
 
 
 # ── Import ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/import/rss/stats")
 def rss_feed_stats():
-    from core.db import db
-    from urllib.parse import urlparse
-    feeds_raw = config.get("RSS_FEEDS", "")
-    feeds = [f.strip() for f in feeds_raw.split(",") if f.strip()]
-    result = {}
-    with db() as conn:
-        for feed_url in feeds:
-            domain = urlparse(feed_url).netloc
-            if domain:
-                count = conn.execute(
-                    "SELECT COUNT(*) FROM recipes WHERE source_type='rss' AND source_url LIKE ?",
-                    (f"%{domain}%",)
-                ).fetchone()[0]
-                result[feed_url] = count
-    return jsonify(result)
+    return jsonify(maintenance.rss_feed_stats())
 
 
 @app.route("/api/import/rss", methods=["POST"])
@@ -473,57 +353,8 @@ def delete_pantry_item(item_id):
 
 @app.route("/api/recipes/<slug>/nutrition", methods=["POST"])
 def estimate_nutrition(slug):
-    ai_config = get_ai_config()
-    if not ai_config.api_key:
-        return jsonify({"error": "No API key configured"}), 400
-    recipe = importer.get_recipe(slug)
-    if not recipe:
-        return jsonify({"error": "Recipe not found"}), 404
-    full = recipe.get("full", {})
-    ingredients = full.get("recipeIngredient", [])
-    servings_raw = full.get("recipeYield", "")
-    servings = 1
-    import re
-    m = re.search(r"\d+", str(servings_raw))
-    if m:
-        servings = int(m.group(0))
-    if not ingredients:
-        return jsonify({"error": "Recipe has no ingredients"}), 400
-    try:
-        client = ai_client(ai_config)
-        recipe_name = full.get("name") or recipe.get("name", slug)
-        resp = client.chat.completions.create(
-            model=ai_config.text_model,
-            messages=[
-                {"role": "system", "content": (
-                    "You are a nutrition expert. Estimate per-serving nutritional values for a recipe.\n"
-                    "IMPORTANT:\n"
-                    f"- The recipe is: {recipe_name}\n"
-                    f"- Total yield: {servings} serving(s)\n"
-                    "- Calculate the TOTAL nutrition for ALL ingredients combined, then DIVIDE by the number of servings.\n"
-                    "- Return values for ONE serving only.\n"
-                    "- Calories should be a realistic number (typical main dish: 400-800 kcal/serving, side dish: 150-350 kcal/serving).\n"
-                    "Return ONLY a JSON object with these exact fields:\n"
-                    '{"calories": number, "proteinContent": "Xg", "fatContent": "Xg", "carbohydrateContent": "Xg", '
-                    '"fiberContent": "Xg", "sugarContent": "Xg", "sodiumContent": "Xmg"}\n'
-                    "No markdown, no explanation — just the JSON object."
-                )},
-                {"role": "user", "content": f"Recipe: {recipe_name} ({servings} servings)\nIngredients:\n" + "\n".join(ingredients)},
-            ],
-            max_tokens=300,
-            temperature=0,
-        )
-        text = resp.choices[0].message.content.strip()
-        import re as _re
-        m2 = _re.search(r'\{[\s\S]*\}', text)
-        if not m2:
-            return jsonify({"error": "AI returned unexpected format"}), 500
-        nutrition = json.loads(m2.group(0))
-        nutrition["@type"] = "NutritionInformation"
-        importer.update_recipe(slug, {"nutrition": nutrition})
-        return jsonify({"ok": True, "nutrition": nutrition})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    payload, status = ai_features.estimate_nutrition(slug)
+    return jsonify(payload), status
 
 
 # ── Cook Log ─────────────────────────────────────────────────────────────────
@@ -757,142 +588,27 @@ def save_settings():
 
 # ── Version ───────────────────────────────────────────────────────────────────
 
-_version_cache = {"latest": None, "checked_at": 0}
-_VERSION_FILE = Path(__file__).parent / "VERSION"
-_GITHUB_API = "https://api.github.com/repos/sette7blo/feedme/releases/latest"
-_CACHE_TTL = 3600  # 1 hour
-
-
-def _read_local_version() -> str:
-    try:
-        return _VERSION_FILE.read_text().strip()
-    except OSError:
-        return "unknown"
-
-
-def _do_fetch_latest_version():
-    try:
-        req = urllib.request.Request(
-            _GITHUB_API,
-            headers={"User-Agent": "Feedme/1.0", "Accept": "application/vnd.github+json"},
-        )
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read())
-        tag = data.get("tag_name", "").lstrip("v")
-        _version_cache["latest"] = tag
-        _version_cache["checked_at"] = time.time()
-    except Exception:
-        pass
-
-
-def _fetch_latest_version() -> str | None:
-    now = time.time()
-    if _version_cache["latest"] and now - _version_cache["checked_at"] < _CACHE_TTL:
-        return _version_cache["latest"]
-    # Fetch in background — return stale/None immediately
-    threading.Thread(target=_do_fetch_latest_version, daemon=True).start()
-    return _version_cache["latest"]
-
-
 @app.route("/api/version")
 def get_version():
-    current = _read_local_version()
-    latest = _fetch_latest_version()
-    update_available = False
-    if latest and current != "unknown":
-        try:
-            def _parse(v):
-                return tuple(int(x) for x in v.split("."))
-            update_available = _parse(latest) > _parse(current)
-        except Exception:
-            update_available = latest != current
-    return jsonify({
-        "current": current,
-        "latest": latest,
-        "update_available": update_available,
-        "release_url": "https://github.com/sette7blo/feedme/releases/latest",
-    })
+    return jsonify(maintenance.version_info())
 
 
 # ── Backup & Restore ─────────────────────────────────────────────────────────
 
 @app.route("/api/backup")
 def download_backup():
-    import zipfile
-    base = Path(__file__).parent
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for folder in ('recipes', 'images'):
-            folder_path = base / folder
-            if not folder_path.exists():
-                continue
-            for f in folder_path.iterdir():
-                if f.is_file():
-                    zf.write(f, f"{folder}/{f.name}")
-        # Include settings from .env (exclude secrets like FLASK_SECRET)
-        settings = {}
-        env_path = base / ".env"
-        if env_path.exists():
-            with open(env_path) as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith("#") or "=" not in line:
-                        continue
-                    k, _, v = line.partition("=")
-                    k = k.strip()
-                    if k in ("FLASK_SECRET",):
-                        continue
-                    settings[k] = v.strip()
-        if settings:
-            zf.writestr("settings.json", json.dumps(settings, indent=2))
-    buf.seek(0)
-    from datetime import datetime
-    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+    backup_bytes, filename = maintenance.create_backup()
     return app.response_class(
-        buf.getvalue(),
+        backup_bytes,
         mimetype="application/zip",
-        headers={"Content-Disposition": f"attachment; filename=feedme-backup-{ts}.zip"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
 
 @app.route("/api/backup/restore", methods=["POST"])
 def restore_backup():
-    import zipfile
-    f = request.files.get("backup")
-    if not f:
-        return jsonify({"error": "No file uploaded"}), 400
-    if not f.filename.endswith(".zip"):
-        return jsonify({"error": "File must be a .zip"}), 400
-    buf = io.BytesIO(f.read())
-    try:
-        zf = zipfile.ZipFile(buf, 'r')
-    except zipfile.BadZipFile:
-        return jsonify({"error": "Invalid zip file"}), 400
-    base = Path(__file__).parent
-    recipes_restored = 0
-    images_restored = 0
-    for name in zf.namelist():
-        if name.startswith("recipes/") and not name.endswith("/"):
-            target = base / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(zf.read(name))
-            recipes_restored += 1
-        elif name.startswith("images/") and not name.endswith("/"):
-            target = base / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(zf.read(name))
-            images_restored += 1
-        elif name == "settings.json":
-            restored_settings = json.loads(zf.read(name))
-            config.save_env(restored_settings)
-    zf.close()
-    # Re-sync DB from restored JSON files
-    importer.sync_all()
-    return jsonify({
-        "ok": True,
-        "recipes": recipes_restored,
-        "images": images_restored,
-    })
+    payload, status = maintenance.restore_backup(request.files.get("backup"))
+    return jsonify(payload), status
 
 
 # ── Export ────────────────────────────────────────────────────────────────────
