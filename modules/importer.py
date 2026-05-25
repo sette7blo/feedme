@@ -14,13 +14,8 @@ def slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
-def parse_recipe_json(path: Path) -> dict | None:
-    try:
-        with open(path) as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return None
-
+def recipe_to_row(data: dict, path: Path) -> dict:
+    """Convert in-memory recipe JSON to the SQLite row shape."""
     name = data.get("name", path.stem)
     slug = data.get("slug") or slugify(name)
 
@@ -38,7 +33,6 @@ def parse_recipe_json(path: Path) -> dict | None:
     else:
         tags_json = "[]"
 
-    # Parse duration strings (PT45M → "45 min")
     def parse_duration(val):
         if not val:
             return None
@@ -50,18 +44,20 @@ def parse_recipe_json(path: Path) -> dict | None:
     image = data.get("image", "")
     if isinstance(image, list):
         image = image[0] if image else ""
+    if isinstance(image, dict):
+        image = image.get("url", "")
 
     yield_val = data.get("recipeYield", "")
     if isinstance(yield_val, list):
         yield_val = yield_val[0] if yield_val else ""
-    import re as _re
-    m = _re.search(r'\d+', str(yield_val))
+    m = re.search(r'\d+', str(yield_val))
     servings = int(m.group()) if m else None
 
     def _str_or_first(val):
-        """Return a plain string whether val is a str, list, or None."""
         if isinstance(val, list):
             return val[0] if val else ""
+        if isinstance(val, dict):
+            return val.get("name") or val.get("text") or ""
         return val or ""
 
     return {
@@ -82,6 +78,15 @@ def parse_recipe_json(path: Path) -> dict | None:
         "source_type": data.get("source_type", "manual"),
         "status": data.get("status", "active"),
     }
+
+
+def parse_recipe_json(path: Path) -> dict | None:
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    return recipe_to_row(data, path)
 
 
 def sync_all() -> dict:
@@ -157,32 +162,36 @@ def save_recipe_json(recipe_data: dict, status: str = "staged") -> Path | None:
     with open(path, "w") as f:
         json.dump(recipe_data, f, indent=2, ensure_ascii=False)
 
-    # Sync this single recipe to DB
-    parsed = parse_recipe_json(path)
-    if parsed:
-        with db() as conn:
-            conn.execute("""
-                INSERT INTO recipes
-                    (slug, name, description, json_path, image_url,
-                     prep_time, cook_time, total_time, servings,
-                     category, cuisine, tags, ingredients,
-                     source_url, source_type, status)
-                VALUES
-                    (:slug, :name, :description, :json_path, :image_url,
-                     :prep_time, :cook_time, :total_time, :servings,
-                     :category, :cuisine, :tags, :ingredients,
-                     :source_url, :source_type, :status)
-                ON CONFLICT(slug) DO UPDATE SET
-                    name=excluded.name,
-                    prep_time=excluded.prep_time,
-                    cook_time=excluded.cook_time,
-                    total_time=excluded.total_time,
-                    servings=excluded.servings,
-                    category=excluded.category,
-                    cuisine=excluded.cuisine,
-                    status=excluded.status,
-                    updated_at=datetime('now')
-            """, parsed)
+    parsed = recipe_to_row(recipe_data, path)
+    with db() as conn:
+        conn.execute("""
+            INSERT INTO recipes
+                (slug, name, description, json_path, image_url,
+                 prep_time, cook_time, total_time, servings,
+                 category, cuisine, tags, ingredients,
+                 source_url, source_type, status)
+            VALUES
+                (:slug, :name, :description, :json_path, :image_url,
+                 :prep_time, :cook_time, :total_time, :servings,
+                 :category, :cuisine, :tags, :ingredients,
+                 :source_url, :source_type, :status)
+            ON CONFLICT(slug) DO UPDATE SET
+                name=excluded.name,
+                description=excluded.description,
+                image_url=excluded.image_url,
+                prep_time=excluded.prep_time,
+                cook_time=excluded.cook_time,
+                total_time=excluded.total_time,
+                servings=excluded.servings,
+                category=excluded.category,
+                cuisine=excluded.cuisine,
+                tags=excluded.tags,
+                ingredients=excluded.ingredients,
+                source_url=excluded.source_url,
+                source_type=excluded.source_type,
+                status=excluded.status,
+                updated_at=datetime('now')
+        """, parsed)
     return path
 
 

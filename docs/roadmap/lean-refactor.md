@@ -27,7 +27,7 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 - Phase 2: Done — [#52](https://github.com/sette7blo/feedme/issues/52)
 - Phase 3: Done — [#53](https://github.com/sette7blo/feedme/issues/53)
 - Phase 4: Done — [#54](https://github.com/sette7blo/feedme/issues/54)
-- Phase 5: Planned — [#55](https://github.com/sette7blo/feedme/issues/55)
+- Phase 5: Done — [#55](https://github.com/sette7blo/feedme/issues/55)
 - Phase 6: Planned — [#56](https://github.com/sette7blo/feedme/issues/56)
 - Phase 7: Planned — [#57](https://github.com/sette7blo/feedme/issues/57)
 
@@ -79,15 +79,15 @@ Acceptance:
 - [x] No micro-file fragmentation.
 
 ### Phase 5 — Consolidate import and recipe normalization logic
-Status: Planned
+Status: Done
 GitHub issue: [#55](https://github.com/sette7blo/feedme/issues/55)
 
 Goal: Reduce duplicated RSS/URL/text/camera recipe parsing and image handling while preserving import behavior.
 
 Acceptance:
-- [ ] Common recipe normalization lives in one predictable place.
-- [ ] RSS and URL import paths produce equivalent normalized schema fields.
-- [ ] Saving a recipe does not needlessly re-read the just-written JSON when avoidable.
+- [x] Common recipe normalization lives in one predictable place.
+- [x] RSS and URL import paths produce equivalent normalized schema fields.
+- [x] Saving a recipe does not needlessly re-read the just-written JSON when avoidable.
 
 ### Phase 6 — Add batch endpoints for bulk recipe and meal-plan actions
 Status: Planned

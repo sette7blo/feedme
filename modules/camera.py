@@ -7,11 +7,11 @@ Lands in 'staged' status.
 """
 import base64
 import json
-import re
 from datetime import date
 from pathlib import Path
 from core.ai import client as ai_client, require_api_key
 from core.db import db
+from modules import imports
 from modules.importer import save_recipe_json, slugify
 from modules.ai_chef import _generate_image
 
@@ -113,9 +113,7 @@ def import_from_images(images: list[tuple[bytes, str]]) -> dict:
         temperature=0.2,
     )
 
-    content = response.choices[0].message.content.strip()
-    content = re.sub(r"^```(?:json)?\s*", "", content)
-    content = re.sub(r"\s*```$",          "", content)
+    content = imports.strip_json_fences(response.choices[0].message.content)
 
     recipe_data = json.loads(content)
     recipe_data["datePublished"] = date.today().isoformat()
