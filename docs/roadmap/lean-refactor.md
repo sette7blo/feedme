@@ -28,7 +28,7 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 - Phase 3: Done — [#53](https://github.com/sette7blo/feedme/issues/53)
 - Phase 4: Done — [#54](https://github.com/sette7blo/feedme/issues/54)
 - Phase 5: Done — [#55](https://github.com/sette7blo/feedme/issues/55)
-- Phase 6: Planned — [#56](https://github.com/sette7blo/feedme/issues/56)
+- Phase 6: Done — [#56](https://github.com/sette7blo/feedme/issues/56)
 - Phase 7: Planned — [#57](https://github.com/sette7blo/feedme/issues/57)
 
 ## Phases
@@ -90,15 +90,15 @@ Acceptance:
 - [x] Saving a recipe does not needlessly re-read the just-written JSON when avoidable.
 
 ### Phase 6 — Add batch endpoints for bulk recipe and meal-plan actions
-Status: Planned
+Status: Done
 GitHub issue: [#56](https://github.com/sette7blo/feedme/issues/56)
 
 Goal: Replace frontend request storms with explicit batch APIs that are easier to reason about and recover from.
 
 Acceptance:
-- [ ] Bulk frontend actions use one request per bulk operation.
-- [ ] API returns enough detail to show success/failure counts.
-- [ ] Existing single-item endpoints still work.
+- [x] Bulk frontend actions use one request per bulk operation.
+- [x] API returns enough detail to show success/failure counts.
+- [x] Existing single-item endpoints still work.
 
 ### Phase 7 — Lean frontend rendering helpers without adding a build step
 Status: Planned

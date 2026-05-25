@@ -997,10 +997,11 @@ async function emptyTrash() {
   if (!trashedData.length) return;
   if (!confirm(`Permanently delete all ${trashedData.length} recipe${trashedData.length===1?'':'s'} in trash? This cannot be undone.`)) return;
   try {
-    await Promise.all(trashedData.map(r => apiDel(`/api/recipes/permanent/${r.slug}`)));
-    trashedData = [];
+    const result = await _batchRecipeAction('permanent_delete', trashedData.map(r => r.slug));
+    const okSlugs = result.results.filter(r => r.ok).map(r => r.slug);
+    trashedData = trashedData.filter(r => !okSlugs.includes(r.slug));
     renderTrashed();
-    toast('Trash emptied', 'ok');
+    toast(_batchMessage(result, 'Trash emptied'), 'ok');
   } catch(e) { toast(e.message, 'err'); }
 }
 
@@ -1087,16 +1088,26 @@ function deselectAll() {
   _updateBulkBar();
 }
 
+function _batchMessage(result, label) {
+  if (!result || !result.failed) return label;
+  return `${label} · ${result.failed} failed`;
+}
+
+async function _batchRecipeAction(action, slugs) {
+  return apiPost('/api/recipes/batch', { action, slugs });
+}
+
 async function bulkFavorite() {
   const slugs = [..._selected];
   if (!slugs.length) return;
   try {
-    await Promise.all(slugs.map(slug => apiPost(`/api/recipes/favorite/${slug}`)));
-    slugs.forEach(slug => {
+    const result = await _batchRecipeAction('favorite', slugs);
+    const okSlugs = result.results.filter(r => r.ok).map(r => r.slug);
+    okSlugs.forEach(slug => {
       const r = recipesData.find(r => r.slug === slug);
       if (r) r.favorited = 1;
     });
-    toast(`${slugs.length} recipe${slugs.length!==1?'s':''} added to favorites`);
+    toast(_batchMessage(result, `${result.ok} recipe${result.ok!==1?'s':''} added to favorites`));
     exitSelectMode();
   } catch(e) { toast(e.message, 'err'); }
 }
@@ -1105,13 +1116,14 @@ async function bulkUnfavorite() {
   const slugs = [..._selected];
   if (!slugs.length) return;
   try {
-    await Promise.all(slugs.map(slug => apiPost(`/api/recipes/favorite/${slug}`)));
-    favoritesData = favoritesData.filter(r => !slugs.includes(r.slug));
-    slugs.forEach(slug => {
+    const result = await _batchRecipeAction('unfavorite', slugs);
+    const okSlugs = result.results.filter(r => r.ok).map(r => r.slug);
+    favoritesData = favoritesData.filter(r => !okSlugs.includes(r.slug));
+    okSlugs.forEach(slug => {
       const r = recipesData.find(r => r.slug === slug);
       if (r) r.favorited = 0;
     });
-    toast(`${slugs.length} recipe${slugs.length!==1?'s':''} removed from favorites`);
+    toast(_batchMessage(result, `${result.ok} recipe${result.ok!==1?'s':''} removed from favorites`));
     exitSelectMode();
   } catch(e) { toast(e.message, 'err'); }
 }
@@ -1121,10 +1133,11 @@ async function bulkTrash() {
   if (!slugs.length) return;
   if (!confirm(`Move ${slugs.length} recipe${slugs.length!==1?'s':''} to trash?`)) return;
   try {
-    await Promise.all(slugs.map(slug => apiDel(`/api/recipes/${slug}`)));
-    recipesData   = recipesData.filter(r => !slugs.includes(r.slug));
-    favoritesData = favoritesData.filter(r => !slugs.includes(r.slug));
-    toast(`${slugs.length} recipe${slugs.length!==1?'s':''} moved to trash`);
+    const result = await _batchRecipeAction('trash', slugs);
+    const okSlugs = result.results.filter(r => r.ok).map(r => r.slug);
+    recipesData   = recipesData.filter(r => !okSlugs.includes(r.slug));
+    favoritesData = favoritesData.filter(r => !okSlugs.includes(r.slug));
+    toast(_batchMessage(result, `${result.ok} recipe${result.ok!==1?'s':''} moved to trash`));
     exitSelectMode();
     if (currentTab === 'recipes') _loadSubContent('recipes', _activeSubTab('recipes'));
   } catch(e) { toast(e.message, 'err'); }
@@ -1134,10 +1147,11 @@ async function bulkKeep() {
   const slugs = [..._selected];
   if (!slugs.length) return;
   try {
-    await Promise.all(slugs.map(slug => apiPost(`/api/recipes/approve/${slug}`)));
-    stagedData = stagedData.filter(r => !slugs.includes(r.slug));
+    const result = await _batchRecipeAction('approve', slugs);
+    const okSlugs = result.results.filter(r => r.ok).map(r => r.slug);
+    stagedData = stagedData.filter(r => !okSlugs.includes(r.slug));
     updateStageBadge(stagedData.length);
-    toast(`${slugs.length} recipe${slugs.length!==1?'s':''} approved`);
+    toast(_batchMessage(result, `${result.ok} recipe${result.ok!==1?'s':''} approved`));
     exitSelectMode();
   } catch(e) { toast(e.message, 'err'); }
 }
@@ -1147,10 +1161,11 @@ async function bulkTrashStaged() {
   if (!slugs.length) return;
   if (!confirm(`Discard ${slugs.length} recipe${slugs.length!==1?'s':''}?`)) return;
   try {
-    await Promise.all(slugs.map(slug => apiDel(`/api/recipes/${slug}`)));
-    stagedData = stagedData.filter(r => !slugs.includes(r.slug));
+    const result = await _batchRecipeAction('discard', slugs);
+    const okSlugs = result.results.filter(r => r.ok).map(r => r.slug);
+    stagedData = stagedData.filter(r => !okSlugs.includes(r.slug));
     updateStageBadge(stagedData.length);
-    toast(`${slugs.length} recipe${slugs.length!==1?'s':''} discarded`);
+    toast(_batchMessage(result, `${result.ok} recipe${result.ok!==1?'s':''} discarded`));
     exitSelectMode();
   } catch(e) { toast(e.message, 'err'); }
 }
