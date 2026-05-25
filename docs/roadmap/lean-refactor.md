@@ -29,7 +29,7 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 - Phase 4: Done — [#54](https://github.com/sette7blo/feedme/issues/54)
 - Phase 5: Done — [#55](https://github.com/sette7blo/feedme/issues/55)
 - Phase 6: Done — [#56](https://github.com/sette7blo/feedme/issues/56)
-- Phase 7: Planned — [#57](https://github.com/sette7blo/feedme/issues/57)
+- Phase 7: Done — [#57](https://github.com/sette7blo/feedme/issues/57)
 
 ## Phases
 
@@ -101,15 +101,15 @@ Acceptance:
 - [x] Existing single-item endpoints still work.
 
 ### Phase 7 — Lean frontend rendering helpers without adding a build step
-Status: Planned
+Status: Done
 GitHub issue: [#57](https://github.com/sette7blo/feedme/issues/57)
 
 Goal: Reduce duplicated recipe-card markup, inline handlers/styles, and full-grid churn while keeping vanilla JS/no build step.
 
 Acceptance:
-- [ ] Recipe cards render through shared helpers instead of repeated large template blocks.
-- [ ] Visible behavior remains the same.
-- [ ] Frontend files get easier to scan, not fragmented into many tiny scripts.
+- [x] Recipe cards render through shared helpers instead of repeated large template blocks.
+- [x] Visible behavior remains the same.
+- [x] Frontend files get easier to scan, not fragmented into many tiny scripts.
 
 ## Completion rule
 

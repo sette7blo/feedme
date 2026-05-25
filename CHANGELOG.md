@@ -11,6 +11,9 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+### Changed
+- Recipe, staging, trash, favorites, and planner picker cards now share frontend rendering helpers to keep the vanilla JS UI easier to maintain without changing visible behavior.
+
 ## [v1.8.1] — 2026-05-11
 
 ### Fixed
