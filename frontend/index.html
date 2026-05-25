@@ -419,6 +419,21 @@
                 <div class="form-group"><label class="form-label">Vision Model</label><input id="s-ppq-vision-model" class="form-input" placeholder="vision-capable model id"></div>
               </div>
               <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Vision model is used for Import from Image and must support image inputs. Check your provider's current model list before choosing model IDs.</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Vision Detail</label>
+                  <select id="s-ai-vision-detail" class="form-input">
+                    <option value="low">Low cost</option>
+                    <option value="auto">Auto</option>
+                    <option value="high">High accuracy</option>
+                  </select>
+                </div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-mid);padding-top:24px">
+                  <input type="checkbox" id="s-generate-images" checked>
+                  Generate recipe images by default
+                </label>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Use low-cost vision detail by default; switch to high only for hard-to-read cookbook pages. Disable generated images to save image API calls.</div>
               <div style="display:flex;align-items:center;gap:12px">
                 <button class="btn btn-ghost btn-sm" id="ai-test-btn" onclick="testAiConnection()">Test Connection</button>
                 <span id="ai-balance" style="font-size:12px;font-weight:600;color:var(--text-mid);display:none"></span>

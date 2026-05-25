@@ -94,6 +94,8 @@ PPQ_BASE_URL=https://api.ppq.ai/v1
 PPQ_MODEL=...
 PPQ_IMAGE_MODEL=...
 PPQ_VISION_MODEL=...
+AI_VISION_DETAIL=low
+GENERATE_IMAGES_BY_DEFAULT=true
 ```
 
 Do not document fixed recommended model IDs unless they have just been verified. Prefer capability language:
@@ -101,6 +103,11 @@ Do not document fixed recommended model IDs unless they have just been verified.
 - text/chat model for recipe generation and extraction
 - image-generation model for generated food photos
 - vision-capable model for camera import
+
+Cost-control settings:
+
+- `AI_VISION_DETAIL`: `low`, `auto`, or `high`; default is `low`.
+- `GENERATE_IMAGES_BY_DEFAULT`: `true` or `false`; disables automatic image-generation calls when false.
 
 ## Verification checklist
 

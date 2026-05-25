@@ -8,6 +8,10 @@ async function loadSettings() {
     document.getElementById('s-ppq-model').value          = s.ppq_model        || '';
     document.getElementById('s-ppq-image-model').value    = s.ppq_image_model  || '';
     document.getElementById('s-ppq-vision-model').value   = s.ppq_vision_model || '';
+    const detailSel = document.getElementById('s-ai-vision-detail');
+    if (detailSel) detailSel.value = s.ai_vision_detail || 'low';
+    const genImages = document.getElementById('s-generate-images');
+    if (genImages) genImages.checked = s.generate_images_by_default !== false;
     _setAiStatusBadge(s.ppq_api_key ? 'unchecked' : 'none');
     if (s.ppq_credit_id) _fetchBalance();
     _loadEquipmentChips(s.equipment || '');
@@ -246,6 +250,8 @@ async function saveSettings() {
     ppq_model:        document.getElementById('s-ppq-model').value,
     ppq_image_model:  document.getElementById('s-ppq-image-model').value,
     ppq_vision_model: document.getElementById('s-ppq-vision-model').value,
+    ai_vision_detail: document.getElementById('s-ai-vision-detail')?.value || 'low',
+    generate_images_by_default: document.getElementById('s-generate-images')?.checked ? 'true' : 'false',
     rss_feeds:        existing.rss_feeds || '',
     equipment:        _readEquipmentChips(),
     preferred_units:  document.getElementById('s-preferred-units').value,

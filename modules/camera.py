@@ -97,7 +97,7 @@ def import_from_images(images: list[tuple[bytes, str]]) -> dict:
         data_url  = f"data:{mime_type};base64,{b64}"
         content_blocks.append({
             "type":      "image_url",
-            "image_url": {"url": data_url, "detail": "high"},
+            "image_url": {"url": data_url, "detail": ai_config.vision_detail},
         })
     content_blocks.append({"type": "text", "text": user_text})
 
@@ -124,9 +124,14 @@ def import_from_images(images: list[tuple[bytes, str]]) -> dict:
     if "slug" not in recipe_data or not recipe_data["slug"]:
         recipe_data["slug"] = slugify(recipe_data.get("name", "recipe"))
 
-    # Generate a clean food photo from the recipe data (best-effort, never blocks save)
-    slug        = recipe_data["slug"]
-    image_path  = _generate_image(recipe_data, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
+    # Generate a clean food photo only when enabled (best-effort, never blocks save)
+    slug = recipe_data["slug"]
+    image_path = None
+    if ai_config.generate_images:
+        try:
+            image_path = _generate_image(recipe_data, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
+        except Exception:
+            image_path = None
     if image_path:
         recipe_data["image"] = f"images/{image_path.name}"
 
