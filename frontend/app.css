@@ -395,6 +395,10 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--text-dim); }
 .card-meta { display: flex; gap: 8px; }
 .card-last-cooked { font-size: 10px; color: var(--text-muted); padding-top: 4px; }
+.card-last-cooked.never { color: var(--text-muted); opacity: .6; }
+.empty-state { color: var(--text-muted); padding: 24px; font-style: italic; }
+.empty-state a { color: var(--amber); }
+.empty-state-compact { font-size: 13px; padding: 8px 0; }
 .quick-plan-btn { position: absolute; top: 7px; right: 40px; background: rgba(255,255,255,.82); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: transform .15s, background .15s; z-index: 2; }
 .quick-plan-btn:hover { transform: scale(1.2); background: rgba(255,255,255,.97); }
 .quick-plan-pop { position: absolute; top: 38px; right: 8px; background: var(--white); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); padding: 10px; z-index: 10; min-width: 170px; }

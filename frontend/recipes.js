@@ -143,13 +143,6 @@ function renderRecipes() {
       countEl.style.display = 'none';
     }
   }
-  if (!list.length) {
-    const hasRecipes = recipesData.length > 0;
-    document.getElementById('recipe-grid').innerHTML = hasRecipes
-      ? `<div style="color:var(--text-muted);padding:24px;font-style:italic">No recipes match your filters. <a href="#" onclick="clearFilters();return false" style="color:var(--amber)">Clear filters</a></div>`
-      : `<div style="color:var(--text-muted);padding:24px;font-style:italic">No recipes yet. Generate one with AI or import from RSS.</div>`;
-    return;
-  }
 
   let renderList = [...list];
   if (_cookTonight && _pantryCache) {
@@ -163,38 +156,24 @@ function renderRecipes() {
     renderList.sort((a, b) => (_parseTimeMinutes(a.cook_time || a.total_time) || 999) - (_parseTimeMinutes(b.cook_time || b.total_time) || 999));
   }
 
-  const selCheck = `<div class="sel-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
+  if (!renderList.length) {
+    const hasRecipes = recipesData.length > 0;
+    document.getElementById('recipe-grid').innerHTML = hasRecipes
+      ? renderEmptyState('No recipes match your filters. ', { actionHtml: '<a href="#" onclick="clearFilters();return false">Clear filters</a>' })
+      : renderEmptyState('No recipes yet. Generate one with AI or import from RSS.');
+    return;
+  }
+
   document.getElementById('recipe-grid').innerHTML = renderList.map(r => {
-    const isSel = _selected.has(r.slug);
-    const clickAction = _selMode
-      ? `toggleSelectRecipe('${r.slug}')`
-      : `openDrawer('${r.slug}')`;
     const covBadge = (_cookTonight && r._cov && r._cov.total > 0)
       ? `<span class="coverage-badge">${r._cov.matched}/${r._cov.total} ingredients</span>`
       : '';
-    return `
-    <div class="recipe-card${_selMode ? ' selectable' : ''}${isSel ? ' selected' : ''}" data-slug="${r.slug}" onclick="${clickAction}">
-      <div class="card-img-wrap">
-        <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
-          ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
-        </div>
-        ${_selMode ? selCheck : srcBadge(r.source_type)}
-        ${_selMode ? '' : heartBtn(r.slug, r.favorited)}
-
-      </div>
-      <div class="card-body">
-        <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
-        <div class="card-name">${r.name}</div>
-        <div class="card-foot">
-          <div class="card-meta">
-            ${(r.total_time||r.cook_time) ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${r.total_time||r.cook_time}</span>` : ''}
-            ${r.servings  ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${r.servings}</span>` : ''}
-          </div>
-          ${covBadge}
-        </div>
-      </div>
-    </div>`;
+    return renderRecipeCard(r, {
+      selectionMode: _selMode,
+      selected: _selected.has(r.slug),
+      showHeart: true,
+      footExtra: covBadge,
+    });
   }).join('');
 }
 
@@ -231,40 +210,19 @@ function renderFavorites() {
   if (surpriseBtn) surpriseBtn.style.display = favoritesData.length >= 2 ? '' : 'none';
   if (!list.length) {
     document.getElementById('favorites-grid').innerHTML =
-      `<div style="color:var(--text-muted);padding:24px;font-style:italic">No favorites yet. Press the heart on any recipe to save it here.</div>`;
+      renderEmptyState('No favorites yet. Press the heart on any recipe to save it here.');
     return;
   }
-  const selCheck = `<div class="sel-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
-  document.getElementById('favorites-grid').innerHTML = list.map(r => {
-    const isSel = _selected.has(r.slug);
-    const clickAction = _selMode
-      ? `toggleSelectRecipe('${r.slug}')`
-      : `openDrawer('${r.slug}')`;
-    return `
-    <div class="recipe-card${_selMode ? ' selectable' : ''}${isSel ? ' selected' : ''}" data-slug="${r.slug}" onclick="${clickAction}">
-      <div class="card-img-wrap">
-        <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
-          ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
-        </div>
-        ${_selMode ? selCheck : srcBadge(r.source_type)}
-        ${_selMode ? '' : heartBtn(r.slug, true)}
-        ${_selMode ? '' : `<button class="quick-plan-btn" onclick="event.stopPropagation();toggleQuickPlan(this,'${r.slug}')" title="Add to meal plan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-mid)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg></button>`}
-
-      </div>
-      <div class="card-body">
-        <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
-        <div class="card-name">${r.name}</div>
-        <div class="card-foot">
-          <div class="card-meta">
-            ${(r.total_time||r.cook_time) ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${r.total_time||r.cook_time}</span>` : ''}
-            ${r.servings ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${r.servings}</span>` : ''}
-          </div>
-        </div>
-        ${r.last_cooked ? `<div class="card-last-cooked">Last made ${_daysAgo(r.last_cooked)}</div>` : `<div class="card-last-cooked" style="color:var(--text-muted);opacity:.6">Never cooked</div>`}
-      </div>
-    </div>`;
-  }).join('');
+  document.getElementById('favorites-grid').innerHTML = list.map(r => renderRecipeCard(r, {
+    selectionMode: _selMode,
+    selected: _selected.has(r.slug),
+    showHeart: true,
+    favoriteOverride: true,
+    showQuickPlan: true,
+    lastCookedHtml: r.last_cooked
+      ? `<div class="card-last-cooked">Last made ${_daysAgo(r.last_cooked)}</div>`
+      : `<div class="card-last-cooked never">Never cooked</div>`,
+  })).join('');
 }
 
 function toggleQuickPlan(btn, slug) {
@@ -364,38 +322,20 @@ function updateStageBadge(n) {
 function renderStaged() {
   if (!stagedData.length) {
     document.getElementById('staging-grid').innerHTML =
-      `<div style="color:var(--text-muted);padding:24px;font-style:italic">No recipes pending review.</div>`;
+      renderEmptyState('No recipes pending review.');
     return;
   }
   const trashSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
-  const selCheck = `<div class="sel-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
-  document.getElementById('staging-grid').innerHTML = stagedData.map(r => {
-    const isSel = _selected.has(r.slug);
-    const clickAction = _selMode
-      ? `toggleSelectRecipe('${r.slug}')`
-      : `openDrawer('${r.slug}')`;
-    return `
-    <div class="recipe-card staged-card${_selMode ? ' selectable' : ''}${isSel ? ' selected' : ''}" data-slug="${r.slug}" onclick="${clickAction}">
-      <div class="card-img-wrap">
-        <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
-          ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
-        </div>
-        ${_selMode ? selCheck : srcBadge(r.source_type)}
-
-      </div>
-      <div class="card-body">
-        <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
-        <div class="card-name">${r.name}</div>
-        <div class="card-foot"><div class="card-meta">${(r.total_time||r.cook_time)?`<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${r.total_time||r.cook_time}</span>`:''} ${r.servings?`<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${r.servings}</span>`:''}</div></div>
-      </div>
-      ${_selMode ? '' : `
+  document.getElementById('staging-grid').innerHTML = stagedData.map(r => renderRecipeCard(r, {
+    className: 'staged-card',
+    selectionMode: _selMode,
+    selected: _selected.has(r.slug),
+    actionsHtml: `
       <div class="staged-actions" onclick="event.stopPropagation()">
         <button class="btn btn-xs" style="background:var(--sage);color:white;flex:1" onclick="approveRecipe('${r.slug}')">✓ Keep</button>
         <button class="btn btn-xs" style="background:#c05040;color:white;padding:4px 8px" onclick="trashRecipe('${r.slug}')" title="Discard">${trashSvg}</button>
-      </div>`}
-    </div>`;
-  }).join('');
+      </div>`,
+  })).join('');
 }
 
 async function approveRecipe(slug) {
@@ -947,31 +887,22 @@ async function loadTrashed() {
 function renderTrashed() {
   const btn = document.getElementById('empty-trash-btn');
   if (!trashedData.length) {
-    document.getElementById('trash-grid').innerHTML =
-      `<div style="color:var(--text-muted);padding:24px;font-style:italic">Trash is empty.</div>`;
+    document.getElementById('trash-grid').innerHTML = renderEmptyState('Trash is empty.');
     if (btn) btn.style.display = 'none';
     return;
   }
   if (btn) btn.style.display = '';
-  document.getElementById('trash-grid').innerHTML = trashedData.map(r => `
-    <div class="recipe-card" id="tr-${r.slug}" style="opacity:.72">
-      <div class="card-img-wrap">
-        <div class="card-ph">
-          ${r.image_url ? `<img src="${r.image_url}${r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at||'').replace(/\D/g,'')}" alt="${r.name}" onerror="this.remove()">` : ''}
-          ${FOOD_SVG[r.source_type]||FOOD_SVG.manual}
-        </div>
-        ${srcBadge(r.source_type)}
-
-      </div>
-      <div class="card-body">
-        <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
-        <div class="card-name">${r.name}</div>
-      </div>
-      <div class="staged-actions">
+  document.getElementById('trash-grid').innerHTML = trashedData.map(r => renderRecipeCard(r, {
+    id: `tr-${r.slug}`,
+    style: 'opacity:.72',
+    hideMeta: true,
+    noClick: true,
+    actionsHtml: `
+      <div class="staged-actions" onclick="event.stopPropagation()">
         <button class="btn btn-xs" style="background:var(--sage);color:white;flex:1" onclick="restoreRecipe('${r.slug}')">↩ Restore</button>
         <button class="btn btn-xs" style="background:#c05040;color:white" onclick="permanentDelete('${r.slug}')">Delete Forever</button>
-      </div>
-    </div>`).join('');
+      </div>`,
+  })).join('');
 }
 
 async function restoreRecipe(slug) {

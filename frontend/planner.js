@@ -117,15 +117,16 @@ function filterPicker(q) {
 function renderPickerGrid(recipes) {
   if (!recipes.length) {
     document.getElementById('picker-grid').innerHTML =
-      '<div style="color:var(--text-muted);font-size:13px;font-style:italic">No recipes found.</div>';
+      renderEmptyState('No recipes found.', { compact: true });
     return;
   }
   document.getElementById('picker-grid').innerHTML = recipes.map(r => `
     <div class="picker-card" onclick="pickRecipe('${r.slug}')">
       <div class="picker-card-img">
-        ${r.image_url
-          ? `<img src="${r.image_url}" alt="${r.name}" onerror="this.parentElement.innerHTML=''">`
-          : `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M12 16v-4"/></svg>`}
+        ${recipeImageHtml(r, {
+          fallback: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M12 16v-4"/></svg>`,
+          clearOnError: true,
+        })}
       </div>
       <div class="picker-card-body">
         <div class="picker-card-cat">${r.category||'—'}</div>

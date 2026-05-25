@@ -45,6 +45,78 @@ function heartBtn(slug, favorited) {
   </button>`;
 }
 
+/* ── Shared render helpers ── */
+function _htmlAttr(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function recipeImageUrl(r) {
+  if (!r || !r.image_url) return '';
+  return r.image_url + (r.image_url.startsWith('http') ? '' : '?t=' + (r.updated_at || '').replace(/\D/g, ''));
+}
+
+function recipeImageHtml(r, opts={}) {
+  const src = opts.src || recipeImageUrl(r);
+  const alt = opts.alt ?? r?.name ?? '';
+  const fallback = opts.fallback || (FOOD_SVG[r?.source_type] || FOOD_SVG.manual);
+  const onerror = opts.clearOnError ? `this.parentElement.innerHTML=''` : `this.remove()`;
+  return `${src ? `<img src="${_htmlAttr(src)}" alt="${_htmlAttr(alt)}" loading="lazy" onerror="${onerror}">` : ''}${fallback || ''}`;
+}
+
+function cardMetaHtml(r) {
+  const time = r.total_time || r.cook_time;
+  const timeHtml = time ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${time}</span>` : '';
+  const servingsHtml = r.servings ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${r.servings}</span>` : '';
+  return `${timeHtml}${servingsHtml}`;
+}
+
+function selectionCheckHtml() {
+  return `<div class="sel-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
+}
+
+function quickPlanButtonHtml(slug) {
+  return `<button class="quick-plan-btn" onclick="event.stopPropagation();toggleQuickPlan(this,'${slug}')" title="Add to meal plan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-mid)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg></button>`;
+}
+
+function renderEmptyState(message, opts={}) {
+  const action = opts.actionHtml || '';
+  if (opts.compact) return `<div class="empty-state empty-state-compact">${message}${action}</div>`;
+  return `<div class="empty-state">${message}${action}</div>`;
+}
+
+function renderRecipeCard(r, opts={}) {
+  const selectable = !!opts.selectionMode;
+  const selected = !!opts.selected;
+  const cardClasses = ['recipe-card', opts.className, selectable ? 'selectable' : '', selected ? 'selected' : '']
+    .filter(Boolean).join(' ');
+  const clickAction = opts.noClick ? '' : (selectable ? `toggleSelectRecipe('${r.slug}')` : (opts.clickAction || `openDrawer('${r.slug}')`));
+  const clickAttr = clickAction ? ` onclick="${clickAction}"` : '';
+  const imageAdornment = selectable ? selectionCheckHtml() : (opts.imageAdornment ?? srcBadge(r.source_type));
+  const favorite = (!selectable && opts.showHeart) ? heartBtn(r.slug, opts.favoriteOverride ?? r.favorited) : '';
+  const quickPlan = (!selectable && opts.showQuickPlan) ? quickPlanButtonHtml(r.slug) : '';
+  const footExtra = opts.footExtra || '';
+  const lastCooked = opts.lastCookedHtml || '';
+  const actions = (!selectable && opts.actionsHtml) ? opts.actionsHtml : '';
+  const style = opts.style ? ` style="${opts.style}"` : '';
+
+  return `
+    <div class="${cardClasses}"${opts.id ? ` id="${opts.id}"` : ''} data-slug="${r.slug}"${clickAttr}${style}>
+      <div class="card-img-wrap">
+        <div class="card-ph">${recipeImageHtml(r)}</div>
+        ${imageAdornment}
+        ${favorite}
+        ${quickPlan}
+      </div>
+      <div class="card-body">
+        <div class="card-cat">${r.category||'—'} · ${r.cuisine||'—'}</div>
+        <div class="card-name">${r.name}</div>
+        ${opts.hideMeta ? '' : `<div class="card-foot"><div class="card-meta">${cardMetaHtml(r)}</div>${footExtra}</div>`}
+        ${lastCooked}
+      </div>
+      ${actions}
+    </div>`;
+}
+
 /* ── Tabs ── */
 let currentTab = 'recipes';
 let _currentSubTabs = {};
