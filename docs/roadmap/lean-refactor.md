@@ -23,7 +23,7 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 
 ## Phase status
 
-- Phase 1: Planned — [#51](https://github.com/sette7blo/feedme/issues/51)
+- Phase 1: Done — [#51](https://github.com/sette7blo/feedme/issues/51)
 - Phase 2: Planned — [#52](https://github.com/sette7blo/feedme/issues/52)
 - Phase 3: Planned — [#53](https://github.com/sette7blo/feedme/issues/53)
 - Phase 4: Planned — [#54](https://github.com/sette7blo/feedme/issues/54)
@@ -34,16 +34,16 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 ## Phases
 
 ### Phase 1 — Lean Feedme docs and remove stale model guidance
-Status: Planned
+Status: Done
 GitHub issue: [#51](https://github.com/sette7blo/feedme/issues/51)
 
 Goal: Reduce agent context cost and stale guidance by making the project docs easier to scan and less tied to old model IDs.
 
 Acceptance:
-- [ ] `CLAUDE.md` is short enough to serve as an agent entrypoint, not an encyclopedia.
-- [ ] Docs describe model capabilities instead of prescribing stale model IDs.
-- [ ] Settings placeholders do not encourage old defaults like `gpt-4o-mini`, `dall-e-3`, or `gpt-4o` unless verified current.
-- [ ] No secrets or personal runtime data are added to git.
+- [x] `CLAUDE.md` is short enough to serve as an agent entrypoint, not an encyclopedia.
+- [x] Docs describe model capabilities instead of prescribing stale model IDs.
+- [x] Settings placeholders use capability-based text and avoid stale model IDs.
+- [x] No secrets or personal runtime data are added to git.
 
 ### Phase 2 — Centralize AI provider and model config
 Status: Planned
