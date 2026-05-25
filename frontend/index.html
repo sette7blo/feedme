@@ -8,9 +8,33 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Feedme">
+<style id="startup-paint">
+  html, body { background:#faf7f2; }
+  #boot-paint {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    background:#faf7f2;
+    color:#8a6040;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px;
+  }
+  #boot-paint .boot-card {
+    padding: 14px 18px;
+    border: 1px solid #e0d4c0;
+    border-radius: 14px;
+    background:#ffffff;
+    box-shadow: 0 6px 28px rgba(44,26,6,.08);
+  }
+  body.app-ready #boot-paint { display:none; }
+</style>
+<link rel="preload" href="/fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
+<div id="boot-paint" aria-live="polite"><div class="boot-card">Loading Feedme…</div></div>
 
 <!-- ═══════════════════════════════════════
      FIXED TOP BANNER
@@ -877,6 +901,7 @@ loadRecipes();
 apiGet('/api/recipes?status=staged&per_page=1').then(d => updateStageBadge(d.total||0)).catch(()=>{});
 const _initSelBtn = document.getElementById('topbar-select-btn');
 if (_initSelBtn) _initSelBtn.style.display = '';
+requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('app-ready')));
 </script>
 
 <!-- Bulk action bar -->

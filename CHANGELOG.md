@@ -14,6 +14,9 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ### Changed
 - Recipe, staging, trash, favorites, and planner picker cards now share frontend rendering helpers to keep the vanilla JS UI easier to maintain without changing visible behavior.
 
+### Fixed
+- iOS startup now paints Feedme's warm background/loading shell immediately instead of showing a plain white screen while CSS, fonts, scripts, or recipe data finish loading.
+
 ## [v1.8.1] — 2026-05-11
 
 ### Fixed
