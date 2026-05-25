@@ -14,6 +14,7 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
+from core.ai import client as ai_client, get_ai_config
 from core.schema import init_db
 from modules import importer, ai_chef, rss_fetcher, url_importer, pantry, meal_planner, grocery, camera, cook_log, meal_plan_ai
 
@@ -190,22 +191,22 @@ def toggle_favorite(slug):
 @app.route("/api/ai/test", methods=["GET"])
 def ai_test():
     """Quick connection test — sends a minimal request to the AI provider."""
-    api_key  = config.get("PPQ_API_KEY", "")
-    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
-    model    = config.get("PPQ_MODEL", "gpt-4o-mini")
-    if not api_key:
+    ai_config = get_ai_config()
+    if not ai_config.api_key:
         return jsonify({"ok": False, "error": "No API key configured"})
-    image_model  = config.get("PPQ_IMAGE_MODEL",  "dall-e-3")
-    vision_model = config.get("PPQ_VISION_MODEL", "gpt-4o")
     try:
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key, base_url=base_url)
+        client = ai_client(ai_config)
         client.chat.completions.create(
-            model=model,
+            model=ai_config.text_model,
             messages=[{"role": "user", "content": "ping"}],
             max_tokens=1,
         )
-        return jsonify({"ok": True, "recipe_model": model, "image_model": image_model, "vision_model": vision_model})
+        return jsonify({
+            "ok": True,
+            "recipe_model": ai_config.text_model,
+            "image_model": ai_config.image_model,
+            "vision_model": ai_config.vision_model,
+        })
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)})
 
@@ -235,7 +236,7 @@ TOPUP_METHODS = {
 
 @app.route("/api/ai/topup", methods=["POST"])
 def ai_topup():
-    api_key = config.get("PPQ_API_KEY", "")
+    api_key = get_ai_config().api_key
     if not api_key:
         return jsonify({"ok": False, "error": "No API key configured"}), 400
     data = request.get_json()
@@ -271,7 +272,7 @@ def ai_topup():
 
 @app.route("/api/ai/topup/status/<invoice_id>", methods=["GET"])
 def ai_topup_status(invoice_id):
-    api_key = config.get("PPQ_API_KEY", "")
+    api_key = get_ai_config().api_key
     if not api_key:
         return jsonify({"ok": False, "error": "No API key configured"}), 400
     try:
@@ -307,10 +308,8 @@ def ai_generate():
 @app.route("/api/recipes/<slug>/regenerate-image", methods=["POST"])
 def recipe_regenerate_image(slug):
     """Regenerate the AI food photo for an existing recipe."""
-    api_key     = config.get("PPQ_API_KEY", "")
-    base_url    = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
-    image_model = config.get("PPQ_IMAGE_MODEL", "dall-e-3")
-    if not api_key:
+    ai_config = get_ai_config()
+    if not ai_config.api_key:
         return jsonify({"error": "No API key configured"}), 400
     recipe = importer.get_recipe(slug)
     if not recipe:
@@ -327,7 +326,7 @@ def recipe_regenerate_image(slug):
             pass
     full.setdefault("name", recipe.get("name", slug))
     try:
-        image_path = ai_chef._generate_image(full, slug, api_key, base_url, image_model)
+        image_path = ai_chef._generate_image(full, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     # Update JSON and DB with new image path
@@ -474,10 +473,8 @@ def delete_pantry_item(item_id):
 
 @app.route("/api/recipes/<slug>/nutrition", methods=["POST"])
 def estimate_nutrition(slug):
-    api_key  = config.get("PPQ_API_KEY", "")
-    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
-    model    = config.get("PPQ_MODEL", "gpt-4o-mini")
-    if not api_key:
+    ai_config = get_ai_config()
+    if not ai_config.api_key:
         return jsonify({"error": "No API key configured"}), 400
     recipe = importer.get_recipe(slug)
     if not recipe:
@@ -493,11 +490,10 @@ def estimate_nutrition(slug):
     if not ingredients:
         return jsonify({"error": "Recipe has no ingredients"}), 400
     try:
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key, base_url=base_url)
+        client = ai_client(ai_config)
         recipe_name = full.get("name") or recipe.get("name", slug)
         resp = client.chat.completions.create(
-            model=model,
+            model=ai_config.text_model,
             messages=[
                 {"role": "system", "content": (
                     "You are a nutrition expert. Estimate per-serving nutritional values for a recipe.\n"
@@ -715,13 +711,14 @@ def clear_grocery_all():
 
 @app.route("/api/settings")
 def get_settings():
+    ai_config = get_ai_config()
     return jsonify({
-        "ppq_api_key":      config.get("PPQ_API_KEY", ""),
+        "ppq_api_key":      ai_config.api_key,
         "ppq_credit_id":    config.get("PPQ_CREDIT_ID", ""),
-        "ppq_base_url":     config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1"),
-        "ppq_model":        config.get("PPQ_MODEL", "gpt-4o-mini"),
-        "ppq_image_model":  config.get("PPQ_IMAGE_MODEL", "dall-e-3"),
-        "ppq_vision_model": config.get("PPQ_VISION_MODEL", "gpt-4o"),
+        "ppq_base_url":     ai_config.base_url,
+        "ppq_model":        ai_config.text_model,
+        "ppq_image_model":  ai_config.image_model,
+        "ppq_vision_model": ai_config.vision_model,
         "rss_feeds":           config.get("RSS_FEEDS", ""),
         "rss_auto_fetch_hours": config.get("RSS_AUTO_FETCH_HOURS", "0"),
         "equipment":           config.get("EQUIPMENT", ""),

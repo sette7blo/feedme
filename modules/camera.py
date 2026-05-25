@@ -10,8 +10,7 @@ import json
 import re
 from datetime import date
 from pathlib import Path
-from openai import OpenAI
-from core import config
+from core.ai import client as ai_client, require_api_key
 from core.db import db
 from modules.importer import save_recipe_json, slugify
 from modules.ai_chef import _generate_image
@@ -78,12 +77,7 @@ def import_from_images(images: list[tuple[bytes, str]]) -> dict:
     if not images:
         raise ValueError("No images provided.")
 
-    api_key  = config.get("PPQ_API_KEY")
-    if not api_key:
-        raise ValueError("PPQ_API_KEY not configured. Add it in Settings.")
-
-    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
-    model    = config.get("PPQ_VISION_MODEL", "gpt-4o")
+    ai_config = require_api_key()
 
     multi    = len(images) > 1
     system   = (_MULTI_PROMPT if multi else _SINGLE_PROMPT) + _FIELDS
@@ -107,10 +101,10 @@ def import_from_images(images: list[tuple[bytes, str]]) -> dict:
         })
     content_blocks.append({"type": "text", "text": user_text})
 
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    client = ai_client(ai_config)
 
     response = client.chat.completions.create(
-        model=model,
+        model=ai_config.vision_model,
         messages=[
             {"role": "system", "content": system},
             {"role": "user",   "content": content_blocks},
@@ -132,8 +126,7 @@ def import_from_images(images: list[tuple[bytes, str]]) -> dict:
 
     # Generate a clean food photo from the recipe data (best-effort, never blocks save)
     slug        = recipe_data["slug"]
-    image_model = config.get("PPQ_IMAGE_MODEL", "dall-e-3")
-    image_path  = _generate_image(recipe_data, slug, api_key, base_url, image_model)
+    image_path  = _generate_image(recipe_data, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
     if image_path:
         recipe_data["image"] = f"images/{image_path.name}"
 

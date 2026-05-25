@@ -24,7 +24,7 @@ Make Feedme easier for humans and agents to modify while reducing stale docs, AI
 ## Phase status
 
 - Phase 1: Done — [#51](https://github.com/sette7blo/feedme/issues/51)
-- Phase 2: Planned — [#52](https://github.com/sette7blo/feedme/issues/52)
+- Phase 2: Done — [#52](https://github.com/sette7blo/feedme/issues/52)
 - Phase 3: Planned — [#53](https://github.com/sette7blo/feedme/issues/53)
 - Phase 4: Planned — [#54](https://github.com/sette7blo/feedme/issues/54)
 - Phase 5: Planned — [#55](https://github.com/sette7blo/feedme/issues/55)
@@ -46,15 +46,15 @@ Acceptance:
 - [x] No secrets or personal runtime data are added to git.
 
 ### Phase 2 — Centralize AI provider and model config
-Status: Planned
+Status: Done
 GitHub issue: [#52](https://github.com/sette7blo/feedme/issues/52)
 
 Goal: Make AI model/base-url lookup come from one backend source so defaults cannot drift across routes/modules.
 
 Acceptance:
-- [ ] AI model defaults/fallbacks live in one backend place.
-- [ ] Recipe, image, vision, nutrition, and meal-plan AI paths use the shared helper.
-- [ ] Existing `.env` keys continue to work.
+- [x] AI model defaults/fallbacks live in one backend place.
+- [x] Recipe, image, vision, nutrition, and meal-plan AI paths use the shared helper.
+- [x] Existing `.env` keys continue to work.
 
 ### Phase 3 — Reduce AI token and image-cost paths
 Status: Planned

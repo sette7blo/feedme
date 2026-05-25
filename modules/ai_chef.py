@@ -7,8 +7,8 @@ import re
 import urllib.request
 from datetime import date
 from pathlib import Path
-from openai import OpenAI
 from core import config
+from core.ai import AIConfig, client as ai_client, require_api_key
 from core.db import db
 from modules.importer import save_recipe_json, slugify
 
@@ -46,21 +46,16 @@ def generate_recipe(prompt: str) -> dict:
     Returns the recipe dict (saved as staged JSON).
     Raises on API error.
     """
-    api_key = config.get("PPQ_API_KEY")
-    if not api_key:
-        raise ValueError("PPQ_API_KEY not configured. Add it in Settings.")
-
-    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
-    model = config.get("PPQ_MODEL", "gpt-4o-mini")
+    ai_config = require_api_key()
 
     equipment = config.get("EQUIPMENT", "").strip()
     full_prompt = prompt
     if equipment:
         full_prompt += f"\n\nAvailable kitchen equipment: {equipment}. Only suggest techniques and tools that work with this equipment."
 
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    client = ai_client(ai_config)
     response = client.chat.completions.create(
-        model=model,
+        model=ai_config.text_model,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": full_prompt}
@@ -83,9 +78,8 @@ def generate_recipe(prompt: str) -> dict:
 
     # Generate image (best-effort — never blocks recipe save)
     slug = recipe_data["slug"]
-    image_model = config.get("PPQ_IMAGE_MODEL", "dall-e-3")
     try:
-        image_path = _generate_image(recipe_data, slug, api_key, base_url, image_model)
+        image_path = _generate_image(recipe_data, slug, ai_config.api_key, ai_config.base_url, ai_config.image_model)
     except Exception:
         image_path = None
     if image_path:
@@ -124,16 +118,11 @@ def extract_recipe_from_text(text: str) -> dict:
     Use AI to extract a structured recipe from pasted raw text.
     Saves as staged. Raises on API error or parse failure.
     """
-    api_key = config.get("PPQ_API_KEY")
-    if not api_key:
-        raise ValueError("PPQ_API_KEY not configured. Add it in Settings.")
+    ai_config = require_api_key()
 
-    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
-    model = config.get("PPQ_MODEL", "gpt-4o-mini")
-
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    client = ai_client(ai_config)
     response = client.chat.completions.create(
-        model=model,
+        model=ai_config.text_model,
         messages=[
             {"role": "system", "content": EXTRACT_PROMPT},
             {"role": "user", "content": text[:12000]},  # cap to avoid token overflow
@@ -176,7 +165,7 @@ def _generate_image(recipe_data: dict, slug: str, api_key: str, base_url: str, m
         + ". Overhead shot, natural light, styled on a wooden surface, high resolution."
     )
 
-    client = OpenAI(api_key=api_key, base_url=base_url, timeout=60.0)
+    client = ai_client(AIConfig(api_key=api_key, base_url=base_url, text_model="", image_model=model, vision_model=""), timeout=60.0)
     gpt_image_models = {"gpt-image-1", "gpt-image-1.5", "gpt-image-2"}
     kwargs = dict(model=model, prompt=prompt, n=1)
     if model in gpt_image_models:

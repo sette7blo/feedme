@@ -5,7 +5,7 @@ import json
 import re
 from datetime import date, timedelta
 
-import core.config as config
+from core.ai import client as ai_client, require_api_key
 from modules.importer import list_recipes
 from modules.pantry import list_pantry
 
@@ -19,10 +19,9 @@ def generate_week_plan(
     use_pantry: bool,
     prompt: str,
 ) -> dict:
-    api_key  = config.get("PPQ_API_KEY", "")
-    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
-    model    = config.get("PPQ_MODEL", "gpt-4o-mini")
-    if not api_key:
+    try:
+        ai_config = require_api_key()
+    except ValueError:
         raise ValueError("No AI API key configured")
 
     data    = list_recipes(status="active", page=1, per_page=200)
@@ -88,10 +87,9 @@ def generate_week_plan(
         "Return the raw JSON array with no markdown, no explanation."
     )
 
-    from openai import OpenAI
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    client = ai_client(ai_config)
     resp = client.chat.completions.create(
-        model=model,
+        model=ai_config.text_model,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Recipe library:\n{json.dumps(recipe_list, ensure_ascii=False)}"},
