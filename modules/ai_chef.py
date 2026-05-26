@@ -195,7 +195,11 @@ def _generate_image(recipe_data: dict, slug: str, api_key: str, base_url: str, m
         import base64
         dest.write_bytes(base64.b64decode(item.b64_json))
     elif getattr(item, "url", None):
-        urllib.request.urlretrieve(item.url, dest)
+        try:
+            with urllib.request.urlopen(item.url, timeout=30) as resp:
+                dest.write_bytes(resp.read())
+        except Exception as exc:
+            raise ValueError(f"Image API returned a URL but download failed: {exc}") from exc
     else:
         raise ValueError("Image API returned no url or b64_json data")
     return dest

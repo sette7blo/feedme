@@ -11,6 +11,9 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+### Fixed
+- Image regeneration no longer hangs indefinitely when a provider returns an image URL that stalls during download; downloads now fail with a clear bounded timeout error.
+
 ## [v1.8.2] — 2026-05-25
 
 ### Changed
