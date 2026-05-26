@@ -84,6 +84,21 @@ The tag triggers GitHub Actions to build/publish Docker images and create the Gi
 
 Do not push a release-intent commit without a matching tag.
 
+Release publishing is tag-driven. A plain `main` push does not have semver tag
+context, so the release workflow must not try to push Docker images from `main`
+unless it also provides a valid non-release tag such as `main` or `edge`.
+
+Cleaner workflow options:
+
+- Preferred: limit Docker image publishing and GitHub release creation to
+  `refs/tags/v*.*.*` only.
+- Alternative: keep `main` pushes in the workflow, but set `push: false` or use
+  a separate development image tag for non-tag refs.
+
+When checking whether a release succeeded, check the tag-triggered run for
+`vX.Y.Z`. Do not treat a separate `main` push run with missing semver metadata
+as the release result.
+
 ## AI configuration notes
 
 The current setting/env names are `PPQ_*` for compatibility:
